@@ -1,0 +1,10 @@
+package com.fitzone.gymbackend.controller;
+
+import com.fitzone.gymbackend.entity.Lead;
+import com.fitzone.gymbackend.repository.LeadRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+public class LeadController {
+	
+}

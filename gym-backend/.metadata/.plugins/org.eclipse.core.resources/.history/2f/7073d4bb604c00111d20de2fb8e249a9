@@ -1,0 +1,5 @@
+package com.fitzone.gymbackend.controller;
+
+public class LeadController {
+
+}

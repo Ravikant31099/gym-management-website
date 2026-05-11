@@ -1,0 +1,5 @@
+package com.fitzone.gymbackend.repository;
+
+public class LeadRepository {
+
+}
