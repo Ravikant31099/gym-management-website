@@ -1,0 +1,32 @@
+node_modules/
+target/
+.env
+.DS_Store
+
+# React
+node_modules/
+dist/
+
+# Spring Boot
+target/
+
+# Environment
+.env
+
+# Mac
+.DS_Store
+
+# STS / Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# IntelliJ
+.idea/
