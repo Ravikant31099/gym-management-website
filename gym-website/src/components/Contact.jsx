@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 export default function Contact() {
     const [success, setSuccess] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -10,25 +11,44 @@ export default function Contact() {
         message: ''
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        try {
+            const response = await fetch("http://localhost:8080/api/leads", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+            if (response.ok) {
+                setSuccess(true);
+                setTimeout(() => {
+                    setSuccess(false);
+                }, 3000);
+                setFormData({
+                    name: "",
+                    email: "",
+                    phone: "",
+                    subject: "",
+                    message: ""
+                });
+            } else {
+                const errorData = await response.json();
+                const messages = Object.values(errorData);
+                setErrorMessage(messages.join(" - "));
+                setTimeout(() => {
+                    setErrorMessage("");
+                }, 4000);
+            }
+        } catch (error) {
+            setErrorMessage("Backend connection failed due to " + error.message);
+            setTimeout(() => {
+                setErrorMessage("");
+            }, 3000);
+        }
         console.log('Form Data:', formData);
-
-        setSuccess(true);
-
-        setTimeout(() => {
-            setSuccess(false);
-        }, 3000);
-
-        setFormData({
-            name: "",
-            email: "",
-            phone: "",
-            subject: "",
-            message: ""
-        });
     }
-
     return (
         <section id="contact">
             <div className="container">
@@ -45,6 +65,18 @@ export default function Contact() {
                         marginBottom: "20px",
                         fontWeight: "bold"
                     }}>Message Sent Successfully ✅
+                    </div>
+                )}
+                {errorMessage && (
+                    <div style={{
+                        background: "#ef4444",
+                        padding: "15px",
+                        borderRadius: "8px",
+                        marginBottom: "20px",
+                        fontWeight: "bold",
+                        color: "white"
+                    }}>
+                        {errorMessage}
                     </div>
                 )}
                 <div className="contact-container">
@@ -99,28 +131,28 @@ export default function Contact() {
                                     value={formData.name}
                                     onChange={(e) =>
                                         setFormData({ ...formData, name: e.target.value })
-                                    }/>
+                                    } />
                                 <input
                                     type="email"
                                     placeholder="Your Email"
                                     value={formData.email}
                                     onChange={(e) =>
                                         setFormData({ ...formData, email: e.target.value })
-                                    }/>
+                                    } />
                                 <input
                                     type="text"
                                     placeholder="Phone Number"
                                     value={formData.phone}
                                     onChange={(e) =>
                                         setFormData({ ...formData, phone: e.target.value })
-                                    }/>
+                                    } />
                                 <input
                                     type="text"
                                     placeholder="Subject"
                                     value={formData.subject}
                                     onChange={(e) =>
                                         setFormData({ ...formData, subject: e.target.value })
-                                    }/>
+                                    } />
                             </div>
                             <textarea
                                 rows="5"
@@ -128,7 +160,7 @@ export default function Contact() {
                                 value={formData.message}
                                 onChange={(e) =>
                                     setFormData({ ...formData, message: e.target.value })
-                                }/>
+                                } />
                             <button type="submit">Send Message</button>
                         </form>
                     </div>

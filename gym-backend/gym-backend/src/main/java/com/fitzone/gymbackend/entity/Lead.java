@@ -1,6 +1,9 @@
 package com.fitzone.gymbackend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "leads")
@@ -9,9 +12,17 @@ public class Lead {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long Id;
+	@NotBlank(message = "Please Enter Name")
 	private String name;
+	@Email(message = "Invalid E-mail")
+	@NotBlank(message = "Please Enter E-mail")
+	private String email;
+	@NotBlank(message = "Please Enter Phone Number")
+	@Pattern(regexp = "[0-9]{10}$", message = "Phone Number must be 10 Digit")
 	private String phone;
+	@NotBlank(message = "Please Enter Subject")
 	private String subject;
+	@NotBlank(message = "Pleas Enter Message")
 	private String message;
 
 	public Long getId() {
@@ -28,6 +39,14 @@ public class Lead {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public String getPhone() {
