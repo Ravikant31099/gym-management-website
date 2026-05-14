@@ -4,8 +4,10 @@ import com.fitzone.gymbackend.entity.Lead;
 import com.fitzone.gymbackend.repository.LeadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 import jakarta.validation.Valid;
 import java.util.*;
+import com.fitzone.gymbackend.exception.ResourceNotFound;
 
 @RestController
 @RequestMapping("/api/leads")
@@ -25,9 +27,20 @@ public class LeadController {
 		return lr.findAll();
 	}
 
-	@DeleteMapping
-	public String deleteLead(@PathVariable Long id) {
-		lr.deleteById(id);
-		return "Lead Deleted Successfully.";
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Map<String, String>> deleteLead(@PathVariable("id") Long id) {
+		Lead l = lr.findById(id).orElseThrow(() -> new ResourceNotFound("Lead Not Found with Id: " + id));
+		lr.delete(l);
+		Map<String, String> mp = new HashMap<>();
+		mp.put("message", "Lead Deleted Successfully");
+		return ResponseEntity.ok(mp);
+	}
+
+	@PutMapping("/{id}/status")
+	public Lead updateStatus(@PathVariable("id") Long id, @RequestParam("status") String status) {
+		Lead l = lr.findById(id).orElseThrow(() -> new ResourceNotFound("Lead Not Found with Id: " + id));
+		l.setStatus(status);
+		return lr.save(l);
+
 	}
 }

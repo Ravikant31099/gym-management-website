@@ -4,8 +4,8 @@ export default function Admin() {
     const [search, setSearch] = useState("");
     const totalLeads = leads.length;
     const todayLeads = leads.length;
-    const contacted = 0;
-    const pending = leads.length;
+    const contacted = leads.filter((lead) => lead.status === "CONTACTED").length;
+    const pending = leads.filter((lead) => lead.status === "NEW").length;
     const filteredLeads = leads.filter((lead) =>
         lead.name.toLowerCase().includes(search.toLowerCase()) ||
         lead.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -21,6 +21,18 @@ export default function Admin() {
                 method: "DELETE"
             });
             setLeads(leads.filter((lead) => lead.id !== id));
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const updateStatus = async (id, status) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/leads/${id}/status?status=${status}`, {
+                method: "PUT"
+            }
+            );
+            const updatedLead = await response.json();
+            setLeads(leads.map((lead) => lead.id === id ? updatedLead : lead));
         } catch (error) {
             console.log(error);
         }
@@ -160,7 +172,8 @@ export default function Admin() {
                     </div>
                 </div>
                 <div style={{
-                    overflowX: "auto"
+                    overflowX: "hidden",
+                    width: "100%"
                 }}>
                     <div style={{
                         display: "grid",
@@ -201,12 +214,16 @@ export default function Admin() {
                     }}>
                         <table style={{
                             width: "100%",
-                            borderCollapse: "collapse",
-                            color: "white"
+                            background: "#0f172a",
+                            borderCollapse: "separate",
+                            borderSpacing: "0",
+                            borderRadius: "16px",
+                            overflow: "hidden",
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.35)"
                         }}>
-                            <thead>
+                            <thead style={{ background: "#22c55e" }}>
                                 <tr style={{
-                                    background: "#1e293b",
+                                    background: "linear-gradient(90deg, #16a34a, #22c55e)",
                                     color: "#22c55e"
                                 }}>
                                     <th style={tableStyle}>Name</th>
@@ -220,40 +237,69 @@ export default function Admin() {
                             </thead>
                             <tbody>
                                 {
-                                    filteredLeads.map((lead) => (
-                                        <tr key={lead.id}
-                                            style={{
-                                                background: "#111827",
-                                                transition: "0.3s"
+                                    filteredLeads.map((lead, index) => (
+                                        <tr key={lead.id} style={{
+                                            background: index % 2 === 0 ? "#1e293b" : "#172033",
+                                            transition: "0.3s ease"
+                                        }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.background = "#263449";
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.background = index % 2 === 0 ? "#1e293b" : "#172033";
                                             }}>
                                             <td style={tableStyle}>{lead.name}</td>
                                             <td style={tableStyle}>{lead.email}</td>
                                             <td style={tableStyle}>{lead.phone}</td>
                                             <td style={tableStyle}>{lead.subject}</td>
-                                            <td style={tableStyle}>{lead.message}</td>
+                                            <td title={lead.message} style={{
+                                                    ...tableStyle,
+                                                    maxWidth: "250px",
+                                                    whiteSpace: "nowrap",
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                    cursor: "pointer"
+                                                }}
+                                            > {lead.message} </td>
                                             <td style={tableStyle}>
-                                                <span style={{
-                                                    background: "#facc15",
-                                                    color: "#000",
-                                                    padding: "6px 12px",
-                                                    borderRadius: "20px",
-                                                    fontWeight: "bold",
-                                                    fontSize: "14px"
-                                                }}>New
-                                                </span>
+                                                <select
+                                                    value={lead.status || "NEW"}
+                                                    onChange={(e) => updateStatus(lead.id, e.target.value)}
+                                                    style={{
+                                                        padding: "10px 35px 10px 14px",
+                                                        borderRadius: "10px",
+                                                        border: "1px solid rgba(255,255,255,0.1)",
+                                                        outline: "none",
+                                                        background: lead.status === "CONTACTED" ? "#16a34a" : lead.status === "FOLLOW_UP" ? "#f59e0b" : lead.status === "CLOSED" ? "#ef4444" : "#3b82f6",
+                                                        color: "white",
+                                                        fontWeight: "600",
+                                                        fontSize: "14px",
+                                                        cursor: "pointer",
+                                                        minWidth: "160px",
+                                                        appearance: "none",
+                                                        WebkitAppearance: "none",
+                                                        MozAppearance: "none",
+                                                        position: "relative"
+                                                    }}>
+                                                    <option value="NEW" style={{ background: "#1e293b", color: "white" }}>🆕 NEW</option>
+                                                    <option value="CONTACTED" style={{ background: "#1e293b", color: "white" }}> 📞 CONTACTED</option>
+                                                    <option value="FOLLOW_UP" style={{ background: "#1e293b", color: "white" }}> ⏳ FOLLOW UP</option>
+                                                    <option value="CLOSED" style={{ background: "#1e293b", color: "white" }}> ✅ CLOSED</option>
+                                                </select>
                                             </td>
                                             <td style={tableStyle}>
                                                 <button
                                                     onClick={() => deleteLead(lead.id)}
                                                     style={{
-                                                        background: "#ef4444",
-                                                        padding: "10px 16px",
-                                                        borderRadius: "10px",
+                                                        background: "linear-gradient(135deg, #dc2626, #ef4444)",
                                                         border: "none",
                                                         color: "white",
-                                                        fontWeight: "600",
+                                                        padding: "10px 16px",
+                                                        borderRadius: "10px",
                                                         cursor: "pointer",
-                                                        boxShadow: "0 4px 10px rgba(239,68,68,0.35)"
+                                                        fontWeight: "600",
+                                                        transition: "0.3s ease",
+                                                        boxShadow: "0 4px 12px rgba(239,68,68,0.3)"
                                                     }}
                                                 >Delete
                                                 </button>
@@ -270,8 +316,9 @@ export default function Admin() {
     );
 }
 const tableStyle = {
-    padding: "18px",
+    padding: "18px 16px",
     borderBottom: "1px solid #334155",
     textAlign: "left",
-    fontSize: "15px"
+    color: "white",
+    fontSize: "14px"
 };

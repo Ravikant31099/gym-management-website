@@ -24,6 +24,7 @@ public class Lead {
 	private String subject;
 	@NotBlank(message = "Pleas Enter Message")
 	private String message;
+	private String status = "NEW";
 
 	public Long getId() {
 		return Id;
@@ -71,6 +72,14 @@ public class Lead {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }
