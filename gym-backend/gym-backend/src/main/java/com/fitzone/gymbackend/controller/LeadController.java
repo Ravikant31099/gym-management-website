@@ -11,17 +11,23 @@ import java.util.*;
 @RequestMapping("/api/leads")
 @CrossOrigin("*")
 public class LeadController {
-	
+
 	@Autowired
 	private LeadRepository lr;
-	
+
 	@PostMapping
 	public Lead saveLead(@Valid @RequestBody Lead l) {
 		return lr.save(l);
 	}
-	
+
 	@GetMapping
 	public List<Lead> getAllLead() {
 		return lr.findAll();
+	}
+
+	@DeleteMapping
+	public String deleteLead(@PathVariable Long id) {
+		lr.deleteById(id);
+		return "Lead Deleted Successfully.";
 	}
 }
