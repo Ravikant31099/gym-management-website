@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 export default function Admin() {
     const [leads, setLeads] = useState([]);
     const [search, setSearch] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const [selectedLeadId, setSelectedLeadId] = useState(null);
     const totalLeads = leads.length;
     const todayLeads = leads.length;
     const contacted = leads.filter((lead) => lead.status === "CONTACTED").length;
@@ -15,14 +20,25 @@ export default function Admin() {
         fetch("http://localhost:8080/api/leads").then((response) => response.json()).then((data) => setLeads(data))
             .catch((error) => console.log(error));
     }, []);
+    const openDeleteModal = (id) => {
+        setSelectedLeadId(id);
+        setShowModal(true);
+    };
+    const confirmDelete = () => {
+        deleteLead(selectedLeadId);
+        setShowModal(false);
+        setSelectedLeadId(null);
+    };
     const deleteLead = async (id) => {
         try {
             await fetch(`http://localhost:8080/api/leads/${id}`, {
                 method: "DELETE"
             });
             setLeads(leads.filter((lead) => lead.id !== id));
+            toast.success("Lead deleted successfully");
         } catch (error) {
             console.log(error);
+            toast.error("Failed to delete lead");
         }
     };
     const updateStatus = async (id, status) => {
@@ -253,13 +269,13 @@ export default function Admin() {
                                             <td style={tableStyle}>{lead.phone}</td>
                                             <td style={tableStyle}>{lead.subject}</td>
                                             <td title={lead.message} style={{
-                                                    ...tableStyle,
-                                                    maxWidth: "250px",
-                                                    whiteSpace: "nowrap",
-                                                    overflow: "hidden",
-                                                    textOverflow: "ellipsis",
-                                                    cursor: "pointer"
-                                                }}
+                                                ...tableStyle,
+                                                maxWidth: "250px",
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                cursor: "pointer"
+                                            }}
                                             > {lead.message} </td>
                                             <td style={tableStyle}>
                                                 <select
@@ -289,7 +305,7 @@ export default function Admin() {
                                             </td>
                                             <td style={tableStyle}>
                                                 <button
-                                                    onClick={() => deleteLead(lead.id)}
+                                                    onClick={() => openDeleteModal(lead.id)}
                                                     style={{
                                                         background: "linear-gradient(135deg, #dc2626, #ef4444)",
                                                         border: "none",
@@ -312,6 +328,89 @@ export default function Admin() {
                     </div>
                 </div>
             </div>
+            {
+                showModal && (
+                    <div
+                        style={{
+                            position: "fixed",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            background: "rgba(0,0,0,0.7)",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            zIndex: 999
+                        }}
+                    >
+                        <div
+                            style={{
+                                background: "#1e293b",
+                                padding: "30px",
+                                borderRadius: "16px",
+                                width: "400px",
+                                boxShadow: "0 8px 30px rgba(0,0,0,0.5)",
+                                textAlign: "center",
+                                border: "1px solid #334155"
+                            }}
+                        >
+                            <h2
+                                style={{
+                                    marginBottom: "15px",
+                                    color: "white"
+                                }}
+                            > Delete Lead
+                            </h2>
+                            <p
+                                style={{
+                                    color: "#94a3b8",
+                                    marginBottom: "30px"
+                                }}
+                            > Are you sure you want to delete this lead?
+                            </p>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: "15px"
+                                }}
+                            >
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    style={{
+                                        padding: "10px 20px",
+                                        borderRadius: "10px",
+                                        border: "none",
+                                        background: "#334155",
+                                        color: "white",
+                                        cursor: "pointer"
+                                    }}
+                                > Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    style={{
+                                        padding: "10px 20px",
+                                        borderRadius: "10px",
+                                        border: "none",
+                                        background: "#ef4444",
+                                        color: "white",
+                                        cursor: "pointer",
+                                        fontWeight: "bold"
+                                    }}
+                                > Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                theme="dark"
+            />
         </div>
     );
 }
