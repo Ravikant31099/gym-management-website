@@ -1,48 +1,43 @@
+import '../style/Pricing.css';
 export default function Pricing() {
     const plans = [
         {
             name: "Basic",
-            price: "₹999/month"
+            price: "Base tier feature setup",
+            priceNum: "₹999",
+            period: "/month"
         },
         {
             name: "Pro",
-            price: "₹1999/month"
+            price: "Most popular tier feature setup",
+            priceNum: "₹1,999",
+            period: "/month",
+            popular: true
         },
         {
             name: "Premium",
-            price: "₹2999/month"
+            price: "Elite tier feature setup",
+            priceNum: "₹2,999",
+            period: "/month"
         }
     ];
     return (
-        <section id="pricing">
+        <section id="pricing" className="pricing-section">
             <div className="container">
-                <h2 style={{
-                    fontSize: "40px",
-                    marginBottom: "50px"
-                }}>
-                    Membership Plans
-                </h2>
-                <div style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: "30px",
-                    flexWrap: "wrap"
-                }}>
+                <h2 className="pricing-title">Membership Plans</h2>
+                <div className="pricing-grid">
                     {plans.map((plan, index) => (
-                        <div className="card"
+                        <div 
+                            className={`pricing-card ${plan.popular ? 'popular-card' : ''}`} 
                             key={index}
-                            style={{
-                                background: "#1e293b",
-                                padding: "20px",
-                                width: "250px",
-                                borderRadius: "10px"
-                            }}
                         >
-                            <h3>{plan.name}</h3>
-                            <h1 className="price-text">
-                                {plan.price}
-                            </h1>
-                            <button>Choose Plan</button>
+                            {plan.popular && <span className="popular-badge">Most Popular</span>}
+                            <h3 className="plan-name">{plan.name}</h3>
+                            <div className="price-container">
+                                <span className="price-amount">{plan.priceNum}</span>
+                                <span className="price-period">{plan.period}</span>
+                            </div>
+                            <button className="pricing-btn" type="button">Choose Plan</button>
                         </div>
                     ))}
                 </div>

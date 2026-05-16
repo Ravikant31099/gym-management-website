@@ -1,4 +1,5 @@
-export default function Testimonals() {
+import '../style/Testimonals.css';
+export default function Testimonials() {
     const reviews = [
         {
             name: "William Brown",
@@ -12,49 +13,25 @@ export default function Testimonals() {
             name: "James Wilson",
             feedback: "The personalized training programs at FitZone have helped me achieve my goals faster than I ever thought possible. The staff is incredibly knowledgeable and friendly."
         }
-    ]
+    ];
+
     return (
-        <section id="testimonials">
+        <section id="testimonials" className="testimonials-section">
             <div className="container">
-                <h2 style={{
-                    fontSize: "40px",
-                    marginBottom: "50px"
-                }}>What our Customers Say
-                </h2>
-                <div style={{
-                    display: "flex",
-                    gap: "30px",
-                    flexWrap: "wrap",
-                    justifyContent: "center"
-                }}>
+                <h2 className="testimonials-title">What our Customers Say</h2>
+                <div className="testimonials-grid">
                     {reviews.map((review, index) => (
-                        <div
-                            key={index}
-                            className="card"
-                            style={{
-                                background: "#1e293b",
-                                padding: "30px",
-                                borderRadius: "10px",
-                                width: "300px",
-                                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-                                transition: "0.3s"
-                            }}>
-                            <p style={{
-                                fontStyle: "italic",
-                                marginBottom: "20px",
-                                lineHeight: "1.5",
-                                color: "#cbd5e1"
-                            }}> {review.feedback}
+                        <div className="testimonial-card" key={index}>
+                            <p className="testimonial-feedback">
+                                "{review.feedback}"
                             </p>
-                            <h4 style={{
-                                color: "#0ea5e9",
-                                marginBottom: "10px"
-                            }}> {review.name}
+                            <h4 className="testimonial-name">
+                                {review.name}
                             </h4>
                         </div>
                     ))}
                 </div>
             </div>
         </section>
-    )
+    );
 }
