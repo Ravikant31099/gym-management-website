@@ -56,7 +56,12 @@ export default function Admin() {
         return matchesSearch && matchesStatus;
     });
     useEffect(() => {
-        fetch("http://localhost:8080/api/leads")
+        fetch("http://localhost:8080/api/leads", {
+            headers: {
+                Authorization:
+                    `Bearer ${localStorage.getItem("token")}`
+            }
+        })
             .then((response) => response.json())
             .then((data) => setLeads(data))
             .catch((error) => console.log(error));

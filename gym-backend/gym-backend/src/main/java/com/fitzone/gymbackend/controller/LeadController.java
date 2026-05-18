@@ -11,7 +11,6 @@ import com.fitzone.gymbackend.exception.ResourceNotFound;
 
 @RestController
 @RequestMapping("/api/leads")
-@CrossOrigin("*")
 public class LeadController {
 
 	@Autowired
