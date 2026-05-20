@@ -186,3 +186,35 @@
         transform: translateY(0);
     }
 }
+
+@media (max-width: 968px) {
+    .contact-container {
+        grid-template-columns: 1fr !important; 
+        gap: 20px;
+    }
+
+    .contact-info {
+        order: 2; 
+        padding: 30px;
+    }
+
+    .contact-form-wrapper {
+        order: 1;
+        padding: 30px;
+    }
+
+    .contact-title {
+        font-size: 32px;
+        margin-bottom: 30px;
+    }
+}
+
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    #contact {
+        padding: 40px 15px;
+    }
+}

@@ -25,6 +25,16 @@
 
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #0b1329;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -33,6 +43,10 @@ body {
   font-family: Arial, sans-serif;
   background-color: #0f172a;
   color: white;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden !important;
 }
 
 section {
@@ -128,4 +142,26 @@ nav a:hover {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   width: 100%;
+}
+
+.Toastify {
+  padding: 0;
+  height: 0;
+}
+
+.Toastify__toast-container {
+  max-width: 100vw !important;
+  right: 0 !important;
+  margin: 0 !important;
+}
+
+.Toastify__toast {
+  margin-right: 12px;
+  margin-top: 12px;
+}
+
+@media (max-width: 480px) {
+  .Toastify {
+    padding: 0;
+  }
 }

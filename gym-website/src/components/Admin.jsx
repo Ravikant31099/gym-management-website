@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../style/Admin.css";
+import { apiRequest } from "../util/api"
 export default function Admin() {
     const [leads, setLeads] = useState([]);
     const [search, setSearch] = useState("");
     const [showViewModal, setShowViewModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedLeadId, setSelectedLeadId] = useState(null);
     const [selectedLead, setSelectedLead] = useState(null);
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -21,6 +21,9 @@ export default function Admin() {
         "NOT INTERESTED"
     ];
     const navigate = useNavigate();
+    const analyticsRef = useRef(null);
+    const leadsRef = useRef(null);
+    const mainContentRef = useRef(null);
     const pending = leads.filter(
         (lead) => lead.status === "NEW"
     ).length;
@@ -47,6 +50,18 @@ export default function Admin() {
             value: leads.filter((lead) => lead.status === "CLOSED").length
         }
     ];
+    const scrollToSection = (ref) => {
+        ref.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    };
+    const scrollToTop = () => {
+        mainContentRef.current?.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    };
     const filteredLeads = leads.filter((lead) => {
         const matchesSearch =
             lead.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -112,7 +127,7 @@ export default function Admin() {
     };
     const handleLogout = () => {
         localStorage.removeItem("token");
-        navigate("/");
+        navigate("/login");
     };
     function DashboardCard({ title, value, color }) {
         return (
@@ -153,11 +168,11 @@ export default function Admin() {
                 />
             )}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-                <div className="logo">FitZone Admin</div>
+                <div className="sidebar-header">FitZone Admin</div>
                 <div className="sidebar-menu">
-                    <div className="sidebar-item active">Dashboard</div>
-                    <div className="sidebar-item">Leads Management</div>
-                    <div className="sidebar-item">Analytics</div>
+                    <div className="sidebar-item active" onClick={scrollToTop}>Dashboard</div>
+                    <div className="sidebar-item" onClick={() => scrollToSection(leadsRef)}>Leads Management</div>
+                    <div className="sidebar-item" onClick={() => scrollToSection(analyticsRef)}>Analytics</div>
                 </div>
                 <div class="logout-wrapper">
                     <button class="btn-logout" onClick={handleLogout}>
@@ -170,7 +185,7 @@ export default function Admin() {
                     </button>
                 </div>
             </aside>
-            <div className="main-content">
+            <div className="main-content" ref={mainContentRef}>
                 <button
                     className="mobile-nav-toggle"
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -222,7 +237,7 @@ export default function Admin() {
                     />
                 </div>
                 {/* CHARTS */}
-                <div className="charts-grid">
+                <div className="charts-grid" ref={analyticsRef}>
                     <div className="chart-card">
                         <h2>Leads Analytics</h2>
                         <ResponsiveContainer width="100%" height="85%">
@@ -257,7 +272,7 @@ export default function Admin() {
                     </div>
                 </div>
                 {/* SEARCH */}
-                <div className="search-filter-container">
+                <div className="search-filter-container" ref={leadsRef}>
                     <input
                         type="text"
                         placeholder="Search leads..."
