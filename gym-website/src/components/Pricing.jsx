@@ -3,20 +3,20 @@ export default function Pricing() {
     const plans = [
         {
             name: "Basic",
-            price: "Base tier feature setup",
+            description: "Base tier feature setup",
             priceNum: "₹999",
             period: "/month"
         },
         {
             name: "Pro",
-            price: "Most popular tier feature setup",
+            description: "Most popular tier feature setup",
             priceNum: "₹1,999",
             period: "/month",
             popular: true
         },
         {
             name: "Premium",
-            price: "Elite tier feature setup",
+            description: "Elite tier feature setup",
             priceNum: "₹2,999",
             period: "/month"
         }
