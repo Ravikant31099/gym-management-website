@@ -12,4 +12,6 @@ public class ApiPath {
 	public static final String PLANS = "/api/plans/**";
 
 	public static final String PUBLIC_PLANS = "/api/plans";
+	
+	public static final int Token_Expiry_Time = 1000 * 60;
 }

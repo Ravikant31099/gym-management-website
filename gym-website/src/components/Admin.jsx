@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../style/Admin.css";
-import { apiRequest } from "../util/api"
+import { apiRequest } from "../util/api";
+import AdminSidebar from "./AdminSidebar";
 export default function Admin() {
     const [leads, setLeads] = useState([]);
     const [search, setSearch] = useState("");
@@ -160,31 +161,14 @@ export default function Admin() {
     return (
         <div className="admin-container">
             {/* SIDEBAR */}
-            {isSidebarOpen && (
-                <div
-                    className="modal-overlay"
-                    style={{ zIndex: 1999 }}
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
-            <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-                <div className="sidebar-header">FitZone Admin</div>
-                <div className="sidebar-menu">
-                    <div className="sidebar-item active" onClick={scrollToTop}>Dashboard</div>
-                    <div className="sidebar-item" onClick={() => scrollToSection(leadsRef)}>Leads Management</div>
-                    <div className="sidebar-item" onClick={() => scrollToSection(analyticsRef)}>Analytics</div>
-                </div>
-                <div class="logout-wrapper">
-                    <button class="btn-logout" onClick={handleLogout}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        Logout
-                    </button>
-                </div>
-            </aside>
+            <AdminSidebar
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+                scrollToTop={scrollToTop}
+                scrollToSection={scrollToSection}
+                leadsRef={leadsRef}
+                analyticsRef={analyticsRef}
+            />
             <div className="main-content" ref={mainContentRef}>
                 <button
                     className="mobile-nav-toggle"

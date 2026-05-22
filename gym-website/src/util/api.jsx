@@ -8,10 +8,8 @@ export async function apiRequest(endpoint,options = {}) {
             `Bearer ${token}`;
     }
     const response = await fetch(`${BASE_URL}${endpoint}`,{...options,headers});
-    if (response.status === 401) {
-        localStorage.removeItem("token");
-        alert("Session expired. Please login again.");
-        window.location.href = "/login";
+    if (response.status === 401 || response.status === 403) {
+        window.dispatchEvent(new Event("session-expired"));
     }
     return response;
 }

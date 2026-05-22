@@ -165,3 +165,41 @@ nav a:hover {
     padding: 0;
   }
 }
+
+.session-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.session-modal {
+    background: #1e293b;
+    padding: 2rem;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    color: white;
+}
+
+.session-modal h2 {
+    margin-bottom: 1rem;
+}
+
+.session-modal p {
+    margin-bottom: 1.5rem;
+    color: #cbd5e1;
+}
+
+.session-modal button {
+    background: #22c55e;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}

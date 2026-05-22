@@ -5,6 +5,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
+import static com.fitzone.gymbackend.constant.ApiPath.*;
 
 public class JwtUtil {
 	private static final String SECURITY_KEY = "Fitzone_Security_JWT_Token_Key_Generator_9890123";
@@ -12,7 +13,7 @@ public class JwtUtil {
 
 	public static String generateToken(String usrname) {
 		return Jwts.builder().setSubject(usrname).setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+				.setExpiration(new Date(System.currentTimeMillis() + Token_Expiry_Time))
 				.signWith(SignatureAlgorithm.HS256, key).compact();
 	}
 

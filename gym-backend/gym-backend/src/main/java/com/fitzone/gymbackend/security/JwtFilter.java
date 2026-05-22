@@ -20,7 +20,8 @@ public class JwtFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest hre,HttpServletResponse hrs,FilterChain fc) throws ServletException, IOException {
 		String authHeader = hre.getHeader("Authorization");
-		if (authHeader != null && authHeader.startsWith("Bearer")) {
+		try {
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
 			String token = authHeader.substring(7);
 			if (JwtUtil.ValidateToken(token)) {
 				String username = JwtUtil.extractUserName(token);
@@ -30,5 +31,13 @@ public class JwtFilter extends OncePerRequestFilter {
 			}
 		}
 		fc.doFilter(hre, hrs);
+		} catch (Exception e) {
+			hrs.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			hrs.setContentType("application/json");
+			hrs.getWriter().write("""
+			{
+				"message" : "Token expired or Invalid"
+			}""");
+		}
 	}
 }
