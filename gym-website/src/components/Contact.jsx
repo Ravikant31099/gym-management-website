@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import '../style/Contact.css'; // Importing the separate CSS file
+import '../style/Home.css';
 
 export default function Contact() {
     const [success, setSuccess] = useState(false);

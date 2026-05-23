@@ -1,4 +1,4 @@
-import '../style/Navbar.css';
+import '../style/Home.css';
 export default function Navbar() {
   return (
     <nav className="site-navbar">

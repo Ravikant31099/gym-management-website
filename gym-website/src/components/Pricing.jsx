@@ -1,4 +1,4 @@
-import '../style/Pricing.css';
+import '../style/Home.css';
 import { useEffect, useState } from "react";
 
 export default function Pricing() {
@@ -8,7 +8,7 @@ export default function Pricing() {
     }, []);
     const fetchPlans = async () => {
         try {
-            const response = await await fetch(`http://localhost:8080/api/plans`);
+            const response = await fetch(`http://localhost:8080/api/plans`);
             const data = await response.json();
             setPlans(data);
         } catch (error) {

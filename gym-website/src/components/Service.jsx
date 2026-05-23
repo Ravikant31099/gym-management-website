@@ -1,4 +1,4 @@
-import '../style/Service.css';
+import '../style/Home.css';
 export default function Service() {
     const services = [
         {

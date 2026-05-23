@@ -1,7 +1,9 @@
-import Admin from "./components/Admin";
-import PlanManagement from "./components/PlanManagement";
-import Login from "./components/Login";
-import Home from "./components/Home";
+import Admin from "./page/Admin";
+import PlanManagement from "./page/PlanManagement";
+import LeadManagement from "./page/LeadManagement";
+import LeadAnalytics from "./page/LeadAnalytics";
+import Login from "./page/Login";
+import Home from "./page/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
@@ -42,17 +44,29 @@ export default function App() {
           </ProtectedRoute>
         }
         />
+        <Route path="/admin/leads" element={
+          <ProtectedRoute>
+            <LeadManagement />
+          </ProtectedRoute>
+        }
+        />
+        <Route path="/admin/leads/analytics" element={
+          <ProtectedRoute>
+            <LeadAnalytics />
+          </ProtectedRoute>
+        }
+        />
       </Routes>
       {sessionExpired && (
         <div className="session-modal-overlay">
           <div className="session-modal">
             <h2>Session Expired</h2>
             <p> Your session has expired. Please login again. </p>
-            <button onClick={() => { 
+            <button onClick={() => {
               localStorage.removeItem("token");
-              setSessionExpired(false); 
-              window.location.href = "/login"; 
-              }}
+              setSessionExpired(false);
+              window.location.href = "/login";
+            }}
             >
               Login Again
             </button>
@@ -66,9 +80,9 @@ export default function App() {
 Lead Management - Working in Progress
 Login/Logout - Work in Progress
 Customer Management - 
-Add Customer -
+Analytics Dashboard - Work in Progress
 Register -
 Feedback management - 
-Plan management - 
+Plan management - Work in Progress
 Loader -
 */

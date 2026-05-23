@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../style/Admin.css";
 
 export default function AdminSidebar({
@@ -10,46 +10,27 @@ export default function AdminSidebar({
     analyticsRef
 }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const handleLogout = () => {
         localStorage.removeItem("token");
         navigate("/login");
     };
     return (
-        <>
-            {isSidebarOpen && (
-                <div
-                    className="modal-overlay"
-                    style={{ zIndex: 1999 }}
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
+        <main>
+            {isSidebarOpen && (<div className="modal-overlay" style={{ zIndex: 1999 }} onClick={() => setIsSidebarOpen(false)} />)}
             <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
                 <div className="sidebar-header">FitZone Admin </div>
                 <div className="sidebar-menu">
-                    <div className="sidebar-item active"
-                        onClick={scrollToTop}
-                    > Dashboard
-                    </div>
-                    <div className="sidebar-item"
-                        onClick={() => scrollToSection(leadsRef)}
-                    > Leads Management
-                    </div>
-                    <div className="sidebar-item"
-                        onClick={() => scrollToSection(analyticsRef)}
-                    > Analytics
-                    </div>
-                    <div className="sidebar-item"
-                        onClick={() => navigate("/admin/plans")}
-                    > Plan Management
-                    </div>
+                    <div className={`sidebar-item ${location.pathname === "/admin" ? "active" : ""}`} onClick={() => { navigate("/admin") }}> Dashboard</div>
+                    <div className={`sidebar-item ${location.pathname === "/admin/leads" ? "active" : ""}`} onClick={() => navigate("/admin/leads")}> Leads Management</div>
+                    <div className={`sidebar-item ${location.pathname === "/admin/leads/analytics" ? "active" : ""}`} onClick={() => navigate("/admin/leads/analytics")}> Lead Analytics</div>
+
+                    <div className={`sidebar-item ${location.pathname === "/admin/plans" ? "active" : ""}`} onClick={() => navigate("/admin/plans")}> Plan Management</div>
                 </div>
                 <div className="logout-wrapper">
-                    <button className="btn-logout"
-                        onClick={handleLogout}
-                    > Logout
-                    </button>
+                    <button className="btn-logout" onClick={handleLogout}> Logout</button>
                 </div>
             </aside>
-        </>
+        </main>
     );
 }
