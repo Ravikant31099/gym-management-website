@@ -5,6 +5,7 @@ import Pricing from "../components/Pricing";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
 import Testimonals from "../components/Testimonals";
+import BMICalculator from "../components/BMICalculator";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Hero />
       <Service />
       <Pricing />
+      <BMICalculator />
       <Testimonals />
       <Contact />
       <Footer />
