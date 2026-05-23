@@ -31,6 +31,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(
 						auth -> auth.requestMatchers(AUTH).permitAll()
 						.requestMatchers(HttpMethod.GET, GETPLANS).permitAll()
+						.requestMatchers(HttpMethod.POST, POSTLEADS).permitAll()
 						.requestMatchers(LEADS).authenticated()
 						.requestMatchers(PLANS).authenticated().anyRequest().authenticated())
 				.addFilterBefore(jf, UsernamePasswordAuthenticationFilter.class);
