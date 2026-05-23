@@ -70,16 +70,15 @@ export default function Contact() {
                     {/* LEFT SIDE */}
                     <div className="contact-info">
                         <h3>Get In Touch</h3>
-                        <p>📞 +91 98765 43210</p>
-                        <p>✉️ fitzone@gmail.com</p>
+                        <a href="tel:+919890743706" target="_blank" className="contact-link"><p>📞 +91 98765 43210</p></a>
+                        <a href="mailto:fitzonegym@gmail.com" target="_blank" rel="noreferrer" className="contact-link"><p>✉️ fitzone@gmail.com</p></a>
                         <div className="location-row">
                             <a href="https://maps.google.com/?q=YOUR_GYM_LOCATION" target="_blank" rel="noreferrer" className="map-btn"> <FaMapMarkerAlt /> Mumbai, India</a>
                         </div>
-                        <p className="contact-subtext">
-                            Start your fitness journey today with FitZone Gym.
-                        </p>
+                        <span className="contact-subtext"> Start your fitness journey today with FitZone Gym.
+                        </span>
                         <div className="social-media-container">
-                            <h3> Follow Us</h3>
+                            <h3> Connect With Us</h3>
                             <div className="social-icons">
                                 <a href="https://instagram.com" target="_blank" rel="noreferrer"><FaInstagram /></a>
                                 <a href="https://facebook.com" target="_blank" rel="noreferrer"><FaFacebook /></a>

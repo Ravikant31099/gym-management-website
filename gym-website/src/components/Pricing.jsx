@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 export default function Pricing() {
     const [plans, setPlans] = useState([]);
+    const [showAllPlans, setShowAllPlans] = useState(false);
+    const visiblePlans = showAllPlans ? plans : plans.slice(0, 3);
     useEffect(() => {
         fetchPlans();
     }, []);
@@ -20,7 +22,7 @@ export default function Pricing() {
             <div className="container">
                 <h2 className="pricing-title">Membership Plans</h2>
                 <div className="pricing-grid">
-                    {plans.map((plan, index) => (
+                    {visiblePlans.map((plan, index) => (
                         <div
                             className={`pricing-card ${plan.popular ? 'popular-card' : ''}`}
                             key={index}
@@ -36,6 +38,11 @@ export default function Pricing() {
                     ))}
                 </div>
             </div>
+            {plans.length > 3 && (
+                <div className="view-more-wrapper">
+                    <button className="view-more-btn" onClick={() => setShowAllPlans(!showAllPlans)}> {showAllPlans ? "Show Less" : "View More"}</button>
+                </div>
+            )}
         </section>
     );
 }
