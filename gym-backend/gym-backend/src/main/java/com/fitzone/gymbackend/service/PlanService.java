@@ -17,7 +17,7 @@ public class PlanService {
 	}
 
 	public List<PlanResponse> getAllPlans() {
-		return pr.findAll().stream().map(this::mapToResponse).toList();
+		return pr.findAll().stream().map(this::planMapToResponse).toList();
 	}
 
 	public PlanResponse createPlan(PlanRequest p) {
@@ -28,7 +28,7 @@ public class PlanService {
 		pl.setPrice(p.getPrice());
 		pl.setPopular(p.getPopular());
 		Plan sp = pr.save(pl);
-		return mapToResponse(sp);
+		return planMapToResponse(sp);
 	}
 
 	public PlanResponse updatExistingPlan(Long id, Plan p) {
@@ -39,7 +39,7 @@ public class PlanService {
 		ep.setPeriod(p.getPeriod());
 		ep.setPopular(p.getPopular());
 		Plan up = pr.save(ep);
-		return mapToResponse(up);
+		return planMapToResponse(up);
 	}
 
 	public void deletePlan(Long id) {
@@ -47,7 +47,7 @@ public class PlanService {
 		pr.delete(ep);
 	}
 
-	private PlanResponse mapToResponse(Plan plan) {
+	private PlanResponse planMapToResponse(Plan plan) {
 		return new PlanResponse(plan.getId(), plan.getName(), plan.getDescription(), plan.getPrice(), plan.getPeriod(),
 				plan.getPopular());
 	}

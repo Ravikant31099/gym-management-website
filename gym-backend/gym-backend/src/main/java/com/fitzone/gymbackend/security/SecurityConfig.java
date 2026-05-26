@@ -32,6 +32,7 @@ public class SecurityConfig {
 						auth -> auth.requestMatchers(AUTH).permitAll()
 						.requestMatchers(HttpMethod.GET, GETPLANS).permitAll()
 						.requestMatchers(HttpMethod.POST, POSTLEADS).permitAll()
+						.requestMatchers(CUSTOMERS).authenticated()
 						.requestMatchers(LEADS).authenticated()
 						.requestMatchers(PLANS).authenticated().anyRequest().authenticated())
 				.addFilterBefore(jf, UsernamePasswordAuthenticationFilter.class);
