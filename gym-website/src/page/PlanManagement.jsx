@@ -28,9 +28,7 @@ export default function PlanManagement() {
         period: "",
         popular: false
     });
-    useEffect(() => {
-        fetchPlans();
-    }, []);
+    useEffect(() => { fetchPlans(); }, []);
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setPlanForm({
@@ -96,11 +94,7 @@ export default function PlanManagement() {
             if (!validatePlanForm()) {
                 return;
             }
-            const response = await apiRequest(`/api/plans`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(planForm)
-            });
+            const response = await apiRequest(`/api/plans`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(planForm) });
             if (!response.ok) {
                 toast.error("Failed to save plan");
                 return;
@@ -148,16 +142,7 @@ export default function PlanManagement() {
             if (!validatePlanForm()) {
                 return;
             }
-            const response = await apiRequest(`/api/plans/${editingPlanId}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-                    body: JSON.stringify(planForm)
-                }
-            );
+            const response = await apiRequest(`/api/plans/${editingPlanId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(planForm) });
             if (!response.ok) {
                 toast.error("Failed to update plan");
                 return;
@@ -187,10 +172,14 @@ export default function PlanManagement() {
                 <div> <p className="admin-label"> ADMIN PANEL </p>
                     <h1 className="dashboard-title"> Plan Management </h1>
                     <p className="dashboard-subtitle">Manage gym membership plans</p>
-
                 </div>
                 <div>
-                    <button className="add-plan-btn" onClick={() => setShowAddModal(true)}> Add Plan</button>
+                    <button className="add-plan-btn" onClick={() => setShowAddModal(true)}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add Plan</button>
                 </div>
             </div>
             {/* SEARCH */}
@@ -244,7 +233,7 @@ export default function PlanManagement() {
                                 </td>
                                 <td>
                                     <div className="action-buttons">
-                                        <button className="view-btn" onClick={() => openEditModal(plan)}> Edit</button>
+                                        <button className="view-btn" onClick={() => openEditModal(plan)}> Edit </button>
                                         <button className="delete-btn" onClick={() => openDeleteModal(plan.id)}> Delete</button>
                                     </div>
                                 </td>

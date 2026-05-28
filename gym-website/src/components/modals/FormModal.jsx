@@ -15,7 +15,7 @@ export default function FormModal({
                 <div className="modal-grid">{children}</div>
                 <div className="confirm-modal-actions">
                     <button className="confirm-btn-cancel" onClick={onClose}> Cancel </button>
-                    <button className="add-plan-btn" onClick={onSubmit} disabled={loading}>{ loading ? "Processing..." : buttonText}</button>
+                    <button className="add-btn" onClick={onSubmit} disabled={loading}>{ loading ? "Processing..." : buttonText}</button>
                 </div>
             </div>
         </div>

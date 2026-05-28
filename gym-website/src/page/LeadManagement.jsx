@@ -82,6 +82,10 @@ export default function LeadManagement() {
                     <h1 className="dashboard-title"> Lead Management </h1>
                     <p className="dashboard-subtitle"> Manage customer inquiries </p>
                 </div>
+                <div className="admin-badge">
+                    <div className="badge-dot" />
+                    <span> FitZone Admin</span>
+                </div>
             </div>
             {/* SEARCH */}
             <div className="search-filter-container">

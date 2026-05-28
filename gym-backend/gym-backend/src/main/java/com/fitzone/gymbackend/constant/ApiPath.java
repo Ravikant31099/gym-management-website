@@ -10,5 +10,5 @@ public class ApiPath {
 	public static final String GETPLANS = "/api/plans";
 	public static final String POSTLEADS = "/api/leads";
 	public static final String CUSTOMERS = "/api/customers/**";  
-	public static final int Token_Expiry_Time = 1000 * 60;
+	public static final int Token_Expiry_Time = 1000 * 60 * 60;
 }

@@ -35,6 +35,10 @@ export default function LeadAnalytics() {
                     <h1 className="dashboard-title">Lead Analytics</h1>
                     <p className="dashboard-subtitle">Analyze lead performance</p>
                 </div>
+                <div className="admin-badge">
+                    <div className="badge-dot" />
+                    <span> FitZone Admin</span>
+                </div>
             </div>
             {/* LEAD CHARTS */}
             <div className="charts-grid">
