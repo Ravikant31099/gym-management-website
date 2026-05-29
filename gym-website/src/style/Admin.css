@@ -1321,6 +1321,15 @@
     color: #94a3b8;
 }
 
+.clickable-row {
+    cursor: pointer;
+    transition: 0.5s ease;
+}
+
+.clickable-row:hover {
+    background: rgba(255,255,255,0.03);
+}
+
 .plan-badge {
     padding: 4px 8px;
     border-radius: 6px;
@@ -1336,6 +1345,12 @@
     border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
+.plan-badge.pro {
+    background: rgba(92, 246, 105, 0.15);
+    color: #c2fa8b;
+    border: 1px solid rgba(172, 246, 92, 0.3);
+}
+
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -1345,21 +1360,32 @@
     font-weight: 500;
 }
 
-.status-badge.active {
+.status-badge.active-status {
     background-color: rgba(16, 185, 129, 0.1);
     color: #34d399;
 }
 
-.status-badge.expired,
-.status-badge.inactive {
+.status-badge.expired-status,
+.status-badge.inactive-status {
     background-color: rgba(239, 68, 68, 0.1);
-    color: #f87171;
+    color: #f40b0b;
+}
+
+.status-badge.expiring-urgent-status {
+    background: rgba(249, 115, 22, 0.15);
+    color: #ef7a06;
+}
+
+.status-badge.expiring-status {
+    background: rgba(234, 179, 8, 0.15);
+    color: #eab308;
 }
 
 .icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
 }
 
 .edit-icn {
@@ -1371,9 +1397,11 @@
 }
 
 .edit-icn:hover {
-    filter: drop-shadow(0 0 10px #2563eb);
+    filter: drop-shadow(0 0 5px #2563eb);
     color: #00ffff;
     background-color: #1d4ed8;
+    transform: scale(1.05);
+    border-radius: 20px;
 }
 
 .edit-icn:focus-visible {
@@ -1381,21 +1409,21 @@
 }
 
 .delete-icn {
-    background: #dc2626;
-    color: white;
+    background-color: transparent;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    outline: none;
 }
 
 .delete-icn:hover {
-    background: #b91c1c;
+    filter: drop-shadow(0 0 5px #e42626);
+    color: #f3da3d;
+    background-color: #b91c1c;
     transform: scale(1.05);
+    border-radius: 20px;
 }
 
-.view-icn {
-    background: #16a34a;
-    color: white;
-}
-
-.view-icn:hover {
-    background: #15803d;
-    transform: scale(1.05);
+.delete-icn:focus-visible {
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #e42626;
 }
