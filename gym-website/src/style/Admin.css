@@ -188,6 +188,27 @@
     box-shadow: 0 0 14px #10b981;
 }
 
+.dashboard-section {
+    border-radius: 16px;
+    padding: 10px 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-section .cards-header {
+    font-size: 25px;
+    font-weight: 600;
+    background: linear-gradient(100deg, #f1f5f9 30%, #94a3b8 70%);;
+    margin-top: 0;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -202,6 +223,7 @@
     border: 1px solid rgba(255, 255, 255, 0.04);
     position: relative;
     overflow: hidden;
+    cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1426,4 +1448,85 @@
 
 .delete-icn:focus-visible {
     box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #e42626;
+}
+
+.customer-analytics-section {
+    background: #121b2e;
+    border: 2px solid #1f2937;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 20px auto;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 
+                0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.customer-analytics-section h3 {
+    color: #64748b;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 20px;
+    letter-spacing: -0.025em;
+}
+
+.customer-analytics-section table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+}
+
+.customer-analytics-section th {
+    background-color: #1f2937;
+    color: #9ca3af;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    padding: 12px 16px;
+}
+
+.customer-analytics-section th:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+.customer-analytics-section th:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    text-align: right;
+}
+
+.customer-analytics-section td {
+    padding: 16px;
+    color: #e5e7eb;
+    font-size: 0.925rem;
+    border-bottom: 1px solid #1f2937;
+    transition: all 0.2s ease;
+}
+
+.customer-analytics-section td:first-child {
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.customer-analytics-section td:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #3b82f6;
+}
+
+.customer-analytics-section tr:last-child td {
+    border-bottom: none;
+}
+
+.customer-analytics-section tbody tr {
+    cursor: pointer;
+}
+
+.customer-analytics-section tbody tr:hover td {
+    background-color: rgba(59, 130, 246, 0.04);
+    color: #fff;
 }

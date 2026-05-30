@@ -2,6 +2,7 @@ import Admin from "./page/Admin";
 import PlanManagement from "./page/PlanManagement";
 import LeadManagement from "./page/LeadManagement";
 import CustomerManagement from "./page/CustomerManagement";
+import CustomerAnalytics from "./page/CustomerAnalytics";
 import LeadAnalytics from "./page/LeadAnalytics";
 import Login from "./page/Login";
 import Home from "./page/Home";
@@ -57,10 +58,15 @@ export default function App() {
           </ProtectedRoute>
         }
         />
-        <Route
-          path="/admin/customers" element={
+        <Route path="/admin/customers" element={
             <ProtectedRoute>
               <CustomerManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/admin/customers/analytics" element={
+            <ProtectedRoute>
+              <CustomerAnalytics />
             </ProtectedRoute>
           }
         />
