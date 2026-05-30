@@ -96,9 +96,9 @@ Login/Logout - Work in Progress
 Lead Analytics - Work in Progress
 Plan Management - Work in Progress (More than 4 records a view all button to be added)
 Services Management - More than 3 records a view all button to be added
-Customer Management - 
-Customer Analytics -
-Register -
+Customer Management - Work in Progress
+Customer Analytics -  Work in Progress
+Register - 
 Feedback management - 
 Payment Integration - 
 Loader -
