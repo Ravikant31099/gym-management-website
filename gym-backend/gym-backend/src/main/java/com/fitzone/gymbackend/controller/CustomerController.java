@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
 import com.fitzone.gymbackend.service.CustomerService;
+import com.fitzone.gymbackend.dto.RenewalRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -43,5 +44,10 @@ public class CustomerController {
 		Map<String, String> mp = new HashMap<>();
 		mp.put("message", "Customer Deleted Successfully");
 		return ResponseEntity.ok(mp);
+	}
+	
+	@PutMapping("/{id}/renew")
+	public ResponseEntity<CustomerResponse> renewMemberShip(@PathVariable("id") Long id, @RequestBody RenewalRequest r) {
+		return ResponseEntity.ok(cs.renewMemberShip(id, r.getPlanId()));
 	}
 }

@@ -34,7 +34,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, POSTLEADS).permitAll()
 						.requestMatchers(CUSTOMERS).authenticated()
 						.requestMatchers(LEADS).authenticated()
-						.requestMatchers(PLANS).authenticated().anyRequest().authenticated())
+						.requestMatchers(PLANS).authenticated()
+						.requestMatchers(PAYMENTS).authenticated().anyRequest().authenticated())
 				.addFilterBefore(jf, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}

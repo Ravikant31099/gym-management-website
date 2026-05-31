@@ -17,17 +17,8 @@ export default function App() {
     const handleSessionExpired = () => {
       setSessionExpired(true);
     };
-    window.addEventListener(
-      "session-expired",
-      handleSessionExpired
-    );
-    return () => {
-      window.removeEventListener(
-        "session-expired",
-        handleSessionExpired
-      );
-    };
-
+    window.addEventListener("session-expired", handleSessionExpired);
+    return () => { window.removeEventListener("session-expired", handleSessionExpired); };
   }, []);
   return (
     <main>
@@ -59,16 +50,16 @@ export default function App() {
         }
         />
         <Route path="/admin/customers" element={
-            <ProtectedRoute>
-              <CustomerManagement />
-            </ProtectedRoute>
-          }
+          <ProtectedRoute>
+            <CustomerManagement />
+          </ProtectedRoute>
+        }
         />
         <Route path="/admin/customers/analytics" element={
-            <ProtectedRoute>
-              <CustomerAnalytics />
-            </ProtectedRoute>
-          }
+          <ProtectedRoute>
+            <CustomerAnalytics />
+          </ProtectedRoute>
+        }
         />
       </Routes>
       {sessionExpired && (
@@ -95,6 +86,7 @@ Lead Management - Working in Progress
 Login/Logout - Work in Progress
 Lead Analytics - Work in Progress
 Plan Management - Work in Progress (More than 4 records a view all button to be added)
+Plan Renewal - Completed. 
 Services Management - More than 3 records a view all button to be added
 Customer Management - Work in Progress
 Customer Analytics -  Work in Progress

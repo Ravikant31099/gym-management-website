@@ -9,7 +9,7 @@ import AdminLayout from "../components/Layout/AdminLayout";
 
 export default function Admin() {
     const [leads, setLeads] = useState([]);
-    const [customerStats, setCustomerStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
+    const [customerStats, setCustomerStats] = useState({ total: 0, inactive: 0, active: 0, expiring: 0, expired: 0 });
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const navigate = useNavigate();
     const pending = leads.filter((lead) => lead.status === "NEW").length;
@@ -29,7 +29,12 @@ export default function Admin() {
             let active = 0;
             let expiring = 0;
             let expired = 0;
+            let inactive = 0;
             customers.forEach(customer => {
+                if (customer.status === "INACTIVE") {
+                    inactive++;
+                    return;
+                }
                 const expiry = new Date(customer.expiryDate);
                 const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
                 if (diffDays < 0) {
@@ -40,7 +45,7 @@ export default function Admin() {
                     active++;
                 }
             });
-            setCustomerStats({ total: customers.length, active, expiring, expired });
+            setCustomerStats({ total: customers.length, inactive, active, expiring, expired });
         } catch (error) {
             console.log(error);
         }
@@ -98,8 +103,9 @@ export default function Admin() {
                 <div className="cards-grid">
                     <DashboardCard title="Total Customers" value={customerStats.total} color="#22c55e" onClick={() => navigate("/admin/customers/analytics")} />
                     <DashboardCard title="Active Members" value={customerStats.active} color="#3b82f6" onClick={() => navigate("/admin/customers/analytics")} />
+                    <DashboardCard title="Inactive Members" value={customerStats.inactive} color="#ef4444" onClick={() => navigate("/admin/customers/analytics")} />
                     <DashboardCard title="Expiring Soon" value={customerStats.expiring} color="#f59e0b" onClick={() => navigate("/admin/customers/analytics")} />
-                    <DashboardCard title="Expired Members" value={customerStats.expired} color="#ef4444" onClick={() => navigate("/admin/customers/analytics")} />
+                    <DashboardCard title="Expired Members" value={customerStats.expired} color="#cd5e2b" onClick={() => navigate("/admin/customers/analytics")} />
                 </div>
             </div>
         </AdminLayout>

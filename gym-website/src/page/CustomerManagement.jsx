@@ -7,7 +7,7 @@ import ConfirmModal from "../components/modals/ConfirmModal";
 import ViewModal from "../components/modals/ViewModal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, RefreshCw } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function CustomerManagement() {
@@ -28,6 +28,9 @@ export default function CustomerManagement() {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [planFilter, setPlanFilter] = useState("ALL");
+    const [showRenewModal, setShowRenewModal] = useState(false);
+    const [renewingCustomerId, setRenewingCustomerId] = useState(null);
+    const [renewPlanId, setRenewPlanId] = useState("");
     const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
 
     useEffect(() => { fetchCustomers(); fetchPlansForCustomer(); }, []);
@@ -172,9 +175,12 @@ export default function CustomerManagement() {
             setDeleting(false);
         }
     };
-    const getMembershipStatus = (expiryDate) => {
+    const getMembershipStatus = (customer) => {
+        if (customer.status === "INACTIVE") {
+            return { text: "Inactive", category: "INACTIVE", className: "inactive-status" };
+        }
         const today = new Date();
-        const expiry = new Date(expiryDate);
+        const expiry = new Date(customer.expiryDate);
         const diffTime = expiry - today;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         if (diffDays < 0) {
@@ -204,11 +210,42 @@ export default function CustomerManagement() {
         const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             customer.phone.includes(searchTerm);
-        const customerStatus = getMembershipStatus(customer.expiryDate).category;
+        const customerStatus = getMembershipStatus(customer).category;
         const matchesStatus = statusFilter === "ALL" || customerStatus === statusFilter;
         const matchesPlan = planFilter === "ALL" || customer.planName === planFilter;
         return (matchesSearch && matchesStatus && matchesPlan);
     });
+    const openRenewModal = (customer) => {
+        setRenewingCustomerId(customer.id);
+        setRenewPlanId(customer.planId);
+        setShowRenewModal(true);
+    };
+    const renewMembership = async () => {
+        try {
+            setUpdating(true);
+            const response = await apiRequest(`/api/customers/${renewingCustomerId}/renew`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ planId: renewPlanId })
+            }
+            );
+            if (!response.ok) {
+                toast.error("Failed to renew membership");
+                return;
+            }
+            const updatedCustomer = await response.json();
+            setCustomers(customers.map(customer => customer.id === renewingCustomerId ? updatedCustomer : customer));
+            toast.success("Membership renewed successfully");
+            setShowRenewModal(false);
+            setRenewingCustomerId(null);
+        } catch (error) {
+            console.log(error);
+            toast.error("Something went wrong"
+            );
+        } finally {
+            setUpdating(false);
+        }
+    };
     return (
         <div className="admin-container">
             <AdminSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
@@ -237,6 +274,7 @@ export default function CustomerManagement() {
                         <option value="ACTIVE"> Active </option>
                         <option value="EXPIRING"> Expiring </option>
                         <option value="EXPIRED"> Expired </option>
+                        <option value="INACTIVE"> Inactive </option>
                     </select>
                     <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
                         <option value="ALL"> All Plans</option>
@@ -260,7 +298,7 @@ export default function CustomerManagement() {
                         </thead>
                         <tbody>
                             {filteredCustomers.length === 0 ? (<tr>
-                                <td colSpan="7">
+                                <td colSpan="8">
                                     <div class="empty-state">
                                         <div class="empty-state__icon">
                                             <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
@@ -274,7 +312,8 @@ export default function CustomerManagement() {
                                         </p>
                                     </div>
                                 </td>
-                            </tr>) : filteredCustomers.map((customer) => (
+                            </tr>
+                            ) : filteredCustomers.map((customer) => (
                                 <tr key={customer.id} className="clickable-row" onClick={() => handleViewCustomer(customer)}>
                                     <td>{customer.name}</td>
                                     <td>{customer.email}</td>
@@ -282,11 +321,12 @@ export default function CustomerManagement() {
                                     <td><span className={`plan-badge ${customer.planName.toLowerCase()}`}>{customer.planName}</span></td>
                                     <td>{customer.joinDate}</td>
                                     <td>{customer.expiryDate}</td>
-                                    <td><span className={`status-badge ${getMembershipStatus(customer.expiryDate).className.toLowerCase()}`}>{getMembershipStatus(customer.expiryDate).text}</span></td>
+                                    <td><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
                                     <td>
                                         <div className="icon-btn">
                                             <button className="edit-icn" onClick={(e) => { e.stopPropagation(); handleEditClick(customer) }}> <Pencil size={24} /> </button>
                                             <button className="delete-icn" onClick={(e) => { e.stopPropagation(); handleDeleteClick(customer.id) }}> <Trash2 size={24} /> </button>
+                                            <button className="renew-icn" onClick={(e) => { e.stopPropagation(); openRenewModal(customer) }}> <RefreshCw size={24} /> </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -341,8 +381,19 @@ export default function CustomerManagement() {
                     <DetailItem label="Plan Price" value={viewCustomer.planPrice} />
                     <DetailItem label="Join Date" value={viewCustomer.joinDate} />
                     <DetailItem label="Expiry Date" value={viewCustomer.expiryDate} />
-                    <DetailItem label="Status" value={getMembershipStatus(viewCustomer.expiryDate).text} />
+                    <DetailItem label="Status" value={getMembershipStatus(viewCustomer).text} />
                 </ViewModal>
+            )}
+            {/* Renewal Modal */}
+            {showRenewModal && (<FormModal title="Renew Membership" onClose={() => setShowRenewModal(false)} onSubmit={renewMembership} loading={updating} buttonText="Renew">
+                <div className="form-group">
+                    <select value={renewPlanId} className="search-input" onChange={(e) => setRenewPlanId(e.target.value)}>
+                        {plans.map(plan => (
+                            <option key={plan.id} value={plan.id}>{plan.name}</option>))
+                        }
+                    </select>
+                </div>
+            </FormModal>
             )}
             <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </div>
