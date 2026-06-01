@@ -1633,3 +1633,170 @@
     color: #9ca3af;
     font-variant-numeric: tabular-nums;
 }
+
+/* Payment Management CSS */
+.payments-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #0f172a; 
+    color: #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+.payments-table thead th {
+    background-color: #1e293b; 
+    color: #94a3b8; 
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    padding: 14px 20px;
+    border-bottom: 2px solid #334155;
+}
+
+.payments-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.payments-table td {
+    padding: 16px 20px;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #1e293b;
+    color: #cbd5e1;
+    text-align: center;
+}
+
+.payment-clickable-row:hover {
+    background-color: #1e293b;
+    cursor: pointer;
+}
+
+.payment-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    text-transform: capitalize;
+}
+
+.payment-status.success, .payment-status.paid {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.payment-status.pending {
+    background-color: rgba(234, 179, 8, 0.15);
+    color: #fde047;
+    border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.payment-status.failed {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.add-Payments-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    color: #22c55e; 
+    background-color: rgba(34, 197, 94, 0.08); 
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+}
+
+.add-Payments-btn svg {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    stroke: #22c55e; 
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.8));
+}
+
+.add-Payments-btn:hover {
+    color: #0f172a; 
+    background-color: #22c55e; 
+    border-color: #22c55e;
+    text-shadow: none;
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5), 
+                0 0 30px rgba(34, 197, 94, 0.2),
+                0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.add-Payments-btn:hover svg {
+    stroke: #064e3b; 
+    filter: none;
+    transform: rotate(90deg);
+}
+
+.add-Payments-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.payment-edit-btn, 
+.payment-delete-btn {
+    padding: 15px 65px;
+    font-size: 1.00rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+}
+
+.payment-edit-btn {
+    color: #a78bfa; 
+    background-color: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.payment-edit-btn:hover {
+    color: #ffffff;
+    background-color: #8b5cf6;
+    border-color: #a78bfa;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.5),
+                0 0 20px rgba(139, 92, 246, 0.2);
+    transform: translateY(-1px);
+}
+
+.payment-delete-btn {
+    color: #f87171;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.payment-delete-btn:hover {
+    color: #ffffff;
+    background-color: #ef4444;
+    border-color: #f87171;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5),
+                0 0 20px rgba(239, 68, 68, 0.2);
+    transform: translateY(-1px);
+}
+
+.payment-edit-btn:active, 
+.payment-delete-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.8);
+}
