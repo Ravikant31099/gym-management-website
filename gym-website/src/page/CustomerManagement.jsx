@@ -370,7 +370,7 @@ export default function CustomerManagement() {
             </FormModal>
             )}
             {/*Delete Customer Model */}
-            {showDeleteModal && (<ConfirmModal title="Delete Customer" message="Are you sure you want to delete this customer?" onClose={() => setShowDeleteModal(false)} onConfirm={deleteCustomer} loading={deleting} />)}
+            {showDeleteModal && (<ConfirmModal title="Delete Customer" description="Are you sure you want to delete this customer?" onClose={() => setShowDeleteModal(false)} onConfirm={deleteCustomer} loading={deleting} />)}
             {/* View Customer Model */}
             {showViewModal && viewCustomer && (
                 <ViewModal title="Customer Details" onClose={() => setShowViewModal(false)}>

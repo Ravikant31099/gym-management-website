@@ -14,10 +14,7 @@ import { useState, useEffect } from "react";
 
 export default function App() {
   const [sessionExpired, setSessionExpired] = useState(false);
-  useEffect(() => {
-    const handleSessionExpired = () => {
-      setSessionExpired(true);
-    };
+  useEffect(() => { const handleSessionExpired = () => { setSessionExpired(true);};
     window.addEventListener("session-expired", handleSessionExpired);
     return () => { window.removeEventListener("session-expired", handleSessionExpired); };
   }, []);
@@ -74,14 +71,7 @@ export default function App() {
           <div className="session-modal">
             <h2>Session Expired</h2>
             <p> Your session has expired. Please login again. </p>
-            <button onClick={() => {
-              localStorage.removeItem("token");
-              setSessionExpired(false);
-              window.location.href = "/login";
-            }}
-            >
-              Login Again
-            </button>
+            <button onClick={() => { sessionStorage.removeItem("token"); setSessionExpired(false); window.location.href = "/login";}}>Login Again</button>
           </div>
         </div>
       )}

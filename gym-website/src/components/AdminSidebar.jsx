@@ -1,20 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import "../style/Admin.css";
 
-export default function AdminSidebar({
-    isSidebarOpen,
-    setIsSidebarOpen,
-    scrollToTop,
-    scrollToSection,
-    leadsRef,
-    analyticsRef
-}) {
+export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollToTop, scrollToSection, leadsRef, analyticsRef}) {
     const navigate = useNavigate();
     const location = useLocation();
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
-    };
+    const handleLogout = () => { sessionStorage.removeItem("token"); navigate("/login");};
     return (
         <main>
             {isSidebarOpen && (<div className="modal-overlay" style={{ zIndex: 1999 }} onClick={() => setIsSidebarOpen(false)} />)}

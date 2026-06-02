@@ -10,12 +10,9 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+    const handleLogin = async (e) => { e.preventDefault(); setLoading(true);
         try {
-            const response = await apiRequest("/api/auth/login", {
-                method: "POST",
+            const response = await apiRequest("/api/auth/login", { method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password })
             });
@@ -24,7 +21,7 @@ export default function Login() {
                 return;
             }
             const data = await response.json();
-            localStorage.setItem("token", data.token);
+            sessionStorage.setItem("token", data.token);
             navigate("/admin");
         } catch (error) {
             console.error(error);
@@ -35,12 +32,7 @@ export default function Login() {
     };
     return (
         <main>
-            <section
-                className="hero-section"
-                style={{
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${adminImage})`
-                }}
-            >
+            <section className="hero-section" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${adminImage})` }}>
                 <div className="login-container">
                     <div className="brand-logo">
                         <p className="logo">💪</p>
@@ -54,40 +46,16 @@ export default function Login() {
                             <p>Enter your credentials to manage the system</p>
                         </div>
                         <div className="input-group">
-                            <input
-                                type="text"
-                                placeholder="Username"
-                                className="input-field"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                            />
+                            <input type="text" placeholder="Username" className="input-field" value={username} onChange={(e) => setUsername(e.target.value)} required />
                         </div>
                         <div className="input-group">
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                className="input-field"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
+                            <input type="password" placeholder="Password" className="input-field" value={password} onChange={(e) => setPassword(e.target.value)} required />
                         </div>
-                        <button
-                            type="submit"
-                            className="login-button"
-                            disabled={loading}
-                        >
-                            {loading ? "Authenticating..." : "Sign In"}
-                        </button>
+                        <button type="submit" className="login-button" disabled={loading}> {loading ? "Authenticating..." : "Sign In"} </button>
                     </form>
                 </div>
             </section>
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                theme="dark"
-            />
+            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </main>
     );
 }
