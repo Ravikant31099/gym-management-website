@@ -157,7 +157,7 @@ export default function CustomerAnalytics() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" />
                         <YAxis />
-                        <Tooltip />
+                        <Tooltip formatter={(value) => [`${value}`, "Customer"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#1d4ed8" }} labelStyle={{ color: "#1d4ed8" }} itemStyle={{ color: "#1d4ed8" }} />
                         <Bar dataKey="customers" radius={[8, 8, 0, 0]} fill="url(#customerGrowth)" />
                     </BarChart>
                 </ResponsiveContainer>

@@ -4,6 +4,7 @@ import LeadManagement from "./page/LeadManagement";
 import CustomerManagement from "./page/CustomerManagement";
 import PaymentManagement from "./page/PaymentManagement";
 import CustomerAnalytics from "./page/CustomerAnalytics";
+import PaymentAnalytics from "./page/PaymentAnalytics";
 import LeadAnalytics from "./page/LeadAnalytics";
 import Login from "./page/Login";
 import Home from "./page/Home";
@@ -62,6 +63,12 @@ export default function App() {
         <Route path="/admin/payments" element={
           <ProtectedRoute>
             <PaymentManagement />
+          </ProtectedRoute>
+        }
+        />
+        <Route path="/admin/payments/analytics" element={
+          <ProtectedRoute>
+            <PaymentAnalytics />
           </ProtectedRoute>
         }
         />

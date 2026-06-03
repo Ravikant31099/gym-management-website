@@ -17,6 +17,7 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollTo
                     <div className={`sidebar-item ${location.pathname === "/admin/payments" ? "active" : ""}`} onClick={() => navigate("/admin/payments")}> Payment Management</div>
                     <div className={`sidebar-item ${location.pathname === "/admin/leads/analytics" ? "active" : ""}`} onClick={() => navigate("/admin/leads/analytics")}> Lead Analytics</div>
                     <div className={`sidebar-item ${location.pathname === "/admin/customers/analytics" ? "active" : ""}`} onClick={() => navigate("/admin/customers/analytics")}> Customer Analytics</div>
+                    <div className={`sidebar-item ${location.pathname === "/admin/payments/analytics" ? "active" : ""}`} onClick={() => navigate("/admin/payments/analytics")}> Payment Analytics</div>
                     <div className={`sidebar-item ${location.pathname === "/admin/plans" ? "active" : ""}`} onClick={() => navigate("/admin/plans")}> Plan Management</div>
                 </div>
                 <div className="logout-wrapper">
