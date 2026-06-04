@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import "../style/Admin.css";
+import "../../style/Admin.css";
 
 export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollToTop, scrollToSection, leadsRef, analyticsRef}) {
     const navigate = useNavigate();

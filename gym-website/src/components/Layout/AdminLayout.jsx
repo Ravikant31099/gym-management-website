@@ -1,4 +1,4 @@
-import AdminSidebar from "../AdminSidebar";
+import AdminSidebar from "../common/AdminSidebar";
 import { useState, useEffect } from "react";
 import "../../style/Admin.css";
 

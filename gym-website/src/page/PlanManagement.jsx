@@ -3,10 +3,11 @@ import { toast, ToastContainer } from "react-toastify";
 import { apiRequest } from "../util/api";
 import "../style/Admin.css";
 import "react-toastify/dist/ReactToastify.css";
-import AdminSidebar from "../components/AdminSidebar";
+import AdminSidebar from "../components/common/AdminSidebar";
 import ConfirmModal from "../components/modals/ConfirmModal";
 import FormModal from "../components/modals/FormModal";
 import AdminLayout from "../components/Layout/AdminLayout";
+import EmptyState from "../components/common/EmptyState";
 
 export default function PlanManagement() {
     const [plans, setPlans] = useState([]);
@@ -207,18 +208,7 @@ export default function PlanManagement() {
                     <tbody>
                         {filteredPlans.length === 0 ? (<tr>
                             <td colSpan="7">
-                                <div class="empty-state">
-                                    <div class="empty-state__icon">
-                                        <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
-                                            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                    </div>
-                                    <h3 class="empty-state__title">No Records Found</h3>
-                                    <p class="empty-state__description">
-                                        There is no data to display in this table at the moment.
-                                        New entries will appear here automatically.
-                                    </p>
-                                </div>
+                                <EmptyState title="No Plan Found" description="There is no data to display in this table at the moment. New entries will appear here automatically."/>
                             </td>
                         </tr>) : (filteredPlans.map((plan) => (
                             <tr key={plan.id}>

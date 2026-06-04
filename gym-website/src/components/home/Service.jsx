@@ -1,10 +1,10 @@
-import '../style/Home.css';
-import personalTraining from "../assets/Personal_Training.jpg";
-import weightLoss from "../assets/Weight_Loss.jpg";
-import strengthTrain from "../assets/Strength_Training.jpg";
-import healthySnack from "../assets/Healthy_Snack.jpg";
-import cleanliness from "../assets/Gym-Deep-Cleaning.jpg";
-import calisthenics from "../assets/Calisthenics.jpg";
+import '../../style/Home.css';
+import personalTraining from "../../assets/Personal_Training.jpg";
+import weightLoss from "../../assets/Weight_Loss.jpg";
+import strengthTrain from "../../assets/Strength_Training.jpg";
+import healthySnack from "../../assets/Healthy_Snack.jpg";
+import cleanliness from "../../assets/Gym-Deep-Cleaning.jpg";
+import calisthenics from "../../assets/Calisthenics.jpg";
 import { useEffect, useState } from "react";
 
 export default function Service() {

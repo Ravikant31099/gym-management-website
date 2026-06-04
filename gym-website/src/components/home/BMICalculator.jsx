@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../style/Home.css";
+import "../../style/Home.css";
 
 export default function BMICalculator() {
     const [height, setHeight] = useState("");

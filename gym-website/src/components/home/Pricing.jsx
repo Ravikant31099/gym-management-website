@@ -1,4 +1,4 @@
-import '../style/Home.css';
+import '../../style/Home.css';
 import { useEffect, useState } from "react";
 
 export default function Pricing() {

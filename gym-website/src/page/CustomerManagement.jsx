@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import "../style/Admin.css";
-import AdminSidebar from "../components/AdminSidebar";
+import AdminSidebar from "../components/common/AdminSidebar";
 import { apiRequest } from "../util/api";
 import FormModal from "../components/modals/FormModal";
 import ConfirmModal from "../components/modals/ConfirmModal";
 import ViewModal from "../components/modals/ViewModal";
+import DetailItem from "../components/common/DetailItem";
+import EmptyState from "../components/common/EmptyState";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Pencil, Trash2, RefreshCw } from "lucide-react";
@@ -198,14 +200,6 @@ export default function CustomerManagement() {
         setViewCustomer(customer);
         setShowViewModal(true);
     };
-    function DetailItem({ label, value }) {
-        return (
-            <div className="detail-item">
-                <p className="detail-label">{label}</p>
-                <p className="detail-value">{value}</p>
-            </div>
-        );
-    };
     const filteredCustomers = customers.filter(customer => {
         const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -299,18 +293,7 @@ export default function CustomerManagement() {
                         <tbody>
                             {filteredCustomers.length === 0 ? (<tr>
                                 <td colSpan="8">
-                                    <div class="empty-state">
-                                        <div class="empty-state__icon">
-                                            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
-                                                <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" />
-                                            </svg>
-                                        </div>
-                                        <h3 class="empty-state__title">No Records Found</h3>
-                                        <p class="empty-state__description">
-                                            There is no data to display in this table at the moment.
-                                            New entries will appear here automatically.
-                                        </p>
-                                    </div>
+                                    <EmptyState title="No Customer Found" description="There is no data to display in this table at the moment. New entries will appear here automatically."/>
                                 </td>
                             </tr>
                             ) : filteredCustomers.map((customer) => (

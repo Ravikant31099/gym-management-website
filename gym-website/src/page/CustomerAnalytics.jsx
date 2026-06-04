@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import "../style/Admin.css";
 import { apiRequest } from "../util/api";
-import AdminSidebar from "../components/AdminSidebar";
+import AdminSidebar from "../components/common/AdminSidebar";
+import DashboardCard from "../components/common/DashboardCard";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function CustomerAnalytics() {
@@ -59,19 +60,6 @@ export default function CustomerAnalytics() {
             }
         });
         setAnalytics({ totalCustomers: customerList.length, inactiveCustomers: inactive, activeCustomers: active, expiringCustomers: expiring, expiredCustomers: expired, mostPopularPlan: popularPlan });
-    };
-    function DashboardCard({ title, value, color }) {
-        return (
-            <div className="dashboard-card">
-                <div
-                    className="dashboard-circle"
-                    style={{ background: color }}
-                />
-                <h3>{title}</h3>
-                <h1>{value}</h1>
-                <p style={{ color }}>Live Data</p>
-            </div>
-        );
     };
     const planDistributionData = Object.entries(customers.reduce((acc, customer) => {
         acc[customer.planName] = (acc[customer.planName] || 0) + 1;

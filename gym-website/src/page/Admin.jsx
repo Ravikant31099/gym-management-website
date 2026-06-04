@@ -4,8 +4,9 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../style/Admin.css";
 import { apiRequest } from "../util/api";
-import AdminSidebar from "../components/AdminSidebar";
-import AdminLayout from "../components/Layout/AdminLayout";
+import AdminSidebar from "../components/common/AdminSidebar";
+import AdminLayout from "../components/layout/AdminLayout";
+import DashboardCard from "../components/common/DashboardCard";
 
 export default function Admin() {
     const [leads, setLeads] = useState([]);
@@ -50,19 +51,7 @@ export default function Admin() {
             console.log(error);
         }
     };
-    function DashboardCard({ title, value, color, onClick }) {
-        return (
-            <div className="dashboard-card" onClick={onClick}>
-                <div
-                    className="dashboard-circle"
-                    style={{ background: color }}
-                />
-                <h3>{title}</h3>
-                <h1>{value}</h1>
-                <p style={{ color }}>Live Data</p>
-            </div>
-        );
-    }
+    
     const handleLogout = () => {
         localStorage.removeItem("token");
         navigate("/login");

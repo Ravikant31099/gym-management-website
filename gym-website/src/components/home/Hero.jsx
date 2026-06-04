@@ -1,5 +1,5 @@
-import gymimage from "../assets/gym.jpg";
-import '../style/Home.css';
+import gymimage from "../../assets/gym.jpg";
+import '../../style/Home.css';
 
 export default function Hero() {
   return (

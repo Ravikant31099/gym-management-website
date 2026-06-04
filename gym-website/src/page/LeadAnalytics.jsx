@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import "../style/Admin.css";
 import { apiRequest } from "../util/api";
-import AdminSidebar from "../components/AdminSidebar";
+import AdminSidebar from "../components/common/AdminSidebar";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function LeadAnalytics() {

@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from "recharts";
 import "../style/Admin.css";
 import { apiRequest } from "../util/api";
-import AdminSidebar from "../components/AdminSidebar";
+import AdminSidebar from "../components/common/AdminSidebar";
+import DashboardCard from "../components/common/DashboardCard";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function PaymentAnalytics() {
@@ -27,16 +28,6 @@ export default function PaymentAnalytics() {
             setLoading(false);
         }
     }
-    function DashboardCard({ title, value, color }) {
-        return (
-            <div className="dashboard-card">
-                <div className="dashboard-circle" style={{ background: color }} />
-                <h3>{title}</h3>
-                <h1>{value}</h1>
-                <p style={{ color }}>Live Data</p>
-            </div>
-        );
-    };
     const getAmountValue = (amount) => { return Number(String(amount).replace("₹", "").replace(",", "").trim()); };
     const totalRevenue = payments.filter(payment => payment.status === "PAID").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
     const pendingRevenue = payments.filter(payment => payment.status === "PENDING").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
@@ -67,6 +58,8 @@ export default function PaymentAnalytics() {
         acc[monthYear].revenue += amount;
         return acc;
     }, {})).sort((a, b) => a.sortDate - b.sortDate);
+    const topPlans = [...revenueByPlan].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    const formatCurrency = (value) => { return new Intl.NumberFormat("en-IN").format(value); };
     return (
         <AdminLayout>
             <div className="header-card">
@@ -121,24 +114,44 @@ export default function PaymentAnalytics() {
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="analytics-chart-card">
-                    <h3>Revenue By Month</h3>
-                    <ResponsiveContainer width="100%" height={350}>
-                        <AreaChart data={revenueByMonth}>
-                            <defs>
-                                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="monthYear" />
-                            <YAxis />
-                            <Tooltip formatter={(value) => [`₹${value}`, "Revenue"]} />
-                            <Area type="monotone" dataKey="revenue" stroke="#22c55e" fill="url(#revenueGradient)" strokeWidth={3} />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                <div className="Payment-analytics-section">
+                    <h3>Top Performing Plans</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Plan</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>{topPlans.map(
+                            (plan, index) => (
+                                <tr key={plan.plan}>
+                                    <td> {index === 0 && "1"} {index === 1 && "2"} {index === 2 && "3"} {index > 2 && `#${index + 1}`}</td>
+                                    <td>{plan.plan}</td>
+                                    <td><span className="revenue-pill">₹{formatCurrency(plan.revenue)}</span></td>
+                                </tr>))}
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+            <div className="analytics-chart-card">
+                <h3>Revenue By Month</h3>
+                <ResponsiveContainer width="100%" height={350}>
+                    <AreaChart data={revenueByMonth}>
+                        <defs>
+                            <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
+                                <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="monthYear" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => [`₹${value}`, "Revenue"]} />
+                        <Area type="monotone" dataKey="revenue" stroke="#22c55e" fill="url(#revenueGradient)" strokeWidth={3} />
+                    </AreaChart>
+                </ResponsiveContainer>
             </div>
         </AdminLayout>
     );

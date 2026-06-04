@@ -8,7 +8,7 @@ import PaymentAnalytics from "./page/PaymentAnalytics";
 import LeadAnalytics from "./page/LeadAnalytics";
 import Login from "./page/Login";
 import Home from "./page/Home";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/commonUtils/ProtectedRoute";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
 import { useState, useEffect } from "react";

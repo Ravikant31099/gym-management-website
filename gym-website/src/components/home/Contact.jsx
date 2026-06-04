@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import '../style/Home.css';
+import '../../style/Home.css';
 import { FaInstagram, FaFacebook, FaWhatsapp, FaYoutube, FaMapMarkerAlt } from 'react-icons/fa';
 
 export default function Contact() {
