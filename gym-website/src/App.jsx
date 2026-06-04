@@ -8,10 +8,11 @@ import PaymentAnalytics from "./page/PaymentAnalytics";
 import LeadAnalytics from "./page/LeadAnalytics";
 import Login from "./page/Login";
 import Home from "./page/Home";
-import ProtectedRoute from "./components/commonUtils/ProtectedRoute";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
 import { useState, useEffect } from "react";
+import {clearToken } from "./util/AuthUtils";
 
 export default function App() {
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -78,7 +79,7 @@ export default function App() {
           <div className="session-modal">
             <h2>Session Expired</h2>
             <p> Your session has expired. Please login again. </p>
-            <button onClick={() => { sessionStorage.removeItem("token"); setSessionExpired(false); window.location.href = "/login";}}>Login Again</button>
+            <button onClick={() => { clearToken(); setSessionExpired(false); window.location.href = "/login";}}>Login Again</button>
           </div>
         </div>
       )}

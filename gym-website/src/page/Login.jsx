@@ -5,6 +5,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import adminImage from "../assets/admin-bg.jpg";
 import { apiRequest } from "../util/api";
+import { setToken } from "../util/AuthUtils";
+
 export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -21,7 +23,7 @@ export default function Login() {
                 return;
             }
             const data = await response.json();
-            sessionStorage.setItem("token", data.token);
+            setToken(data.token);
             navigate("/admin");
         } catch (error) {
             console.error(error);

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import "../style/Admin.css";
 import { apiRequest } from "../util/api";
+import { formatDate } from "../util/CommonUtil";
 import AdminSidebar from "../components/common/AdminSidebar";
 import DashboardCard from "../components/common/DashboardCard";
 import AdminLayout from "../components/layout/AdminLayout";
@@ -180,7 +181,7 @@ export default function CustomerAnalytics() {
                                     <h4>{customer.name}</h4>
                                     <p> {customer.planName}</p>
                                 </div>
-                                <span>{customer.joinDate}</span>
+                                <span>{formatDate(customer.joinDate)}</span>
                             </div>
                         ))}
                     </div>

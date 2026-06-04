@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from "recharts";
 import "../style/Admin.css";
 import { apiRequest } from "../util/api";
+import { getAmountValue, formatCurrency } from "../util/CommonUtil";
 import AdminSidebar from "../components/common/AdminSidebar";
 import DashboardCard from "../components/common/DashboardCard";
 import AdminLayout from "../components/layout/AdminLayout";
+import { APP_CONFIG } from "../constants/AppConstants";
 
 export default function PaymentAnalytics() {
     const [payments, setPayments] = useState([]);
@@ -28,7 +30,6 @@ export default function PaymentAnalytics() {
             setLoading(false);
         }
     }
-    const getAmountValue = (amount) => { return Number(String(amount).replace("₹", "").replace(",", "").trim()); };
     const totalRevenue = payments.filter(payment => payment.status === "PAID").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
     const pendingRevenue = payments.filter(payment => payment.status === "PENDING").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
     const todayCollection = payments.filter(payment => payment.status === "PAID").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
@@ -59,7 +60,6 @@ export default function PaymentAnalytics() {
         return acc;
     }, {})).sort((a, b) => a.sortDate - b.sortDate);
     const topPlans = [...revenueByPlan].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
-    const formatCurrency = (value) => { return new Intl.NumberFormat("en-IN").format(value); };
     return (
         <AdminLayout>
             <div className="header-card">
@@ -77,9 +77,9 @@ export default function PaymentAnalytics() {
             <div className="dashboard-section">
                 <h3 className="cards-header"> Payment Summary </h3>
                 <div className="cards-grid">
-                    <DashboardCard title="Total Revenue" value={totalRevenue} color="#22c55e" />
-                    <DashboardCard title="Pending Revenue" value={pendingRevenue} color="#3b82f6" />
-                    <DashboardCard title="Today's Collection" value={todayCollection} color="#ef4444" />
+                    <DashboardCard title="Total Revenue" value= {`${formatCurrency(totalRevenue)}`} color="#22c55e" />
+                    <DashboardCard title="Pending Revenue" value={`${formatCurrency(pendingRevenue)}`} color="#3b82f6" />
+                    <DashboardCard title="Today's Collection" value={`${formatCurrency(todayCollection)}`} color="#ef4444" />
                     <DashboardCard title="Transactions" value={totalTransactions} color="#f59e0b" />
                 </div>
             </div>
@@ -96,7 +96,7 @@ export default function PaymentAnalytics() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="plan" />
                         <YAxis />
-                        <Tooltip formatter={(value) => [`₹${value}`, "Revenue"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#1d4ed8" }} labelStyle={{ color: "#1d4ed8" }} itemStyle={{ color: "#1d4ed8" }} />
+                        <Tooltip formatter={(value) => [`${APP_CONFIG.CURRENCY_SYMBOL}${value}`, "Revenue"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#1d4ed8" }} labelStyle={{ color: "#1d4ed8" }} itemStyle={{ color: "#1d4ed8" }} />
                         <Bar dataKey="revenue" fill="url(#planRevenueGradient)" radius={[8, 8, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
@@ -129,7 +129,7 @@ export default function PaymentAnalytics() {
                                 <tr key={plan.plan}>
                                     <td> {index === 0 && "1"} {index === 1 && "2"} {index === 2 && "3"} {index > 2 && `#${index + 1}`}</td>
                                     <td>{plan.plan}</td>
-                                    <td><span className="revenue-pill">₹{formatCurrency(plan.revenue)}</span></td>
+                                    <td><span className="revenue-pill">{formatCurrency(plan.revenue)}</span></td>
                                 </tr>))}
                         </tbody>
                     </table>
@@ -148,7 +148,7 @@ export default function PaymentAnalytics() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="monthYear" />
                         <YAxis />
-                        <Tooltip formatter={(value) => [`₹${value}`, "Revenue"]} />
+                        <Tooltip formatter={(value) => [`${APP_CONFIG.CURRENCY_SYMBOL}${value}`, "Revenue"]} />
                         <Area type="monotone" dataKey="revenue" stroke="#22c55e" fill="url(#revenueGradient)" strokeWidth={3} />
                     </AreaChart>
                 </ResponsiveContainer>

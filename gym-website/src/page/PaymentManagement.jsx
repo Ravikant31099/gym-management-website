@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import "../style/Admin.css";
 import AdminSidebar from "../components/common/AdminSidebar";
 import { apiRequest } from "../util/api";
+import { getAmountValue, formatCurrency } from "../util/CommonUtil";
+import { APP_CONFIG, PAYMENT_STATUS, PAYMENT_MODE } from "../constants/AppConstants";
 import FormModal from "../components/modals/FormModal";
 import PaymentViewModal from "../components/modals/PaymentViewModal";
 import ConfirmModal from "../components/modals/ConfirmModal";
 import DashboardCard from "../components/common/DashboardCard";
 import DetailItem from "../components/common/DetailItem";
 import EmptyState from "../components/common/EmptyState";
+import { formatDate } from "../util/CommonUtil";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function PaymentManagement() {
@@ -33,7 +36,7 @@ export default function PaymentManagement() {
     const [planFilter, setPlanFilter] = useState("ALL");
     const [customerSearch, setCustomerSearch] = useState("");
     const [filteredCustomers, setFilteredCustomers] = useState([]);
-    const [paymentForm, setPaymentForm] = useState({ customerId: "", planId: "", paymentMode: "UPI", status: "PAID", remarks: "" });
+    const [paymentForm, setPaymentForm] = useState({ customerId: "", planId: "", paymentMode: PAYMENT_STATUS.PAID, status: PAYMENT_MODE.UPI, remarks: "" });
 
     useEffect(() => { fetchPayments(); fetchCustomersForPayments(); fetchPlansForPayments(); }, []);
     const fetchPayments = async () => {
@@ -101,16 +104,13 @@ export default function PaymentManagement() {
             ]);
             toast.success("Payment added successfully");
             setShowAddModal(false);
-            setPaymentForm({ customerId: "", planId: "", paymentMode: "UPI", status: "PAID", remarks: "" });
+            resetPaymentForm();
         } catch (error) {
             console.log(error);
             toast.error("Something went wrong");
         } finally {
             setSaving(false);
         }
-    };
-    const getAmountValue = (amount) => {
-        return Number(String(amount).replace("₹", "").replaceAll(",", "").trim());
     };
     const totalRevenue = payments.filter(payment => payment.status === "PAID").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
     const pendingAmount = payments.filter(payment => payment.status === "PENDING").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
@@ -125,6 +125,7 @@ export default function PaymentManagement() {
             status: payment.status,
             remarks: payment.remarks || ""
         });
+        setCustomerSearch(payment.customerName);
         setShowEditModal(true);
     };
     const openDeletePayment = (paymentId) => {
@@ -172,7 +173,7 @@ export default function PaymentManagement() {
         }
     };
     const filteredPayments = payments.filter(payment => {
-        const matchesSearch = payment.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) || payment.planName?.toLowerCase().includes(searchValue);
+        const matchesSearch = payment.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) || payment.planName?.toLowerCase().includes(searchTerm);
         const matchesStatus = statusFilter === "ALL" || payment.status === statusFilter;
         const matchesMode = modeFilter === "ALL" || payment.paymentMode === modeFilter;
         const matchesPlan = planFilter === "ALL" || payment.planName === planFilter;
@@ -184,8 +185,13 @@ export default function PaymentManagement() {
             setFilteredCustomers([]);
             return;
         }
-        const filtered = customers.filter(customer => customer.name.toLowerCase().includes(value.toLowerCase()) || customer.phone?.includes(searchValue));
+        const filtered = customers.filter(customer => customer.name.toLowerCase().includes(value.toLowerCase()) || customer.phone?.includes(value));
         setFilteredCustomers(filtered);
+    };
+    const resetPaymentForm = () => {
+        setPaymentForm({ customerId: "", planId: "", paymentMode: "UPI", status: "PAID", remarks: "" });
+        setCustomerSearch("");
+        setFilteredCustomers([]);
     };
     return (
         <div className="admin-container">
@@ -199,7 +205,7 @@ export default function PaymentManagement() {
                         <p className="dashboard-subtitle"> Manage Customer Payments and Subscriptions</p>
                     </div>
                     <div>
-                        <button className="add-Payments-btn" onClick={() => setShowAddModal(true)}>
+                        <button className="add-Payments-btn" onClick={() => { resetPaymentForm(); setShowAddModal(true) }}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -211,9 +217,9 @@ export default function PaymentManagement() {
                 <div className="dashboard-section">
                     <h3 className="cards-header"> Payment Summary </h3>
                     <div className="cards-grid">
-                        <DashboardCard title="Today's Collection" value={`₹${todayCollection}`} color="#22c55e" />
-                        <DashboardCard title="Total Revenue" value={`₹${totalRevenue}`} color="#3b82f6" />
-                        <DashboardCard title="Pending Amount" value={`₹${pendingAmount}`} color="#f59e0b" />
+                        <DashboardCard title="Today's Collection" value={`${formatCurrency(todayCollection)}`} color="#22c55e" />
+                        <DashboardCard title="Total Revenue" value={`${formatCurrency(totalRevenue)}`} color="#3b82f6" />
+                        <DashboardCard title="Pending Amount" value={`${formatCurrency(pendingAmount)}`} color="#f59e0b" />
                         <DashboardCard title="Total Payments" value={totalPayments} color="#8b5cf6" />
                     </div>
                 </div>
@@ -256,7 +262,7 @@ export default function PaymentManagement() {
                         <tbody>
                             {filteredPayments.length === 0 ? (<tr>
                                 <td colSpan="7">
-                                    <EmptyState title="No Payments Found" description="There is no data to display in this table at the moment. New entries will appear here automatically."/>
+                                    <EmptyState title="No Payments Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                                 </td>
                             </tr>
                             ) : filteredPayments.map(payment => (
@@ -264,7 +270,7 @@ export default function PaymentManagement() {
                                     <td>{payment.customerName}</td>
                                     <td>{payment.planName}</td>
                                     <td>{payment.amount}</td>
-                                    <td>{payment.paymentDate}</td>
+                                    <td>{formatDate(payment.paymentDate)}</td>
                                     <td><span className={`payment-status ${payment.status.toLowerCase()}`}>{payment.status}</span></td>
                                 </tr>
                             ))}
@@ -273,42 +279,41 @@ export default function PaymentManagement() {
                 </div>
             </div>
             {/* Add Payments Modal */}
-            {showAddModal && (<FormModal title="Add Payment" onClose={() => setShowAddModal(false)} onSubmit={savePayment} loading={saving} buttonText="Save Payment">
+            {showAddModal && (<FormModal title="Add Payment" onClose={() => { resetPaymentForm(); setShowAddModal(false) }} onSubmit={savePayment} loading={saving} buttonText="Save Payment">
                 <div className="form-group">
                     <div className="autocomplete-wrapper">
                         <input type="text" className="search-input" placeholder="Search Customer" value={customerSearch} onChange={(e) => handleCustomerSearch(e.target.value)} />
-                        {
-                            filteredCustomers.length > 0 && (
-                                <div className="suggestions-dropdown">
-                                    {filteredCustomers.map(
-                                        customer => (
-                                            <div key={customer.id} className="suggestion-item" onClick={() => { setPaymentForm({ ...paymentForm, customerId: customer.id }); setCustomerSearch(customer.name); setFilteredCustomers([]); }}> <div>{customer.name}</div><small>{customer.phone}</small>
+                        {filteredCustomers.length > 0 && (
+                            <div className="suggestions-dropdown">
+                                {filteredCustomers.map(
+                                    customer => (
+                                        <div key={customer.id} className="suggestion-item" onClick={() => { setPaymentForm({ ...paymentForm, customerId: customer.id }); setCustomerSearch(customer.name); setFilteredCustomers([]); }}><small>{customer.name} - </small><small>{customer.phone}</small>
 
-                                            </div>
-                                        ))}
-                                </div>
-                            )}
+                                        </div>
+                                    ))}
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="form-group">
-                    <select value={paymentForm.planId} className="search-input" onChange={(e) => setPaymentForm({ ...paymentForm, planId: e.target.value })}>
+                    <select value={paymentForm.planId} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, planId: e.target.value })}>
                         <option value="">Select Plan</option>
                         {plans.map(plan => (<option key={plan.id} value={plan.id}>    {plan.name} - {plan.price}</option>))}
                     </select>
                 </div>
                 <div className="form-group">
-                    <select value={paymentForm.paymentMode} className="search-input" onChange={(e) => setPaymentForm({ ...paymentForm, paymentMode: e.target.value })}>
-                        <option value="CASH">Cash</option>
-                        <option value="UPI">UPI</option>
-                        <option value="CARD">Card</option>
-                        <option value="BANK_TRANSFER">Bank Transfer</option>
+                    <select value={paymentForm.paymentMode} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, paymentMode: e.target.value })}>
+                        <option value={PAYMENT_MODE.CASH}>Cash</option>
+                        <option value={PAYMENT_MODE.UPI}>UPI</option>
+                        <option value={PAYMENT_MODE.CARD}>Card</option>
+                        <option value={PAYMENT_MODE.BANK_TRANSFER}>Bank Transfer</option>
                     </select>
                 </div>
                 <div className="form-group">
-                    <select value={paymentForm.status} className="search-input" onChange={(e) => setPaymentForm({ ...paymentForm, status: e.target.value })}>
-                        <option value="PAID">Paid</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="FAILED">Failed</option>
+                    <select value={paymentForm.status} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, status: e.target.value })}>
+                        <option value={PAYMENT_STATUS.PAID}>Paid</option>
+                        <option value={PAYMENT_STATUS.PENDING}>Pending</option>
+                        <option value={PAYMENT_STATUS.FAILED}>Failed</option>
                     </select>
                 </div>
                 <div className="form-group full-width">
@@ -322,7 +327,7 @@ export default function PaymentManagement() {
                     <DetailItem label="Name" value={selectedPayment.customerName} />
                     <DetailItem label="Plan" value={selectedPayment.planName} />
                     <DetailItem label="Amount" value={selectedPayment.amount} />
-                    <DetailItem label="Payment Date" value={selectedPayment.paymentDate} />
+                    <DetailItem label="Payment Date" value={formatDate(selectedPayment.paymentDate)} />
                     <DetailItem label="Payment Mode" value={selectedPayment.paymentMode} />
                     <DetailItem label="Status" value={selectedPayment.status} />
                     <DetailItem label="Remarks" value={selectedPayment.remarks || "-"} />
@@ -338,7 +343,7 @@ export default function PaymentManagement() {
                                 <div className="suggestions-dropdown">
                                     {filteredCustomers.map(
                                         customer => (
-                                            <div key={customer.id} className="suggestion-item" onClick={() => { setPaymentForm({ ...paymentForm, customerId: customer.id }); setCustomerSearch(customer.name); setFilteredCustomers([]); }}>{customer.name}
+                                            <div key={customer.id} className="suggestion-item" onClick={() => { setPaymentForm({ ...paymentForm, customerId: customer.id }); setCustomerSearch(customer.name); setFilteredCustomers([]); }}><small>{customer.name} - </small><small>{customer.phone}</small>
                                             </div>
                                         ))}
                                 </div>
@@ -346,24 +351,24 @@ export default function PaymentManagement() {
                     </div>
                 </div>
                 <div className="form-group">
-                    <select value={paymentForm.planId} className="search-input" onChange={(e) => setPaymentForm({ ...paymentForm, planId: e.target.value })}>
+                    <select value={paymentForm.planId} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, planId: e.target.value })}>
                         <option value="">Select Plan</option>
                         {plans.map(plan => (<option key={plan.id} value={plan.id}>    {plan.name} - {plan.price}</option>))}
                     </select>
                 </div>
                 <div className="form-group">
-                    <select value={paymentForm.paymentMode} className="search-input" onChange={(e) => setPaymentForm({ ...paymentForm, paymentMode: e.target.value })}>
-                        <option value="CASH">Cash</option>
-                        <option value="UPI">UPI</option>
-                        <option value="CARD">Card</option>
-                        <option value="BANK_TRANSFER">Bank Transfer</option>
+                    <select value={paymentForm.paymentMode} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, paymentMode: e.target.value })}>
+                        <option value={PAYMENT_MODE.CASH}>Cash</option>
+                        <option value={PAYMENT_MODE.UPI}>UPI</option>
+                        <option value={PAYMENT_MODE.CARD}>Card</option>
+                        <option value={PAYMENT_MODE.BANK_TRANSFER}>Bank Transfer</option>
                     </select>
                 </div>
                 <div className="form-group">
-                    <select value={paymentForm.status} className="search-input" onChange={(e) => setPaymentForm({ ...paymentForm, status: e.target.value })}>
-                        <option value="PAID">Paid</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="FAILED">Failed</option>
+                    <select value={paymentForm.status} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, status: e.target.value })}>
+                        <option value={PAYMENT_STATUS.PAID}>Paid</option>
+                        <option value={PAYMENT_STATUS.PENDING}>Pending</option>
+                        <option value={PAYMENT_STATUS.FAILED}>Failed</option>
                     </select>
                 </div>
                 <div className="form-group full-width">

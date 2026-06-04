@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import "../style/Admin.css";
 import AdminSidebar from "../components/common/AdminSidebar";
 import { apiRequest } from "../util/api";
+import { formatDate } from "../util/CommonUtil";
 import FormModal from "../components/modals/FormModal";
 import ConfirmModal from "../components/modals/ConfirmModal";
 import ViewModal from "../components/modals/ViewModal";
 import DetailItem from "../components/common/DetailItem";
 import EmptyState from "../components/common/EmptyState";
 import DatePicker from "react-datepicker";
+import {getMembershipStatus} from "../util/CommonUtil"; 
 import "react-datepicker/dist/react-datepicker.css";
 import { Pencil, Trash2, RefreshCw } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
@@ -119,7 +121,7 @@ export default function CustomerManagement() {
             setCustomers([...customers, savedCustomer]);
             toast.success("Customer Added Successfully");
             setShowAddModal(false);
-            setCustomerForm({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
+            resetCustomerForm();
         } catch (error) {
             console.log(error);
             toast.error("Something went wrong");
@@ -177,25 +179,6 @@ export default function CustomerManagement() {
             setDeleting(false);
         }
     };
-    const getMembershipStatus = (customer) => {
-        if (customer.status === "INACTIVE") {
-            return { text: "Inactive", category: "INACTIVE", className: "inactive-status" };
-        }
-        const today = new Date();
-        const expiry = new Date(customer.expiryDate);
-        const diffTime = expiry - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays < 0) {
-            return { text: "Expired", category: "EXPIRED", className: "expired-status" };
-        }
-        if (diffDays <= 3) {
-            return { text: `Expiring in ${diffDays} day${diffDays > 1 ? "s" : ""}`, category: "EXPIRING", className: "expiring-urgent-status" };
-        }
-        if (diffDays <= 7) {
-            return { text: "Expiring Soon", category: "EXPIRING", className: "expiring-status" };
-        }
-        return { text: "Active", category: "ACTIVE", className: "active-status" };
-    };
     const handleViewCustomer = (customer) => {
         setViewCustomer(customer);
         setShowViewModal(true);
@@ -209,6 +192,9 @@ export default function CustomerManagement() {
         const matchesPlan = planFilter === "ALL" || customer.planName === planFilter;
         return (matchesSearch && matchesStatus && matchesPlan);
     });
+    const resetCustomerForm = () => {
+        setCustomerForm({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
+    };
     const openRenewModal = (customer) => {
         setRenewingCustomerId(customer.id);
         setRenewPlanId(customer.planId);
@@ -252,7 +238,7 @@ export default function CustomerManagement() {
                         <p className="dashboard-subtitle"> Manage gym customers and memberships</p>
                     </div>
                     <div>
-                        <button className="add-customer-btn" onClick={() => setShowAddModal(true)}>
+                        <button className="add-customer-btn" onClick={() => {resetCustomerForm(); setShowAddModal(true)}}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -302,8 +288,8 @@ export default function CustomerManagement() {
                                     <td>{customer.email}</td>
                                     <td>{customer.phone}</td>
                                     <td><span className={`plan-badge ${customer.planName.toLowerCase()}`}>{customer.planName}</span></td>
-                                    <td>{customer.joinDate}</td>
-                                    <td>{customer.expiryDate}</td>
+                                    <td>{formatDate(customer.joinDate)}</td>
+                                    <td>{formatDate(customer.expiryDate)}</td>
                                     <td><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
                                     <td>
                                         <div className="icon-btn">
@@ -319,17 +305,17 @@ export default function CustomerManagement() {
                 </div>
             </div>
             {/* Add Customer Modal */}
-            {showAddModal && (<FormModal title="Add Customer" onClose={() => setShowAddModal(false)} loading={saving} onSubmit={handleAddCustomer} buttonText="Save Customer">
+            {showAddModal && (<FormModal title="Add Customer" onClose={() => {resetCustomerForm(); setShowAddModal(false)}} loading={saving} onSubmit={handleAddCustomer} buttonText="Save Customer">
                 <input type="text" name="name" placeholder="Name" className="search-input" value={customerForm.name} onChange={handleChange} />
                 <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
                 <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
                 <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" />
                 <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" />
-                <select name="planId" value={customerForm.planId} className="search-input" onChange={handleChange}>
+                <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange}>
                     <option value="">Select Plan</option>
                     {plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
-                <select name="status" value={customerForm.status} className="search-input" onChange={handleChange}>
+                <select name="status" value={customerForm.status} className="filter-select-modal" onChange={handleChange}>
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="INACTIVE">INACTIVE</option>
                 </select>
@@ -342,11 +328,11 @@ export default function CustomerManagement() {
                 <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
                 <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" />
                 <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" />
-                <select name="planId" value={customerForm.planId} className="search-input" onChange={handleChange}>
+                <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange}>
                     <option value="">Select Plan</option>
                     {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
-                <select name="status" value={customerForm.status} className="search-input" onChange={handleChange}>
+                <select name="status" value={customerForm.status} className="filter-select-modal" onChange={handleChange}>
                     <option value="ACTIVE"> ACTIVE</option>
                     <option value="INACTIVE">INACTIVE</option>
                 </select>
@@ -362,8 +348,8 @@ export default function CustomerManagement() {
                     <DetailItem label="Phone" value={viewCustomer.phone} />
                     <DetailItem label="Plan" value={viewCustomer.planName} />
                     <DetailItem label="Plan Price" value={viewCustomer.planPrice} />
-                    <DetailItem label="Join Date" value={viewCustomer.joinDate} />
-                    <DetailItem label="Expiry Date" value={viewCustomer.expiryDate} />
+                    <DetailItem label="Join Date" value={formatDate(viewCustomer.joinDate)} />
+                    <DetailItem label="Expiry Date" value={formatDate(viewCustomer.expiryDate)} />
                     <DetailItem label="Status" value={getMembershipStatus(viewCustomer).text} />
                 </ViewModal>
             )}
