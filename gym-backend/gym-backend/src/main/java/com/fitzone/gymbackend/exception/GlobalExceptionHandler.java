@@ -39,4 +39,11 @@ public class GlobalExceptionHandler {
 		error.put("error", rnf.getMessage());
 		return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
 	}
+
+	@ExceptionHandler(ResourceInUseException.class)
+	public ResponseEntity<Map<String, String>> ResourceInUseException(ResourceInUseException riue) {
+		Map<String, String> error = new HashMap<>();
+		error.put("error", riue.getMessage());
+		return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+	}
 }
