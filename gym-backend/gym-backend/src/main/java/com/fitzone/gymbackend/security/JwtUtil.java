@@ -5,23 +5,32 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
-import static com.fitzone.gymbackend.constant.ApiPath.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class JwtUtil {
-	private static final String SECURITY_KEY = "Fitzone_Security_JWT_Token_Key_Generator_9890123";
-	private static final Key key = Keys.hmacShaKeyFor(SECURITY_KEY.getBytes());
 
-	public static String generateToken(String usrname) {
-		return Jwts.builder().setSubject(usrname).setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + Token_Expiry_Time))
-				.signWith(SignatureAlgorithm.HS256, key).compact();
+	private final Key key;
+	private final long expiryMs;
+
+	public JwtUtil(@Value("${app.jwt.secret}") String secret, @Value("${app.jwt.expiry-ms:3600000}") long expiryMs) {
+		this.key = Keys.hmacShaKeyFor(secret.getBytes());
+		this.expiryMs = expiryMs;
 	}
 
-	public static String extractUserName(String token) {
+	@SuppressWarnings("deprecation")
+	public String generateToken(String username) {
+		return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+				.setExpiration(new Date(System.currentTimeMillis() + expiryMs)).signWith(SignatureAlgorithm.HS256, key)
+				.compact();
+	}
+
+	public String extractUserName(String token) {
 		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
 	}
 
-	public static boolean ValidateToken(String token) {
+	public boolean validateToken(String token) {
 		try {
 			Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
 			return true;

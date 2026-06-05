@@ -3,65 +3,61 @@ package com.fitzone.gymbackend.service;
 import com.fitzone.gymbackend.dto.PlanRequest;
 import com.fitzone.gymbackend.dto.PlanResponse;
 import com.fitzone.gymbackend.entity.Plan;
+import com.fitzone.gymbackend.exception.ResourceInUseException;
+import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.repository.CustomerRepository;
-import com.fitzone.gymbackend.repository.PaymentRespository;
-import com.fitzone.gymbackend.repository.PlanRespository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fitzone.gymbackend.repository.PaymentRepository;
+import com.fitzone.gymbackend.repository.PlanRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-import com.fitzone.gymbackend.exception.ResourceInUseException;
-import com.fitzone.gymbackend.exception.ResourceNotFound;
-
 @Service
 public class PlanService {
-	private final PlanRespository pr;
 
-	public PlanService(PlanRespository pr) {
-		this.pr = pr;
+	private final PlanRepository planRepository;
+	private final CustomerRepository customerRepository;
+	private final PaymentRepository paymentRepository;
+
+	public PlanService(PlanRepository planRepository, CustomerRepository customerRepository,
+			PaymentRepository paymentRepository) {
+		this.planRepository = planRepository;
+		this.customerRepository = customerRepository;
+		this.paymentRepository = paymentRepository;
 	}
-	
-	@Autowired
-	public CustomerRepository cr;
-	
-	@Autowired
-	public PaymentRespository par;
 
 	public List<PlanResponse> getAllPlans() {
-		return pr.findAll().stream().map(this::planMapToResponse).toList();
+		return planRepository.findAll().stream().map(this::planMapToResponse).toList();
 	}
 
 	public PlanResponse createPlan(PlanRequest p) {
-		Plan pl = new Plan();
-		pl.setName(p.getName());
-		pl.setDescription(p.getDescription());
-		pl.setPeriod(p.getPeriod());
-		pl.setPrice(p.getPrice());
-		pl.setPopular(p.getPopular());
-		Plan sp = pr.save(pl);
-		return planMapToResponse(sp);
+		Plan plan = new Plan();
+		plan.setName(p.getName());
+		plan.setDescription(p.getDescription());
+		plan.setPeriod(p.getPeriod());
+		plan.setPrice(p.getPrice());
+		plan.setPopular(p.getPopular());
+		return planMapToResponse(planRepository.save(plan));
 	}
 
-	public PlanResponse updatExistingPlan(Long id, Plan p) {
-		Plan ep = pr.findById(id).orElseThrow(() -> new ResourceNotFound("Plan Not Found"));
-		ep.setName(p.getName());
-		ep.setDescription(p.getDescription());
-		ep.setPrice(p.getPrice());
-		ep.setPeriod(p.getPeriod());
-		ep.setPopular(p.getPopular());
-		Plan up = pr.save(ep);
-		return planMapToResponse(up);
+	public PlanResponse updateExistingPlan(Long id, PlanRequest p) {
+		Plan existing = planRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		existing.setName(p.getName());
+		existing.setDescription(p.getDescription());
+		existing.setPrice(p.getPrice());
+		existing.setPeriod(p.getPeriod());
+		existing.setPopular(p.getPopular());
+		return planMapToResponse(planRepository.save(existing));
 	}
 
 	public void deletePlan(Long id) {
-		 if (cr.existsByPlanId(id)) {
-			 throw new ResourceInUseException("Plan is assigned to customers and cannot be deleted.");
-		 }
-		 if (par.existsByPlanId(id)) {
-			 throw new ResourceInUseException("Plan is assigned to customers and cannot be deleted.");
-		 }
-		Plan ep = pr.findById(id).orElseThrow(() -> new ResourceNotFound("Plan Not Found"));
-		pr.delete(ep);
+		if (customerRepository.existsByPlanId(id)) {
+			throw new ResourceInUseException("Plan is assigned to customers and cannot be deleted.");
+		}
+		if (paymentRepository.existsByPlanId(id)) {
+			throw new ResourceInUseException("Plan has payment records and cannot be deleted.");
+		}
+		Plan plan = planRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		planRepository.delete(plan);
 	}
 
 	private PlanResponse planMapToResponse(Plan plan) {

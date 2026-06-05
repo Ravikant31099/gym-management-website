@@ -3,110 +3,101 @@ package com.fitzone.gymbackend.service;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.entity.Plan;
-import com.fitzone.gymbackend.repository.PlanRespository;
+import com.fitzone.gymbackend.repository.PlanRepository;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
 import com.fitzone.gymbackend.entity.Customer;
 import com.fitzone.gymbackend.repository.CustomerRepository;
-import com.fitzone.gymbackend.repository.PaymentRespository;
+import com.fitzone.gymbackend.repository.PaymentRepository;
 
 @Service
 public class CustomerService {
 
-	@Autowired
-	private CustomerRepository cr;
+	private final CustomerRepository customerRepository;
+	private final PlanRepository planRepository;
+	private final PaymentRepository paymentRepository;
 
-	@Autowired
-	private PlanRespository pr;
-	
-	@Autowired
-	private PaymentRespository par;
+	public CustomerService(CustomerRepository customerRepository, PlanRepository planRepository,
+			PaymentRepository paymentRepository) {
+		this.customerRepository = customerRepository;
+		this.planRepository = planRepository;
+		this.paymentRepository = paymentRepository;
+	}
 
 	public List<CustomerResponse> getAllCustomer() {
-		return cr.findAll().stream().map(this::customerMapToResponse).toList();
+		return customerRepository.findAll().stream().map(this::customerMapToResponse).toList();
 	}
 
 	public CustomerResponse saveCustomer(CustomerRequest c) {
-		Plan plan = pr.findById(c.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
-		Customer cs = new Customer();
-		cs.setName(c.getName());
-		cs.setEmail(c.getEmail());
-		cs.setPhone(c.getPhone());
-		cs.setJoinDate(c.getJoinDate());
-		cs.setExpiryDate(c.getExpiryDate());
-		cs.setStatus(c.getStatus());
-		cs.setPlan(plan);
-		Customer sC = cr.save(cs);
-		return customerMapToResponse(sC);
+		Plan plan = planRepository.findById(c.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		Customer customer = new Customer();
+		customer.setName(c.getName());
+		customer.setEmail(c.getEmail());
+		customer.setPhone(c.getPhone());
+		customer.setJoinDate(c.getJoinDate());
+		customer.setExpiryDate(c.getExpiryDate());
+		customer.setStatus(c.getStatus());
+		customer.setPlan(plan);
+		return customerMapToResponse(customerRepository.save(customer));
 	}
 
 	public CustomerResponse updateCustomer(Long id, CustomerRequest c) {
-		Customer cs = cr.findById(id).orElseThrow(() -> new ResourceNotFound("Customer not found"));
-		Plan plan = pr.findById(c.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
-		cs.setName(c.getName());
-		cs.setEmail(c.getEmail());
-		cs.setPhone(c.getPhone());
-		cs.setJoinDate(c.getJoinDate());
-		cs.setExpiryDate(c.getExpiryDate());
-		cs.setStatus(c.getStatus());
-		cs.setPlan(plan);
-		Customer sC = cr.save(cs);
-		return customerMapToResponse(sC);
+		Customer customer = customerRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
+		Plan plan = planRepository.findById(c.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		customer.setName(c.getName());
+		customer.setEmail(c.getEmail());
+		customer.setPhone(c.getPhone());
+		customer.setJoinDate(c.getJoinDate());
+		customer.setExpiryDate(c.getExpiryDate());
+		customer.setStatus(c.getStatus());
+		customer.setPlan(plan);
+		return customerMapToResponse(customerRepository.save(customer));
 	}
 
 	public void deleteCustomer(Long id) {
-		if(par.existsByCustomerId(id)) {
+		if (paymentRepository.existsByCustomerId(id)) {
 			throw new ResourceInUseException("Customer has payment records and cannot be deleted.");
 		}
-		Customer cs = cr.findById(id).orElseThrow(() -> new ResourceNotFound("Customer not found"));
-		cr.delete(cs);
+		Customer customer = customerRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
+		customerRepository.delete(customer);
+	}
+
+	public CustomerResponse renewMemberShip(Long customerId, Long planId) {
+		Customer customer = customerRepository.findById(customerId)
+				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
+		Plan plan = planRepository.findById(planId).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		int months = getPlanMonths(plan.getPeriod());
+		LocalDate today = LocalDate.now();
+		LocalDate expiry = customer.getExpiryDate();
+		LocalDate newExpiry = (expiry != null && expiry.isAfter(today)) ? expiry.plusMonths(months)
+				: today.plusMonths(months);
+		customer.setExpiryDate(newExpiry);
+		customer.setPlan(plan);
+		return customerMapToResponse(customerRepository.save(customer));
+	}
+
+	private int getPlanMonths(String period) {
+		if (period == null)
+			throw new IllegalArgumentException("Plan period is null");
+		return switch (period.toLowerCase().trim().replace("/", "")) {
+		case "month" -> 1;
+		case "3 month" -> 3;
+		case "6 month" -> 6;
+		case "9 month" -> 9;
+		case "year" -> 12;
+		default -> throw new IllegalArgumentException("Invalid plan period: " + period);
+		};
 	}
 
 	private CustomerResponse customerMapToResponse(Customer c) {
 		return new CustomerResponse(c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getJoinDate(),
 				c.getExpiryDate(), c.getStatus(), c.getPlan().getId(), c.getPlan().getName(), c.getPlan().getPrice());
-	}
-
-	private int getPlanMonth(String period) {
-		period = period.toLowerCase().trim().replace("/", "");
-		switch (period) {
-		case "month":
-			return 1;
-		case "3 month":
-			return 3;
-		case "6 month":
-			return 6;
-		case "9 month":
-			return 9;
-		case "year":
-			return 12;
-		default:
-			throw new RuntimeException("Invalid Period Plan");
-		}
-
-	}
-
-	public CustomerResponse renewMemberShip(Long CustomerId, Long PlanId) {
-		Customer c = cr.findById(CustomerId).orElseThrow(() -> new ResourceNotFound("Customer not found"));
-		Plan p = pr.findById(PlanId).orElseThrow(() -> new ResourceNotFound("Plan not found"));
-		int months = getPlanMonth(p.getPeriod());
-		LocalDate d = LocalDate.now();
-		LocalDate expd = c.getExpiryDate();
-		LocalDate newExpd;
-		if (expd != null && expd.isAfter(d)) {
-			newExpd = expd.plusMonths(months);
-		} else {
-			newExpd = d.plusMonths(months);
-		}
-		c.setExpiryDate(newExpd);
-		c.setPlan(p);
-		Customer updateCustomer = cr.save(c);
-		return customerMapToResponse(updateCustomer);
 	}
 }

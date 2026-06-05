@@ -1,48 +1,41 @@
 package com.fitzone.gymbackend.controller;
 
 import com.fitzone.gymbackend.entity.Lead;
-import com.fitzone.gymbackend.repository.LeadRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import com.fitzone.gymbackend.service.LeadService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-import java.util.*;
-import com.fitzone.gymbackend.exception.ResourceNotFound;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/leads")
 public class LeadController {
 
-	@Autowired
-	private LeadRepository lr;
+	private final LeadService leadService;
+
+	public LeadController(LeadService leadService) {
+		this.leadService = leadService;
+	}
 
 	@PostMapping
-	public Lead saveLead(@Valid @RequestBody Lead l) {
-		return lr.save(l);
+	public ResponseEntity<Lead> saveLead(@Valid @RequestBody Lead lead) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(leadService.saveLead(lead));
 	}
 
 	@GetMapping
-	public List<Lead> getAllLead() {
-		return lr.findAll();
+	public ResponseEntity<List<Lead>> getAllLeads() {
+		return ResponseEntity.ok(leadService.getAllLeads());
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<String> deleteLead(@PathVariable("id") Long id) {
-		Lead l = lr.findById(id).orElseThrow(() -> new ResourceNotFound("Lead Not Found with Id: " + id));
-		try {
-			lr.delete(l);
-			return ResponseEntity.ok().build();
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-
+	public ResponseEntity<Void> deleteLead(@PathVariable("id") Long id) {
+		leadService.deleteLead(id);
+		return ResponseEntity.ok().build();
 	}
 
 	@PutMapping("/{id}/status")
-	public Lead updateStatus(@PathVariable("id") Long id, @RequestParam("status") String status) {
-		Lead l = lr.findById(id).orElseThrow(() -> new ResourceNotFound("Lead Not Found with Id: " + id));
-		l.setStatus(status);
-		return lr.save(l);
-
+	public ResponseEntity<Lead> updateStatus(@PathVariable("id") Long id, @RequestParam("status") String status) {
+		return ResponseEntity.ok(leadService.updateStatus(id, status));
 	}
 }

@@ -94,7 +94,7 @@ export default function PaymentAnalytics() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="plan" />
                         <YAxis />
-                        <Tooltip formatter={(value) => [`${APP_CONFIG.CURRENCY_SYMBOL}${value}`, "Revenue"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#1d4ed8" }} labelStyle={{ color: "#1d4ed8" }} itemStyle={{ color: "#1d4ed8" }} />
+                        <Tooltip formatter={(value) => [`${formatCurrency(value)}`, "Revenue"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#1d4ed8" }} labelStyle={{ color: "#1d4ed8" }} itemStyle={{ color: "#1d4ed8" }} />
                         <Bar dataKey="revenue" fill="url(#planRevenueGradient)" radius={[8, 8, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
@@ -146,7 +146,7 @@ export default function PaymentAnalytics() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="monthYear" />
                         <YAxis />
-                        <Tooltip formatter={(value) => [`${APP_CONFIG.CURRENCY_SYMBOL}${value}`, "Revenue"]} />
+                        <Tooltip formatter={(value) => [`${formatCurrency(value)}`, "Revenue"]} />
                         <Area type="monotone" dataKey="revenue" stroke="#22c55e" fill="url(#revenueGradient)" strokeWidth={3} />
                     </AreaChart>
                 </ResponsiveContainer>

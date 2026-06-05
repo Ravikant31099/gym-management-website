@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
     CURRENCY_SYMBOL: "₹",
-    CURRENCY_CODE: "USD",
+    CURRENCY_CODE: "INR",
     LOCALE: "en-IN"
 };
 export const PAYMENT_STATUS = {

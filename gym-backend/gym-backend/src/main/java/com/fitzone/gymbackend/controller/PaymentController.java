@@ -11,32 +11,32 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
-	private final PaymentService pS;
+	private final PaymentService paymentservice;
 
-	public PaymentController(PaymentService pS) {
-		this.pS = pS;
+	public PaymentController(PaymentService paymentservice) {
+		this.paymentservice = paymentservice;
 	}
 
 	@GetMapping
 	public ResponseEntity<List<PaymentResponse>> getAllPayments() {
-		return ResponseEntity.ok(pS.getAllPayments());
+		return ResponseEntity.ok(paymentservice.getAllPayments());
 	}
 
 	@PostMapping
 	public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody PaymentRequest req) {
-		return ResponseEntity.ok(pS.savePayment(req));
+		return ResponseEntity.ok(paymentservice.savePayment(req));
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<PaymentResponse> updatePayment(@PathVariable("id") Long id,
 			@Valid @RequestBody PaymentRequest req) {
-		return ResponseEntity.ok(pS.updatePayment(id, req));
+		return ResponseEntity.ok(paymentservice.updatePayment(id, req));
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> deletePayment(@PathVariable("id") Long id) {
 		try {
-			pS.deletePayment(id);
+			paymentservice.deletePayment(id);
 			return ResponseEntity.ok().build();
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
