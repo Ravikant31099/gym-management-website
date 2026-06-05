@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -29,6 +31,10 @@ public class AuthController {
 			String token = jwtUtil.generateToken(lr.getUsername());
 			return ResponseEntity.ok(Map.of("token", token));
 		}
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
+		Map<String, String> mp = new HashMap<String, String>();
+		mp.put("error", "Invalid Input");
+		mp.put("message", "Invalid Credentials");
+		mp.put("Timestamp", String.valueOf(System.currentTimeMillis()));		
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mp);
 	}
 }

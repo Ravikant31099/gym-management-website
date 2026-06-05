@@ -2,13 +2,13 @@ import { getToken } from "../util/AuthUtils";
 const BASE_URL = import.meta.env.VITE_API_LOCALURL;;
 
 export async function apiRequest(endpoint, options = {}) {
-    const token = getToken();;
+    const token = getToken();
     const headers = { "Content-Type": "application/json", ...options.headers };
     if (token) {
         headers.Authorization = `Bearer ${token}`;
     }
     const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
-    if (response.status === 401 || response.status === 403) {
+    if ((response.status === 401 || response.status === 403) && token) {
         window.dispatchEvent(new Event("session-expired"));
     }
     return response;

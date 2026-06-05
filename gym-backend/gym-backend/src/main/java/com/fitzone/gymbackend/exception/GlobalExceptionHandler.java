@@ -38,12 +38,6 @@ public class GlobalExceptionHandler {
 		return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex, request);
 	}
 
-	private ResponseEntity<ErrorDetails> buildResponse(HttpStatus status, Exception ex, HttpServletRequest request) {
-		ErrorDetails error = new ErrorDetails(System.currentTimeMillis(), status.value(), status.getReasonPhrase(),
-				ex.getMessage(), request.getRequestURI());
-		return new ResponseEntity<>(error, status);
-	}
-
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ErrorDetails> handleNotReadable(HttpMessageNotReadableException ex,
 			HttpServletRequest request) {
@@ -64,5 +58,11 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorDetails> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex,
 			HttpServletRequest request) {
 		return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, ex, request);
+	}
+	
+	private ResponseEntity<ErrorDetails> buildResponse(HttpStatus status, Exception ex, HttpServletRequest request) {
+		ErrorDetails error = new ErrorDetails(System.currentTimeMillis(), status.value(), status.getReasonPhrase(),
+				ex.getMessage(), request.getRequestURI());
+		return new ResponseEntity<>(error, status);
 	}
 }
