@@ -37,13 +37,9 @@ public class CustomerController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<String> deleteCustomer(@PathVariable("id") Long id) {
-		try {
-			customerService.deleteCustomer(id);
-			return ResponseEntity.ok().build();
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
+	public ResponseEntity<Void> deleteCustomer(@PathVariable("id") Long id) {
+		customerService.archivedCustomer(id);
+		return ResponseEntity.ok().build();
 	}
 
 	@PutMapping("/{id}/renew")

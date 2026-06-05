@@ -1,10 +1,10 @@
+import "../style/Admin.css";
+import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatCurrency } from "../util/CommonUtil";
 import { APP_CONFIG, PLAN_PERIOD, PLAN_TYPE } from "../constants/AppConstants";
-import "../style/Admin.css";
-import "react-toastify/dist/ReactToastify.css";
 import ConfirmModal from "../components/modals/ConfirmModal";
 import FormModal from "../components/modals/FormModal";
 import AdminLayout from "../components/Layout/AdminLayout";
@@ -71,7 +71,7 @@ export default function PlanManagement() {
             setPlans(data);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch plans. Please try again later.");
+            toast.error(error.message);
         }
     }
     const savePlan = async () => {
@@ -89,7 +89,7 @@ export default function PlanManagement() {
             resetPlanForm();
         } catch (error) {
             console.log(error);
-            toast.error("Failed to save plans. Please try again later.");
+            toast.error(error.message);
         } finally {
             setSaving(false);
         }
@@ -105,7 +105,7 @@ export default function PlanManagement() {
             setSelectedPlanId(null);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to delete plans. Please try again later.");
+            toast.error(error.message);
         } finally {
             setDeleting(false);
         }
@@ -126,7 +126,7 @@ export default function PlanManagement() {
             resetPlanForm();
         } catch (error) {
             console.log(error);
-            toast.error("Failed to update plans. Please try again later.");
+            toast.error(error.message);
         } finally {
             setUpdating(false);
         }

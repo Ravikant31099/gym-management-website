@@ -1,6 +1,7 @@
 package com.fitzone.gymbackend.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotBlank;
 
 public class PaymentRequest {
@@ -16,6 +17,7 @@ public class PaymentRequest {
 	@NotBlank(message = "Payment status is required")
 	private String status;
 
+	@Size(max = 500, message = "Remarks cannot exceed 500 characters")
 	private String remarks;
 
 	public PaymentRequest() {

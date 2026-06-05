@@ -31,19 +31,13 @@ public class PlanController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<PlanResponse> updatePlan(
-			@PathVariable("id") Long id,
-			@RequestBody @Valid PlanRequest p) {
+	public ResponseEntity<PlanResponse> updatePlan(@PathVariable("id") Long id, @RequestBody @Valid PlanRequest p) {
 		return ResponseEntity.ok(planService.updateExistingPlan(id, p));
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<String> deletePlan(@PathVariable("id") Long id) {
-		try {
-			planService.deletePlan(id);
-			return ResponseEntity.ok().build();
-		} catch (RuntimeException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
+	public ResponseEntity<Void> deletePlan(@PathVariable("id") Long id) {
+		planService.deactivatePlan(id);
+		return ResponseEntity.ok().build();
 	}
 }

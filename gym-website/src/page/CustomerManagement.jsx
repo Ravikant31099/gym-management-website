@@ -44,7 +44,7 @@ export default function CustomerManagement() {
             setCustomers(data);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch customer records. Please try again later.");
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -56,8 +56,8 @@ export default function CustomerManagement() {
             const data = await response.json();
             setPlans(data);
         } catch (error) {
-            toast.error("Failed to fetch plans. Please try again later.");
             console.log(error);
+            toast.error(error.message);
         }
     };
     const handleChange = (e) => {
@@ -112,7 +112,7 @@ export default function CustomerManagement() {
             resetCustomerForm();
         } catch (error) {
             console.log(error);
-            toast.error("Failed to save customer records. Please try again later.");
+            toast.error(error.message);
         } finally {
             setSaving(false);
         }
@@ -136,7 +136,7 @@ export default function CustomerManagement() {
             setShowEditModal(false);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to update Customer Records. Please try again later.");
+            toast.error(error.message);
         } finally {
             setUpdating(false);
         }
@@ -156,7 +156,7 @@ export default function CustomerManagement() {
             setSelectedCustomerId(null);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to delete Customer Records. Please try again later.");
+            toast.error(error.message);
         } finally {
             setDeleting(false);
         }

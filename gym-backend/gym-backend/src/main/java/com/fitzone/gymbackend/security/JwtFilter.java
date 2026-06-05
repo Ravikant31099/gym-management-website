@@ -4,11 +4,15 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+
 import java.io.IOException;
 import java.util.Collections;
 
@@ -16,9 +20,12 @@ import java.util.Collections;
 public class JwtFilter extends OncePerRequestFilter {
 
 	private final JwtUtil jwtUtil;
-
-	public JwtFilter(JwtUtil jwtUtil) {
+	private HandlerExceptionResolver resolver;
+	
+	
+	public JwtFilter(JwtUtil jwtUtil, @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
 		this.jwtUtil = jwtUtil;
+		this.resolver = resolver;
 	}
 
 	@Override
@@ -38,12 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
 			}
 			fc.doFilter(hre, hrs);
 		} catch (Exception e) {
-			hrs.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			hrs.setContentType("application/json");
-			hrs.getWriter().write("""
-					{
-						"message" : "Token expired or Invalid"
-					}""");
+			resolver.resolveException(hre, hrs, null, e);
 		}
 	}
 }

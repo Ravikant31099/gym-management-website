@@ -23,7 +23,7 @@ export default function CustomerAnalytics() {
             calculateAnalytics(data);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch customer records. Please try again later.");
+            toast.error(error.message);
         }
     };
     const calculateAnalytics = (customerList) => {

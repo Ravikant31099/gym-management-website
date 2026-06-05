@@ -26,7 +26,7 @@ public class PlanService {
 	}
 
 	public List<PlanResponse> getAllPlans() {
-		return planRepository.findAll().stream().map(this::planMapToResponse).toList();
+		return planRepository.findByActiveTrue().stream().map(this::planMapToResponse).toList();
 	}
 
 	public PlanResponse createPlan(PlanRequest p) {
@@ -49,7 +49,7 @@ public class PlanService {
 		return planMapToResponse(planRepository.save(existing));
 	}
 
-	public void deletePlan(Long id) {
+	public void deactivatePlan(Long id) {
 		if (customerRepository.existsByPlanId(id)) {
 			throw new ResourceInUseException("Plan is assigned to customers and cannot be deleted.");
 		}
@@ -57,7 +57,8 @@ public class PlanService {
 			throw new ResourceInUseException("Plan has payment records and cannot be deleted.");
 		}
 		Plan plan = planRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Plan not found"));
-		planRepository.delete(plan);
+		plan.setActive(false);
+		planRepository.save(plan);
 	}
 
 	private PlanResponse planMapToResponse(Plan plan) {

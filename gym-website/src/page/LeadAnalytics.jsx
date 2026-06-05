@@ -16,9 +16,9 @@ export default function LeadAnalytics() {
             await handleApiResponse(response);
             const data = await response.json();
             setLeads(data);
-        } catch (e) {
-            console.log(e);
-            toast.error("Failed to fetch leads. Please try again later.");
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message);
         }
     };
     const chartData = [

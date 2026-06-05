@@ -35,9 +35,9 @@ export default function LeadManagement() {
             await handleApiResponse(response);
             const data = await response.json();
             setLeads(data);
-        } catch (e) {
-            console.log(e);
-            toast.error("Failed to fetch leads. Please try again later.");
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message);
         }
     };
     const deleteLead = async (id) => {
@@ -49,7 +49,7 @@ export default function LeadManagement() {
             toast.success("Lead deleted successfully");
         } catch (error) {
             console.log(error);
-            toast.error("Failed to delete leads. Please try again later.");
+            toast.error(error.message);
         } finally {
             setDeletingLead(false);
         }
@@ -63,7 +63,7 @@ export default function LeadManagement() {
             setLeads(leads.map((lead) => lead.id === id ? updatedLead : lead));
         } catch (error) {
             console.log(error);
-            toast.error("Failed to update leads. Please try again later.");
+            toast.error(error.message);
         } finally {
             setUpdatingStatusId(null);
         }

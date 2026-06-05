@@ -2,9 +2,8 @@ package com.fitzone.gymbackend.service;
 
 import java.time.LocalDate;
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
+import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.entity.Plan;
@@ -30,11 +29,17 @@ public class CustomerService {
 	}
 
 	public List<CustomerResponse> getAllCustomer() {
-		return customerRepository.findAll().stream().map(this::customerMapToResponse).toList();
+		return customerRepository.findByArchivedFalse().stream().map(this::customerMapToResponse).toList();
 	}
 
 	public CustomerResponse saveCustomer(CustomerRequest c) {
 		Plan plan = planRepository.findById(c.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		if (customerRepository.existsByPhone(c.getPhone())) {
+			throw new BusinessException("Customer phone already exists");
+		}
+		if (customerRepository.existsByEmail(c.getEmail())) {
+			throw new BusinessException("Customer email already exists");
+		}
 		Customer customer = new Customer();
 		customer.setName(c.getName());
 		customer.setEmail(c.getEmail());
@@ -50,6 +55,12 @@ public class CustomerService {
 		Customer customer = customerRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		Plan plan = planRepository.findById(c.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		if (customerRepository.existsByPhoneAndIdNot(c.getPhone(), id)) {
+			throw new BusinessException("Customer phone already exists");
+		}
+		if (customerRepository.existsByEmailAndIdNot(c.getEmail(), id)) {
+			throw new BusinessException("Customer email already exists");
+		}
 		customer.setName(c.getName());
 		customer.setEmail(c.getEmail());
 		customer.setPhone(c.getPhone());
@@ -60,13 +71,13 @@ public class CustomerService {
 		return customerMapToResponse(customerRepository.save(customer));
 	}
 
-	public void deleteCustomer(Long id) {
+	public void archivedCustomer(Long id) {
 		if (paymentRepository.existsByCustomerId(id)) {
 			throw new ResourceInUseException("Customer has payment records and cannot be deleted.");
 		}
-		Customer customer = customerRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
-		customerRepository.delete(customer);
+		Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Customer not found"));
+		customer.setArchived(true);
+		customerRepository.save(customer);
 	}
 
 	public CustomerResponse renewMemberShip(Long customerId, Long planId) {

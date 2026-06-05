@@ -44,7 +44,7 @@ export default function PaymentManagement() {
             setPayments(data);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch Payments. Please try again later.");
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -58,7 +58,7 @@ export default function PaymentManagement() {
             setCustomers(data);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch Customer Records. Please try again later.");
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -70,7 +70,7 @@ export default function PaymentManagement() {
             const data = await response.json();
             setPlans(data);
         } catch (error) {
-            toast.error("Failed to fetch plans. Please try again later.");
+            toast.error(error.message);
             console.log(error);
         }
     };
@@ -91,7 +91,7 @@ export default function PaymentManagement() {
             resetPaymentForm();
         } catch (error) {
             console.log(error);
-            toast.error("Failed to save payment. Please try again later.");
+            toast.error(error.message);
         } finally {
             setSaving(false);
         }
@@ -128,7 +128,7 @@ export default function PaymentManagement() {
             setEditingPaymentId(null);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to update payment. Please try again later.");
+            toast.error(error.message);
         } finally {
             setUpdating(false);
         }
@@ -144,7 +144,7 @@ export default function PaymentManagement() {
             setSelectedPaymentId(null);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to delete payment. Please try again later.");
+            toast.error(error.message);
         } finally {
             setDeleting(false);
         }

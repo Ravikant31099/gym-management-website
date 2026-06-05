@@ -9,16 +9,13 @@ public class Plan {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long Id;
-
 	private String name;
-
 	private String description;
-
 	private String price;
-
 	private String period;
-
 	private Boolean popular;
+	@Column(nullable=false)
+	private Boolean active=true;
 
 	public Long getId() {
 		return Id;
@@ -67,8 +64,16 @@ public class Plan {
 	public void setPopular(Boolean popular) {
 		this.popular = popular;
 	}
+	
+	public Boolean getActive() {
+		return active;
+	}
 
-	public Plan(Long id, String name, String description, String price, String period, Boolean popular) {
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	public Plan(Long id, String name, String description, String price, String period, Boolean popular, Boolean active) {
 		super();
 		Id = id;
 		this.name = name;
@@ -76,11 +81,10 @@ public class Plan {
 		this.price = price;
 		this.period = period;
 		this.popular = popular;
+		this.active = active;
 	}
 
 	public Plan() {
 	}
 	
-	
-
 }

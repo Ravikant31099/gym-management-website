@@ -22,8 +22,8 @@ export default function PaymentAnalytics() {
             const data = await response.json();
             setPayments(data);
         } catch (error) {
-            toast.error("Failed to fetch Payments. Please try again later.");
             console.log(error);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }

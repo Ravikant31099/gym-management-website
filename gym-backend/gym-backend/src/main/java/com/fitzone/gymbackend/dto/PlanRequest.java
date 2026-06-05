@@ -2,16 +2,21 @@ package com.fitzone.gymbackend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public class PlanRequest {
 
-	@NotBlank(message = "Please Enter Plan Name")
+	@NotBlank(message = "Plan name is required")
+	@Size(min = 2, max = 50, message = "Plan name must be between 2 and 50 characters")
 	private String name;
 
-	@NotBlank(message = "Please Enter Plan Description")
+	@NotBlank(message = "Plan description is required")
+	@Size(max = 500, message = "Description cannot exceed 500 characters")
 	private String description;
 
-	@NotBlank(message = "Please Enter Plan Price")
+	@NotBlank(message = "Plan price is required")
+	@Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "Invalid price format")
 	private String price;
 
 	@NotBlank(message = "Please Enter Plan Period")

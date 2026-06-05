@@ -5,30 +5,33 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public class CustomerRequest {
 
-	@NotBlank(message = "name is required")
+	@NotBlank(message = "Name is required")
+	@Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
 	private String name;
 
 	@NotBlank(message = "Email is required")
-	@Email(message = "Invalid E-mail Formal")
+	@Email(message = "Invalid email format")
+	@Size(max = 100, message = "Email cannot exceed 100 characters")
 	private String email;
 
-	@NotBlank(message = "Phone Number is required")
-	@Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")
+	@NotBlank(message = "Phone number is required")
+	@Pattern(regexp = "^[0-9]{10}$",message = "Phone number must be 10 digits")
 	private String phone;
 
-	@NotNull(message = "Join Date is required")
+	@NotNull(message = "Join date is required")
 	private LocalDate joinDate;
 
-	@NotNull(message = "Expiry Date is required")
+	@NotNull(message = "Expiry date is required")
 	private LocalDate expiryDate;
 
-	@NotNull(message = "Status is required")
+	@NotBlank(message = "Status is required")
 	private String status;
 
-	@NotNull(message = "Plan Id is required")
+	@NotNull(message = "Plan is required")
 	private Long planId;
 
 	public String getName() {

@@ -25,14 +25,12 @@ public class LeadService {
 	}
 
 	public void deleteLead(Long id) {
-		Lead lead = leadRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFound("Lead not found with id: " + id));
+		Lead lead = leadRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Lead not found with id: " + id));
 		leadRepository.delete(lead);
 	}
 
 	public Lead updateStatus(Long id, String status) {
-		Lead lead = leadRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFound("Lead not found with id: " + id));
+		Lead lead = leadRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Lead not found with id: " + id));
 		lead.setStatus(status);
 		return leadRepository.save(lead);
 	}

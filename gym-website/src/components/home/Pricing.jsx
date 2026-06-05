@@ -1,21 +1,24 @@
 import '../../style/Home.css';
-import {formatCurrency} from '../../util/CommonUtil';
+import "react-toastify/dist/ReactToastify.css";
+import { formatCurrency } from '../../util/CommonUtil';
+import { apiRequest, handleApiResponse } from "../../util/api";
+import { toast, ToastContainer } from "react-toastify";
 import { useEffect, useState } from "react";
 
 export default function Pricing() {
+    useEffect(() => { fetchPlans(); }, []);
     const [plans, setPlans] = useState([]);
     const [showAllPlans, setShowAllPlans] = useState(false);
     const visiblePlans = showAllPlans ? plans : plans.slice(0, 3);
-    useEffect(() => {
-        fetchPlans();
-    }, []);
     const fetchPlans = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/api/plans`);
+            const response = await apiRequest("/api/plans", "GET");
+            await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
         } catch (error) {
             console.log(error);
+            toast.error(error.message);
         }
     };
     return (
@@ -44,6 +47,8 @@ export default function Pricing() {
                     <button className="view-more-btn" onClick={() => setShowAllPlans(!showAllPlans)}> {showAllPlans ? "Show Less" : "View More"}</button>
                 </div>
             )}
+            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </section>
+        
     );
 }

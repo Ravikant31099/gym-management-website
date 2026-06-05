@@ -23,9 +23,9 @@ export default function Admin() {
             await handleApiResponse(response);
             const data = await response.json();
             setLeads(data);
-        } catch (e) {
+        } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch leads. Please try again later.");
+            toast.error(error.message);
         }
     };
     const fetchCustomerStats = async () => {
@@ -56,7 +56,7 @@ export default function Admin() {
             setCustomerStats({ total: customers.length, inactive, active, expiring, expired });
         } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch Customer Records. Please try again later.");
+            toast.error(error.message);
         }
     };
     return (

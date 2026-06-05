@@ -10,25 +10,17 @@ public class Customer {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
 	private String name;
-
 	private String email;
-
 	private String phone;
-
 	private LocalDate joinDate;
-
 	private LocalDate expiryDate;
-
 	private String status;
-
 	@ManyToOne
-
 	@JoinColumn(name = "plan_id")
-
 	private Plan plan;
-
+	@Column(nullable = false)
+	private Boolean archived = false;
 
 	public Long getId() {
 		return id;
@@ -94,11 +86,19 @@ public class Customer {
 		this.plan = plan;
 	}
 
+	public Boolean getArchived() {
+		return archived;
+	}
+
+	public void setArchived(Boolean archived) {
+		this.archived = archived;
+	}
+
 	public Customer() {
 	}
-	
+
 	public Customer(Long id, String name, String email, String phone, LocalDate joinDate, LocalDate expiryDate,
-			String status, Plan plan) {
+			String status, Plan plan, boolean archived) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -108,6 +108,7 @@ public class Customer {
 		this.expiryDate = expiryDate;
 		this.status = status;
 		this.plan = plan;
+		this.archived = archived;
 	}
 
 }
