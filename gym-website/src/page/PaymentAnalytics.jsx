@@ -1,12 +1,11 @@
+import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from "recharts";
-import "../style/Admin.css";
-import { apiRequest } from "../util/api";
+import { apiRequest, handleApiResponse } from "../util/api";
 import { getAmountValue, formatCurrency } from "../util/CommonUtil";
-import AdminSidebar from "../components/common/AdminSidebar";
-import DashboardCard from "../components/common/DashboardCard";
-import AdminLayout from "../components/layout/AdminLayout";
 import { APP_CONFIG } from "../constants/AppConstants";
+import { AdminSidebar, DashboardCard } from "../components/common/index";
+import AdminLayout from "../components/layout/AdminLayout";
 
 export default function PaymentAnalytics() {
     const [payments, setPayments] = useState([]);
@@ -19,12 +18,11 @@ export default function PaymentAnalytics() {
         try {
             setLoading(true);
             const response = await apiRequest("/api/payments");
-            if (!response.ok) {
-                return;
-            }
+            await handleApiResponse(response);
             const data = await response.json();
             setPayments(data);
         } catch (error) {
+            toast.error("Failed to fetch Payments. Please try again later.");
             console.log(error);
         } finally {
             setLoading(false);

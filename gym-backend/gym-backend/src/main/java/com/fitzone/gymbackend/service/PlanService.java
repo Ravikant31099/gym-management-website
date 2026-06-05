@@ -3,9 +3,14 @@ package com.fitzone.gymbackend.service;
 import com.fitzone.gymbackend.dto.PlanRequest;
 import com.fitzone.gymbackend.dto.PlanResponse;
 import com.fitzone.gymbackend.entity.Plan;
+import com.fitzone.gymbackend.repository.CustomerRepository;
+import com.fitzone.gymbackend.repository.PaymentRespository;
 import com.fitzone.gymbackend.repository.PlanRespository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+
+import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 
 @Service
@@ -15,6 +20,12 @@ public class PlanService {
 	public PlanService(PlanRespository pr) {
 		this.pr = pr;
 	}
+	
+	@Autowired
+	public CustomerRepository cr;
+	
+	@Autowired
+	public PaymentRespository par;
 
 	public List<PlanResponse> getAllPlans() {
 		return pr.findAll().stream().map(this::planMapToResponse).toList();
@@ -43,6 +54,12 @@ public class PlanService {
 	}
 
 	public void deletePlan(Long id) {
+		 if (cr.existsByPlanId(id)) {
+			 throw new ResourceInUseException("Plan is assigned to customers and cannot be deleted.");
+		 }
+		 if (par.existsByPlanId(id)) {
+			 throw new ResourceInUseException("Plan is assigned to customers and cannot be deleted.");
+		 }
 		Plan ep = pr.findById(id).orElseThrow(() -> new ResourceNotFound("Plan Not Found"));
 		pr.delete(ep);
 	}

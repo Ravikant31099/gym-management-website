@@ -1,10 +1,9 @@
+import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
-import "../style/Admin.css";
-import { apiRequest } from "../util/api";
+import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate } from "../util/CommonUtil";
-import AdminSidebar from "../components/common/AdminSidebar";
-import DashboardCard from "../components/common/DashboardCard";
+import {AdminSidebar,DashboardCard} from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function CustomerAnalytics() {
@@ -18,14 +17,13 @@ export default function CustomerAnalytics() {
     const fetchCustomerAnalytics = async () => {
         try {
             const response = await apiRequest("/api/customers");
-            if (!response.ok) {
-                return;
-            }
+            await handleApiResponse(response);
             const data = await response.json();
             setCustomers(data);
             calculateAnalytics(data);
         } catch (error) {
             console.log(error);
+            toast.error("Failed to fetch customer records. Please try again later.");
         }
     };
     const calculateAnalytics = (customerList) => {

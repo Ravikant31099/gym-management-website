@@ -1,17 +1,13 @@
-import { useEffect, useState } from "react";
 import "../style/Admin.css";
-import AdminSidebar from "../components/common/AdminSidebar";
-import { apiRequest } from "../util/api";
+import { useEffect, useState } from "react";
+import { apiRequest, handleApiResponse } from "../util/api";
 import { getAmountValue, formatCurrency } from "../util/CommonUtil";
 import { APP_CONFIG, PAYMENT_STATUS, PAYMENT_MODE } from "../constants/AppConstants";
-import FormModal from "../components/modals/FormModal";
-import PaymentViewModal from "../components/modals/PaymentViewModal";
-import ConfirmModal from "../components/modals/ConfirmModal";
-import DashboardCard from "../components/common/DashboardCard";
-import DetailItem from "../components/common/DetailItem";
-import EmptyState from "../components/common/EmptyState";
+import { AdminSidebar, DashboardCard, DetailItem, EmptyState } from "../components/common/index";
 import { formatDate } from "../util/CommonUtil";
 import { toast, ToastContainer } from "react-toastify";
+import { ConfirmModal, FormModal, PaymentViewModal } from "../components/modals/index";
+import AdminLayout from "../components/layout/AdminLayout";
 
 export default function PaymentManagement() {
     const [payments, setPayments] = useState([]);
@@ -43,10 +39,7 @@ export default function PaymentManagement() {
         try {
             setLoading(true);
             const response = await apiRequest("/api/payments");
-            if (!response.ok) {
-                toast.error("Failed to Fetch Payments");
-                return;
-            }
+            await handleApiResponse(response);
             const data = await response.json();
             setPayments(data);
         } catch (error) {
@@ -60,10 +53,7 @@ export default function PaymentManagement() {
         try {
             setLoading(true);
             const response = await apiRequest("/api/customers");
-            if (!response.ok) {
-                toast.error("Failed to Fetch Customer Records");
-                return;
-            }
+            await handleApiResponse(response);
             const data = await response.json();
             setCustomers(data);
         } catch (error) {
@@ -76,10 +66,7 @@ export default function PaymentManagement() {
     const fetchPlansForPayments = async () => {
         try {
             const response = await apiRequest("/api/plans", "GET");
-            if (!response.ok) {
-                toast.error("Failed to Fetch Customer's Plans");
-                return;
-            }
+            await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
         } catch (error) {
@@ -95,10 +82,7 @@ export default function PaymentManagement() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(paymentForm)
             });
-            if (!response.ok) {
-                toast.error("Failed to save payment");
-                return;
-            }
+            await handleApiResponse(response);
             const savedPayment = await response.json();
             setPayments([...payments, savedPayment
             ]);
@@ -107,7 +91,7 @@ export default function PaymentManagement() {
             resetPaymentForm();
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to save payment. Please try again later.");
         } finally {
             setSaving(false);
         }
@@ -135,12 +119,8 @@ export default function PaymentManagement() {
     const updatePayment = async () => {
         try {
             setUpdating(true);
-            const response =
-                await apiRequest(`/api/payments/${editingPaymentId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(paymentForm) });
-            if (!response.ok) {
-                toast.error("Failed to update payment");
-                return;
-            }
+            const response = await apiRequest(`/api/payments/${editingPaymentId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(paymentForm) });
+            await handleApiResponse(response);
             const updatedPayment = await response.json();
             setPayments(payments.map(payment => payment.id === editingPaymentId ? updatedPayment : payment));
             toast.success("Payment updated successfully");
@@ -148,7 +128,7 @@ export default function PaymentManagement() {
             setEditingPaymentId(null);
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to update payment. Please try again later.");
         } finally {
             setUpdating(false);
         }
@@ -157,17 +137,14 @@ export default function PaymentManagement() {
         try {
             setDeleting(true);
             const response = await apiRequest(`/api/payments/${selectedPaymentId}`, { method: "DELETE" });
-            if (!response.ok) {
-                toast.error("Failed to delete payment");
-                return;
-            }
+            await handleApiResponse(response);
             setPayments(payments.filter(payment => payment.id !== selectedPaymentId));
             toast.success("Payment deleted successfully");
             setShowDeleteModal(false);
             setSelectedPaymentId(null);
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to delete payment. Please try again later.");
         } finally {
             setDeleting(false);
         }
@@ -194,89 +171,85 @@ export default function PaymentManagement() {
         setFilteredCustomers([]);
     };
     return (
-        <div className="admin-container">
-            <AdminSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-            <div className="main-content">
-                <button className="mobile-nav-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>☰</button>
-                <div className="header-card">
-                    <div>
-                        <p className="admin-label"> ADMIN PANEL</p>
-                        <h1 className="dashboard-title">Payments Management</h1>
-                        <p className="dashboard-subtitle"> Manage Customer Payments and Subscriptions</p>
-                    </div>
-                    <div>
-                        <button className="add-Payments-btn" onClick={() => { resetPaymentForm(); setShowAddModal(true) }}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>Add Payments
-                        </button>
-                    </div>
+        <AdminLayout>
+            <div className="header-card">
+                <div>
+                    <p className="admin-label"> ADMIN PANEL</p>
+                    <h1 className="dashboard-title">Payments Management</h1>
+                    <p className="dashboard-subtitle"> Manage Customer Payments and Subscriptions</p>
                 </div>
-                {/* Summary Cards */}
-                <div className="dashboard-section">
-                    <h3 className="cards-header"> Payment Summary </h3>
-                    <div className="cards-grid">
-                        <DashboardCard title="Today's Collection" value={`${formatCurrency(todayCollection)}`} color="#22c55e" />
-                        <DashboardCard title="Total Revenue" value={`${formatCurrency(totalRevenue)}`} color="#3b82f6" />
-                        <DashboardCard title="Pending Amount" value={`${formatCurrency(pendingAmount)}`} color="#f59e0b" />
-                        <DashboardCard title="Total Payments" value={totalPayments} color="#8b5cf6" />
-                    </div>
+                <div>
+                    <button className="add-Payments-btn" onClick={() => { resetPaymentForm(); setShowAddModal(true) }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>Add Payments
+                    </button>
                 </div>
-                {/* Search and Filters */}
-                <div className="search-filter-container">
-                    <input type="text" placeholder="Search Customer..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
-                        <option value="ALL">All Status</option>
-                        <option value="PAID">Paid</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="FAILED">Failed</option>
-                    </select>
-                    <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)} className="filter-select">
-                        <option value="ALL">All Modes</option>
-                        <option value="UPI"> UPI</option>
-                        <option value="CASH">Cash</option>
-                        <option value="CARD">Card</option>
-                        <option value="BANK_TRANSFER">Bank Transfer</option>
-                    </select>
-                    <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
-                        <option value="ALL">All Plans</option>
-                        {plans.map(plan => (<option key={plan.id} value={plan.name}>{plan.name} </option>))}
-                    </select>
+            </div>
+            {/* Summary Cards */}
+            <div className="dashboard-section">
+                <h3 className="cards-header"> Payment Summary </h3>
+                <div className="cards-grid">
+                    <DashboardCard title="Today's Collection" value={`${formatCurrency(todayCollection)}`} color="#22c55e" />
+                    <DashboardCard title="Total Revenue" value={`${formatCurrency(totalRevenue)}`} color="#3b82f6" />
+                    <DashboardCard title="Pending Amount" value={`${formatCurrency(pendingAmount)}`} color="#f59e0b" />
+                    <DashboardCard title="Total Payments" value={totalPayments} color="#8b5cf6" />
                 </div>
-                {/* Payments Table */}
-                <div className="table-wrapper">
-                    <div className="table-header">
-                        <h3> Payments <span className="table-header-count"> ({filteredPayments.length})</span></h3>
-                    </div>
-                    <table className="payments-table">
-                        <thead>
-                            <tr>
-                                <th>Customer</th>
-                                <th>Plan</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Status</th>
+            </div>
+            {/* Search and Filters */}
+            <div className="search-filter-container">
+                <input type="text" placeholder="Search Customer..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
+                    <option value="ALL">All Status</option>
+                    <option value={PAYMENT_STATUS.PAID}>Paid</option>
+                    <option value={PAYMENT_STATUS.PENDING}>Pending</option>
+                    <option value={PAYMENT_STATUS.FAILED}>Failed</option>
+                </select>
+                <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)} className="filter-select">
+                    <option value="ALL">All Modes</option>
+                    <option value={PAYMENT_MODE.UPI}> UPI</option>
+                    <option value={PAYMENT_MODE.CASH}>Cash</option>
+                    <option value={PAYMENT_MODE.CARD}>Card</option>
+                    <option value={PAYMENT_MODE.BANK_TRANSFER}>Bank Transfer</option>
+                </select>
+                <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
+                    <option value="ALL">All Plans</option>
+                    {plans.map(plan => (<option key={plan.id} value={plan.name}>{plan.name} </option>))}
+                </select>
+            </div>
+            {/* Payments Table */}
+            <div className="table-wrapper">
+                <div className="table-header">
+                    <h3> Payments <span className="table-header-count"> ({filteredPayments.length})</span></h3>
+                </div>
+                <table className="payments-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredPayments.length === 0 ? (<tr>
+                            <td colSpan="7">
+                                <EmptyState title="No Payments Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
+                            </td>
+                        </tr>
+                        ) : filteredPayments.map(payment => (
+                            <tr key={payment.id} className="payment-clickable-row" onClick={() => { setSelectedPayment(payment); setShowPaymentModal(true); }}>
+                                <td>{payment.customerName}</td>
+                                <td>{payment.planName}</td>
+                                <td>{payment.amount}</td>
+                                <td>{formatDate(payment.paymentDate)}</td>
+                                <td><span className={`payment-status ${payment.status.toLowerCase()}`}>{payment.status}</span></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {filteredPayments.length === 0 ? (<tr>
-                                <td colSpan="7">
-                                    <EmptyState title="No Payments Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
-                                </td>
-                            </tr>
-                            ) : filteredPayments.map(payment => (
-                                <tr key={payment.id} className="payment-clickable-row" onClick={() => { setSelectedPayment(payment); setShowPaymentModal(true); }}>
-                                    <td>{payment.customerName}</td>
-                                    <td>{payment.planName}</td>
-                                    <td>{payment.amount}</td>
-                                    <td>{formatDate(payment.paymentDate)}</td>
-                                    <td><span className={`payment-status ${payment.status.toLowerCase()}`}>{payment.status}</span></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                        ))}
+                    </tbody>
+                </table>
             </div>
             {/* Add Payments Modal */}
             {showAddModal && (<FormModal title="Add Payment" onClose={() => { resetPaymentForm(); setShowAddModal(false) }} onSubmit={savePayment} loading={saving} buttonText="Save Payment">
@@ -379,6 +352,6 @@ export default function PaymentManagement() {
             {/* Delete Payment Modal */}
             {showDeleteModal && (<ConfirmModal title="Delete Payment" description="Are you sure you want to delete this Payment?" onClose={() => setShowDeleteModal(false)} onConfirm={deletePayment} loading={deleting} />)}
             <ToastContainer position="top-right" autoClose={3000} theme="dark" />
-        </div>
+        </AdminLayout>
     );
 };

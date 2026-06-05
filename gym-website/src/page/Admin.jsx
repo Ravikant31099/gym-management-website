@@ -1,12 +1,11 @@
+import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import "../style/Admin.css";
-import { apiRequest } from "../util/api";
-import AdminSidebar from "../components/common/AdminSidebar";
+import { apiRequest, handleApiResponse } from "../util/api";
+import {AdminSidebar,DashboardCard} from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
-import DashboardCard from "../components/common/DashboardCard";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Admin() {
     const [leads, setLeads] = useState([]);
@@ -17,14 +16,22 @@ export default function Admin() {
     const joinedLeads = leads.filter((lead) => lead.status === "JOINED").length;
     const contactedLeads = leads.filter((lead) => lead.status === "CONTACTED").length;
     const followUpLeads = leads.filter((lead) => lead.status === "FOLLOW-UP").length;
-    useEffect(() => { apiRequest("/api/leads").then((response) => response.json()).then((data) => setLeads(data)).catch((error) => console.log(error)); }, []);
-    useEffect(() => { fetchCustomerStats(); }, []);
+    useEffect(() => { fetchLeadStats(); fetchCustomerStats(); }, []);
+    const fetchLeadStats = async () => {
+        try {
+            const response = await apiRequest("/api/leads");
+            await handleApiResponse(response);
+            const data = await response.json();
+            setLeads(data);
+        } catch (e) {
+            console.log(error);
+            toast.error("Failed to fetch leads. Please try again later.");
+        }
+    };
     const fetchCustomerStats = async () => {
         try {
             const response = await apiRequest("/api/customers");
-            if (!response.ok) {
-                return;
-            }
+            await handleApiResponse(response);
             const customers = await response.json();
             const today = new Date();
             let active = 0;
@@ -49,20 +56,9 @@ export default function Admin() {
             setCustomerStats({ total: customers.length, inactive, active, expiring, expired });
         } catch (error) {
             console.log(error);
+            toast.error("Failed to fetch Customer Records. Please try again later.");
         }
     };
-    
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
-    };
-    function SidebarItem({ title }) {
-        return (
-            <div className="sidebar-item">
-                {title}
-            </div>
-        );
-    }
     return (
         <AdminLayout>
             {/* HEADER */}

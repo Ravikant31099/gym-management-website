@@ -1,8 +1,6 @@
 package com.fitzone.gymbackend.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.fitzone.gymbackend.dto.PaymentRequest;
@@ -36,10 +34,12 @@ public class PaymentController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Map<String, String>> deletePayment(@PathVariable("id") Long id) {
-		pS.deletePayment(id);
-		Map<String, String> response = new HashMap<>();
-		response.put("message", "Payment deleted successfully");
-		return ResponseEntity.ok(response);
+	public ResponseEntity<String> deletePayment(@PathVariable("id") Long id) {
+		try {
+			pS.deletePayment(id);
+			return ResponseEntity.ok().build();
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
 	}
 }

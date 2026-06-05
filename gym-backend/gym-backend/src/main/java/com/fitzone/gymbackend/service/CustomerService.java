@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.entity.Plan;
 import com.fitzone.gymbackend.repository.PlanRespository;
@@ -12,6 +14,7 @@ import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
 import com.fitzone.gymbackend.entity.Customer;
 import com.fitzone.gymbackend.repository.CustomerRepository;
+import com.fitzone.gymbackend.repository.PaymentRespository;
 
 @Service
 public class CustomerService {
@@ -21,6 +24,9 @@ public class CustomerService {
 
 	@Autowired
 	private PlanRespository pr;
+	
+	@Autowired
+	private PaymentRespository par;
 
 	public List<CustomerResponse> getAllCustomer() {
 		return cr.findAll().stream().map(this::customerMapToResponse).toList();
@@ -55,6 +61,9 @@ public class CustomerService {
 	}
 
 	public void deleteCustomer(Long id) {
+		if(par.existsByCustomerId(id)) {
+			throw new ResourceInUseException("Customer has payment records and cannot be deleted.");
+		}
 		Customer cs = cr.findById(id).orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		cr.delete(cs);
 	}

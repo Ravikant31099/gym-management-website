@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import { apiRequest } from "../util/api";
+import { apiRequest, handleApiResponse } from "../util/api";
+import { formatCurrency } from "../util/CommonUtil";
+import { APP_CONFIG, PLAN_PERIOD, PLAN_TYPE } from "../constants/AppConstants";
 import "../style/Admin.css";
 import "react-toastify/dist/ReactToastify.css";
-import AdminSidebar from "../components/common/AdminSidebar";
 import ConfirmModal from "../components/modals/ConfirmModal";
 import FormModal from "../components/modals/FormModal";
 import AdminLayout from "../components/Layout/AdminLayout";
-import EmptyState from "../components/common/EmptyState";
+import { AdminSidebar, EmptyState } from "../components/common/index";
 
 export default function PlanManagement() {
     const [plans, setPlans] = useState([]);
@@ -22,22 +23,11 @@ export default function PlanManagement() {
     const [deleting, setDeleting] = useState(false);
     const [search, setSearch] = useState("");
     const [popularFilter, setPopularFilter] = useState("ALL");
-    const [planForm, setPlanForm] = useState({
-        name: "",
-        description: "",
-        price: "",
-        period: "",
-        popular: false
-    });
+    const [planForm, setPlanForm] = useState({ name: "", description: "", price: "", period: PLAN_PERIOD.MONTH, popular: false });
     useEffect(() => { fetchPlans(); }, []);
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setPlanForm({
-            ...planForm, [name]:
-                type === "checkbox"
-                    ? checked
-                    : value
-        });
+        setPlanForm({ ...planForm, [name]: type === "checkbox" ? checked : value });
     };
     const filteredPlans = plans.filter((plan) => {
         const matchesSearch = plan.name.toLowerCase().includes(search.toLowerCase());
@@ -51,13 +41,7 @@ export default function PlanManagement() {
     };
     const openEditModal = (plan) => {
         setEditingPlanId(plan.id);
-        setPlanForm({
-            name: plan.name,
-            description: plan.description,
-            price: plan.price,
-            period: plan.period,
-            popular: plan.popular
-        });
+        setPlanForm({ name: plan.name, description: plan.description, price: plan.price, period: plan.period, popular: plan.popular });
         setShowEditModal(true);
     };
     const validatePlanForm = () => {
@@ -82,6 +66,7 @@ export default function PlanManagement() {
     const fetchPlans = async () => {
         try {
             const response = await apiRequest("/api/plans", "GET");
+            await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
         } catch (error) {
@@ -96,24 +81,15 @@ export default function PlanManagement() {
                 return;
             }
             const response = await apiRequest(`/api/plans`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(planForm) });
-            if (!response.ok) {
-                toast.error("Failed to save plan");
-                return;
-            }
+            await handleApiResponse(response);
             const savedPlan = await response.json();
             setPlans([...plans, savedPlan]);
             toast.success("Plan added successfully");
             setShowAddModal(false);
-            setPlanForm({
-                name: "",
-                description: "",
-                price: "",
-                period: "",
-                popular: false
-            });
+            resetPlanForm();
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to save plans. Please try again later.");
         } finally {
             setSaving(false);
         }
@@ -122,17 +98,14 @@ export default function PlanManagement() {
         try {
             setDeleting(true);
             const response = await apiRequest(`/api/plans/${selectedPlanId}`, { method: "DELETE" });
-            if (!response.ok) {
-                toast.error("Failed to delete plan");
-                return;
-            }
+            await handleApiResponse(response);
             setPlans(plans.filter((plan) => plan.id !== selectedPlanId));
             toast.success("Plan deleted successfully");
             setShowDeleteModal(false);
             setSelectedPlanId(null);
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to delete plans. Please try again later.");
         } finally {
             setDeleting(false);
         }
@@ -144,28 +117,22 @@ export default function PlanManagement() {
                 return;
             }
             const response = await apiRequest(`/api/plans/${editingPlanId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(planForm) });
-            if (!response.ok) {
-                toast.error("Failed to update plan");
-                return;
-            }
+            await handleApiResponse(response);
             const updatedPlan = await response.json();
             setPlans(plans.map((plan) => plan.id === editingPlanId ? updatedPlan : plan));
             toast.success("Plan updated successfully");
             setShowEditModal(false);
             setEditingPlanId(null);
-            setPlanForm({
-                name: "",
-                description: "",
-                price: "",
-                period: "",
-                popular: false
-            });
+            resetPlanForm();
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to update plans. Please try again later.");
         } finally {
             setUpdating(false);
         }
+    };
+    const resetPlanForm = () => {
+        setPlanForm({ name: "", description: "", price: "", period: PLAN_PERIOD.MONTH, popular: false });
     };
     return (
         <AdminLayout>
@@ -188,8 +155,8 @@ export default function PlanManagement() {
                 <input type="text" className="search-input" placeholder="Search plans..." value={search} onChange={(e) => setSearch(e.target.value)} />
                 <select className="filter-select" value={popularFilter} onChange={(e) => setPopularFilter(e.target.value)}>
                     <option value="ALL"> All Plans</option>
-                    <option value="POPULAR"> Popular </option>
-                    <option value="NORMAL"> Normal</option>
+                    <option value={PLAN_TYPE.POPULAR}> Popular </option>
+                    <option value={PLAN_TYPE.NORMAL}> Normal</option>
                 </select>
             </div>
             {/* TABLE */}
@@ -208,13 +175,13 @@ export default function PlanManagement() {
                     <tbody>
                         {filteredPlans.length === 0 ? (<tr>
                             <td colSpan="7">
-                                <EmptyState title="No Plan Found" description="There is no data to display in this table at the moment. New entries will appear here automatically."/>
+                                <EmptyState title="No Plan Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
                         </tr>) : (filteredPlans.map((plan) => (
                             <tr key={plan.id}>
                                 <td>{plan.name}</td>
                                 <td>{plan.description}</td>
-                                <td>{plan.price}</td>
+                                <td>{formatCurrency(plan.price)}</td>
                                 <td>{plan.period}</td>
                                 <td>
                                     {plan.popular ?
@@ -239,7 +206,13 @@ export default function PlanManagement() {
                     <input type="text" name="name" placeholder="Plan Name" value={planForm.name} onChange={handleInputChange} className="search-input" />
                     <input type="text" name="description" placeholder="Description" value={planForm.description} onChange={handleInputChange} className="search-input" />
                     <input type="text" name="price" placeholder="Price" value={planForm.price} onChange={handleInputChange} className="search-input" />
-                    <input type="text" name="period" placeholder="Period" value={planForm.period} onChange={handleInputChange} className="search-input" />
+                    <select name="period" value={planForm.period} className="filter-select-modal" onChange={handleInputChange}>
+                        <option value={PLAN_PERIOD.MONTH}>MONTH</option>
+                        <option value={PLAN_PERIOD.THREE_MONTH}>3 MONTH</option>
+                        <option value={PLAN_PERIOD.SIX_MONTH}>6 MONTH</option>
+                        <option value={PLAN_PERIOD.NINE_MONTH}>9 MONTH</option>
+                        <option value={PLAN_PERIOD.YEAR}>YEAR</option>
+                    </select>
                     <label className="popular-checkbox-card">
                         <span>Mark as Popular Plan</span>
                         <input type="checkbox" name="popular" checked={planForm.popular} onChange={handleInputChange} />
@@ -256,7 +229,13 @@ export default function PlanManagement() {
                     <input type="text" name="name" placeholder="Plan Name" value={planForm.name} onChange={handleInputChange} className="search-input" />
                     <input type="text" name="description" placeholder="Description" value={planForm.description} onChange={handleInputChange} className="search-input" />
                     <input type="text" name="price" placeholder="Price" value={planForm.price} onChange={handleInputChange} className="search-input" />
-                    <input type="text" name="period" placeholder="Period" value={planForm.period} onChange={handleInputChange} className="search-input" />
+                    <select name="period" value={planForm.period} className="filter-select-modal" onChange={handleInputChange}>
+                        <option value={PLAN_PERIOD.MONTH}>MONTH</option>
+                        <option value={PLAN_PERIOD.THREE_MONTH}>3 MONTH</option>
+                        <option value={PLAN_PERIOD.SIX_MONTH}>6 MONTH</option>
+                        <option value={PLAN_PERIOD.NINE_MONTH}>9 MONTH</option>
+                        <option value={PLAN_PERIOD.YEAR}>YEAR</option>
+                    </select>
                     <label className="popular-checkbox-card">
                         <span>Mark as Popular Plan</span>
                         <input type="checkbox" name="popular" checked={planForm.popular} onChange={handleInputChange} />

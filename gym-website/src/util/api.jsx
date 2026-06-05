@@ -1,5 +1,5 @@
 import {getToken } from "../util/AuthUtils";
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = import.meta.env.VITE_API_LOCALURL;;
 
 export async function apiRequest(endpoint,options = {}) {
     const token = getToken();;
@@ -12,4 +12,12 @@ export async function apiRequest(endpoint,options = {}) {
         window.dispatchEvent(new Event("session-expired"));
     }
     return response;
+}
+export async function handleApiResponse(response) {
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || "Something went wrong");
+    }
+    return response;
+
 }

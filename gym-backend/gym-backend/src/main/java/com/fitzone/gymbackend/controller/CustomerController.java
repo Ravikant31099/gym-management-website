@@ -1,9 +1,6 @@
 package com.fitzone.gymbackend.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.fitzone.gymbackend.dto.CustomerRequest;
@@ -39,15 +36,18 @@ public class CustomerController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Map<String,String>> deleteCustomer(@PathVariable("id") Long id) {
-		cs.deleteCustomer(id);
-		Map<String, String> mp = new HashMap<>();
-		mp.put("message", "Customer Deleted Successfully");
-		return ResponseEntity.ok(mp);
+	public ResponseEntity<String> deleteCustomer(@PathVariable("id") Long id) {
+		try {
+			cs.deleteCustomer(id);
+			return ResponseEntity.ok().build();
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
 	}
-	
+
 	@PutMapping("/{id}/renew")
-	public ResponseEntity<CustomerResponse> renewMemberShip(@PathVariable("id") Long id, @RequestBody RenewalRequest r) {
+	public ResponseEntity<CustomerResponse> renewMemberShip(@PathVariable("id") Long id,
+			@RequestBody RenewalRequest r) {
 		return ResponseEntity.ok(cs.renewMemberShip(id, r.getPlanId()));
 	}
 }

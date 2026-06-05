@@ -1,18 +1,15 @@
-import { useEffect, useState } from "react";
 import "../style/Admin.css";
-import AdminSidebar from "../components/common/AdminSidebar";
-import { apiRequest } from "../util/api";
-import { formatDate } from "../util/CommonUtil";
-import FormModal from "../components/modals/FormModal";
-import ConfirmModal from "../components/modals/ConfirmModal";
-import ViewModal from "../components/modals/ViewModal";
-import DetailItem from "../components/common/DetailItem";
-import EmptyState from "../components/common/EmptyState";
-import DatePicker from "react-datepicker";
-import {getMembershipStatus} from "../util/CommonUtil"; 
 import "react-datepicker/dist/react-datepicker.css";
+import { useEffect, useState } from "react";
+import { apiRequest, handleApiResponse } from "../util/api";
+import { formatDate, formatCurrency, getMembershipStatus } from "../util/CommonUtil";
+import { APP_CONFIG, CUSTOMER_STATUS } from "../constants/AppConstants";
+import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
 import { Pencil, Trash2, RefreshCw } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
+import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
+import DatePicker from "react-datepicker";
+import AdminLayout from "../components/layout/AdminLayout";
 
 export default function CustomerManagement() {
     const [customers, setCustomers] = useState([]);
@@ -42,15 +39,12 @@ export default function CustomerManagement() {
         try {
             setLoading(true);
             const response = await apiRequest("/api/customers");
-            if (!response.ok) {
-                toast.error("Failed to Fetch Customer Records");
-                return;
-            }
+            await handleApiResponse(response);
             const data = await response.json();
             setCustomers(data);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch Customer Records. Please try again later.");
+            toast.error("Failed to fetch customer records. Please try again later.");
         } finally {
             setLoading(false);
         }
@@ -58,10 +52,7 @@ export default function CustomerManagement() {
     const fetchPlansForCustomer = async () => {
         try {
             const response = await apiRequest("/api/plans", "GET");
-            if (!response.ok) {
-                toast.error("Failed to Fetch Customer's Plans");
-                return;
-            }
+            await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
         } catch (error) {
@@ -113,10 +104,7 @@ export default function CustomerManagement() {
         }
         try {
             const response = await apiRequest("/api/customers", { method: "POST", body: JSON.stringify(customerForm) });
-            if (!response.ok) {
-                toast.error("Failed to save Customer Details. Please try again later.");
-                return;
-            }
+            await handleApiResponse(response);
             const savedCustomer = await response.json();
             setCustomers([...customers, savedCustomer]);
             toast.success("Customer Added Successfully");
@@ -124,7 +112,7 @@ export default function CustomerManagement() {
             resetCustomerForm();
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to save customer records. Please try again later.");
         } finally {
             setSaving(false);
         }
@@ -141,17 +129,14 @@ export default function CustomerManagement() {
         }
         try {
             const response = await apiRequest(`/api/customers/${selectedCustomer.id}`, { method: "PUT", body: JSON.stringify(customerForm) });
-            if (!response.ok) {
-                toast.error("Failed to update Customer Details. Please try again later.");
-                return;
-            }
+            await handleApiResponse(response);
             const updatedCustomer = await response.json();
             setCustomers(customers.map(customer => customer.id === selectedCustomer.id ? updatedCustomer : customer));
             toast.success("Customer Updated Successfully");
             setShowEditModal(false);
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to update Customer Records. Please try again later.");
         } finally {
             setUpdating(false);
         }
@@ -164,17 +149,14 @@ export default function CustomerManagement() {
         try {
             setDeleting(true);
             const response = await apiRequest(`/api/customers/${selectedCustomerId}`, { method: "DELETE" });
-            if (!response.ok) {
-                toast.error("Failed to Delete Customer Record.");
-                return;
-            }
+            await handleApiResponse(response);
             setCustomers(customers.filter(customer => customer.id !== selectedCustomerId));
             toast.success("Customer Deleted Successfully");
             setShowDeleteModal(false);
             setSelectedCustomerId(null);
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong");
+            toast.error("Failed to delete Customer Records. Please try again later.");
         } finally {
             setDeleting(false);
         }
@@ -227,85 +209,81 @@ export default function CustomerManagement() {
         }
     };
     return (
-        <div className="admin-container">
-            <AdminSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-            <div className="main-content">
-                <button className="mobile-nav-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>☰</button>
-                <div className="header-card">
-                    <div>
-                        <p className="admin-label"> ADMIN PANEL</p>
-                        <h1 className="dashboard-title">Customer Management</h1>
-                        <p className="dashboard-subtitle"> Manage gym customers and memberships</p>
-                    </div>
-                    <div>
-                        <button className="add-customer-btn" onClick={() => {resetCustomerForm(); setShowAddModal(true)}}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Add Customer</button>
-                    </div>
+        <AdminLayout>
+            <div className="header-card">
+                <div>
+                    <p className="admin-label"> ADMIN PANEL</p>
+                    <h1 className="dashboard-title">Customer Management</h1>
+                    <p className="dashboard-subtitle"> Manage gym customers and memberships</p>
                 </div>
-                {/* SEARCH */}
-                <div className="search-filter-container">
-                    <input type="text" placeholder="Search customer..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
-                        <option value="ALL"> All Status </option>
-                        <option value="ACTIVE"> Active </option>
-                        <option value="EXPIRING"> Expiring </option>
-                        <option value="EXPIRED"> Expired </option>
-                        <option value="INACTIVE"> Inactive </option>
-                    </select>
-                    <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
-                        <option value="ALL"> All Plans</option>
-                        {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.name}>{plan.name}</option>))}
-                    </select>
-                </div>
-                {/* TABLE */}
-                <div className="table-wrapper">
-                    <table className="customer-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Plan</th>
-                                <th>Join Date</th>
-                                <th>Expiry Date</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredCustomers.length === 0 ? (<tr>
-                                <td colSpan="8">
-                                    <EmptyState title="No Customer Found" description="There is no data to display in this table at the moment. New entries will appear here automatically."/>
-                                </td>
-                            </tr>
-                            ) : filteredCustomers.map((customer) => (
-                                <tr key={customer.id} className="clickable-row" onClick={() => handleViewCustomer(customer)}>
-                                    <td>{customer.name}</td>
-                                    <td>{customer.email}</td>
-                                    <td>{customer.phone}</td>
-                                    <td><span className={`plan-badge ${customer.planName.toLowerCase()}`}>{customer.planName}</span></td>
-                                    <td>{formatDate(customer.joinDate)}</td>
-                                    <td>{formatDate(customer.expiryDate)}</td>
-                                    <td><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
-                                    <td>
-                                        <div className="icon-btn">
-                                            <button className="edit-icn" onClick={(e) => { e.stopPropagation(); handleEditClick(customer) }}> <Pencil size={24} /> </button>
-                                            <button className="delete-icn" onClick={(e) => { e.stopPropagation(); handleDeleteClick(customer.id) }}> <Trash2 size={24} /> </button>
-                                            <button className="renew-icn" onClick={(e) => { e.stopPropagation(); openRenewModal(customer) }}> <RefreshCw size={24} /> </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div>
+                    <button className="add-customer-btn" onClick={() => { resetCustomerForm(); setShowAddModal(true) }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add Customer</button>
                 </div>
             </div>
+            {/* SEARCH */}
+            <div className="search-filter-container">
+                <input type="text" placeholder="Search customer..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
+                    <option value="ALL"> All Status </option>
+                    <option value={CUSTOMER_STATUS.ACTIVE}> Active </option>
+                    <option value={CUSTOMER_STATUS.EXPIRING}> Expiring </option>
+                    <option value={CUSTOMER_STATUS.EXPIRED}> Expired </option>
+                    <option value={CUSTOMER_STATUS.INACTIVE}> Inactive </option>
+                </select>
+                <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
+                    <option value="ALL"> All Plans</option>
+                    {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.name}>{plan.name}</option>))}
+                </select>
+            </div>
+            {/* TABLE */}
+            <div className="table-wrapper">
+                <table className="customer-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Plan</th>
+                            <th>Join Date</th>
+                            <th>Expiry Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredCustomers.length === 0 ? (<tr>
+                            <td colSpan="8">
+                                <EmptyState title="No Customer Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
+                            </td>
+                        </tr>
+                        ) : filteredCustomers.map((customer) => (
+                            <tr key={customer.id} className="clickable-row" onClick={() => handleViewCustomer(customer)}>
+                                <td>{customer.name}</td>
+                                <td>{customer.email}</td>
+                                <td>{customer.phone}</td>
+                                <td><span className={`plan-badge ${customer.planName.toLowerCase()}`}>{customer.planName}</span></td>
+                                <td>{formatDate(customer.joinDate)}</td>
+                                <td>{formatDate(customer.expiryDate)}</td>
+                                <td><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
+                                <td>
+                                    <div className="icon-btn">
+                                        <button className="edit-icn" onClick={(e) => { e.stopPropagation(); handleEditClick(customer) }}> <Pencil size={24} /> </button>
+                                        <button className="delete-icn" onClick={(e) => { e.stopPropagation(); handleDeleteClick(customer.id) }}> <Trash2 size={24} /> </button>
+                                        <button className="renew-icn" onClick={(e) => { e.stopPropagation(); openRenewModal(customer) }}> <RefreshCw size={24} /> </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
             {/* Add Customer Modal */}
-            {showAddModal && (<FormModal title="Add Customer" onClose={() => {resetCustomerForm(); setShowAddModal(false)}} loading={saving} onSubmit={handleAddCustomer} buttonText="Save Customer">
+            {showAddModal && (<FormModal title="Add Customer" onClose={() => { resetCustomerForm(); setShowAddModal(false) }} loading={saving} onSubmit={handleAddCustomer} buttonText="Save Customer">
                 <input type="text" name="name" placeholder="Name" className="search-input" value={customerForm.name} onChange={handleChange} />
                 <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
                 <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
@@ -316,8 +294,8 @@ export default function CustomerManagement() {
                     {plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
                 <select name="status" value={customerForm.status} className="filter-select-modal" onChange={handleChange}>
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="INACTIVE">INACTIVE</option>
+                    <option value={CUSTOMER_STATUS.ACTIVE}>ACTIVE</option>
+                    <option value={CUSTOMER_STATUS.INACTIVE}>INACTIVE</option>
                 </select>
             </FormModal>
             )}
@@ -333,8 +311,8 @@ export default function CustomerManagement() {
                     {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
                 <select name="status" value={customerForm.status} className="filter-select-modal" onChange={handleChange}>
-                    <option value="ACTIVE"> ACTIVE</option>
-                    <option value="INACTIVE">INACTIVE</option>
+                    <option value={CUSTOMER_STATUS.ACTIVE}> ACTIVE</option>
+                    <option value={CUSTOMER_STATUS.INACTIVE}>INACTIVE</option>
                 </select>
             </FormModal>
             )}
@@ -347,7 +325,7 @@ export default function CustomerManagement() {
                     <DetailItem label="Email" value={viewCustomer.email} />
                     <DetailItem label="Phone" value={viewCustomer.phone} />
                     <DetailItem label="Plan" value={viewCustomer.planName} />
-                    <DetailItem label="Plan Price" value={viewCustomer.planPrice} />
+                    <DetailItem label="Plan Price" value={formatCurrency(viewCustomer.planPrice)} />
                     <DetailItem label="Join Date" value={formatDate(viewCustomer.joinDate)} />
                     <DetailItem label="Expiry Date" value={formatDate(viewCustomer.expiryDate)} />
                     <DetailItem label="Status" value={getMembershipStatus(viewCustomer).text} />
@@ -365,6 +343,6 @@ export default function CustomerManagement() {
             </FormModal>
             )}
             <ToastContainer position="top-right" autoClose={3000} theme="dark" />
-        </div>
+        </AdminLayout>
     );
 }

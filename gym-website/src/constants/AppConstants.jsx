@@ -17,18 +17,15 @@ export const PAYMENT_MODE = {
 export const LEAD_STATUS = {
     NEW: "NEW",
     CONTACTED: "CONTACTED",
-    CONVERTED: "CONVERTED",
-    LOST: "LOST"
-};
-export const LEAD_TEMPERATURE = {
-    HOT: "HOT",
-    WARM: "WARM",
-    COLD: "COLD"
+    JOINED: "JOINED",
+    NOTINTERESTED: "NOT-INTERESTED",
+    FOLLOWUP: "FOLLOW-UP"
 };
 export const CUSTOMER_STATUS = {
     ACTIVE: "ACTIVE",
-    EXPIRING_SOON: "EXPIRING_SOON",
-    EXPIRED: "EXPIRED"
+    EXPIRING: "EXPIRING",
+    EXPIRED: "EXPIRED",
+    INACTIVE: "INACTIVE"
 };
 export const PLAN_PERIOD = {
     MONTH: "/month",
@@ -36,4 +33,8 @@ export const PLAN_PERIOD = {
     SIX_MONTH: "/6 month",
     NINE_MONTH: "/9 month",
     YEAR: "/year"
+};
+export const PLAN_TYPE = {
+    NORMAL: "NORMAL",
+    POPULAR: "POPULAR"
 };

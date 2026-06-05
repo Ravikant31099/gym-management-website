@@ -1,4 +1,5 @@
 import '../../style/Home.css';
+import {formatCurrency} from '../../util/CommonUtil';
 import { useEffect, useState } from "react";
 
 export default function Pricing() {
@@ -30,7 +31,7 @@ export default function Pricing() {
                             {plan.popular && <span className="popular-badge">Most Popular</span>}
                             <h3 className="plan-name">{plan.name}</h3>
                             <div className="price-container">
-                                <span className="price-amount">{plan.price}</span>
+                                <span className="price-amount">{formatCurrency(plan.price)}</span>
                                 <span className="price-period">{plan.period}</span>
                             </div>
                             <button className="pricing-btn" type="button">Choose Plan</button>

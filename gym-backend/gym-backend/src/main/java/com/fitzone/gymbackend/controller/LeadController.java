@@ -27,12 +27,15 @@ public class LeadController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Map<String, String>> deleteLead(@PathVariable("id") Long id) {
+	public ResponseEntity<String> deleteLead(@PathVariable("id") Long id) {
 		Lead l = lr.findById(id).orElseThrow(() -> new ResourceNotFound("Lead Not Found with Id: " + id));
-		lr.delete(l);
-		Map<String, String> mp = new HashMap<>();
-		mp.put("message", "Lead Deleted Successfully");
-		return ResponseEntity.ok(mp);
+		try {
+			lr.delete(l);
+			return ResponseEntity.ok().build();
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+
 	}
 
 	@PutMapping("/{id}/status")

@@ -1,14 +1,26 @@
-import { useEffect, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import "../style/Admin.css";
-import { apiRequest } from "../util/api";
-import AdminSidebar from "../components/common/AdminSidebar";
+import { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { apiRequest, handleApiResponse } from "../util/api";
+import { AdminSidebar } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function LeadAnalytics() {
     const [leads, setLeads] = useState([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    useEffect(() => { apiRequest("/api/leads").then((response) => response.json()).then((data) => setLeads(data)).catch((error) => console.log(error)); }, []);
+    useEffect(() => { fetchLeadStats(); }, []);
+    const fetchLeadStats = async () => {
+        try {
+            const response = await apiRequest("/api/leads");
+            await handleApiResponse(response);
+            const data = await response.json();
+            setLeads(data);
+        } catch (e) {
+            console.log(e);
+            toast.error("Failed to fetch leads. Please try again later.");
+        }
+    };
     const chartData = [
         {
             name: "New",
@@ -16,7 +28,7 @@ export default function LeadAnalytics() {
         },
         {
             name: "Contacted",
-            value: leads.filter((lead) => lead.status === "CONTACTED" || lead.status === "FOLLOW-UP").length 
+            value: leads.filter((lead) => lead.status === "CONTACTED" || lead.status === "FOLLOW-UP").length
         },
         {
             name: "Joined",
@@ -76,6 +88,7 @@ export default function LeadAnalytics() {
                     </ResponsiveContainer>
                 </div>
             </div>
+            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </AdminLayout>
     );
 }

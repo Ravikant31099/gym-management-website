@@ -1,11 +1,11 @@
+import "../style/Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../style/Login.css";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import adminImage from "../assets/admin-bg.jpg";
-import { apiRequest } from "../util/api";
+import { apiRequest, handleApiResponse } from "../util/api";
 import { setToken } from "../util/AuthUtils";
+import adminImage from "../assets/admin-bg.jpg";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Login() {
     const [username, setUsername] = useState("");
@@ -18,10 +18,7 @@ export default function Login() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password })
             });
-            if (!response.ok) {
-                toast.error("Invalid Credentials");
-                return;
-            }
+            await handleApiResponse(response);
             const data = await response.json();
             setToken(data.token);
             navigate("/admin");

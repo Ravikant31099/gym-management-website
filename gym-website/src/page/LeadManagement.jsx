@@ -1,14 +1,12 @@
+import "../style/Admin.css";
+import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import { apiRequest } from "../util/api";
-import AdminSidebar from "../components/common/AdminSidebar";
-import "react-toastify/dist/ReactToastify.css";
-import "../style/Admin.css";
-import ConfirmModal from "../components/modals/ConfirmModal";
-import ViewModal from "../components/modals/ViewModal";
+import { apiRequest, handleApiResponse } from "../util/api";
+import { LEAD_STATUS } from "../constants/AppConstants";
+import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
+import { ConfirmModal, ViewModal } from "../components/modals/index";
 import AdminLayout from "../components/layout/AdminLayout";
-import DetailItem from "../components/common/DetailItem";
-import EmptyState from "../components/common/EmptyState";
 
 export default function LeadManagement() {
     const [leads, setLeads] = useState([]);
@@ -20,37 +18,38 @@ export default function LeadManagement() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [deletingLead, setDeletingLead] = useState(false);
     const [updatingStatusId, setUpdatingStatusId] = useState(null);
-    const statusOptions = [
-        "NEW",
-        "CONTACTED",
-        "FOLLOW-UP",
-        "JOINED",
-        "NOT INTERESTED"
-    ];
+    const statusOptions = [LEAD_STATUS.NEW, LEAD_STATUS.CONTACTED, LEAD_STATUS.FOLLOWUP, LEAD_STATUS.JOINED, LEAD_STATUS.NOTINTERESTED];
     const filteredLeads = leads.filter((lead) => {
-        const matchesSearch =
-            lead.name.toLowerCase().includes(search.toLowerCase()) ||
-            lead.email.toLowerCase().includes(search.toLowerCase()) ||
-            lead.phone.includes(search);
-        const matchesStatus =
-            statusFilter === "ALL" ||
-            lead.status === statusFilter;
+        const matchesSearch = lead.name.toLowerCase().includes(search.toLowerCase()) || lead.email.toLowerCase().includes(search.toLowerCase()) || lead.phone.includes(search);
+        const matchesStatus = statusFilter === "ALL" || lead.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
-    useEffect(() => { apiRequest("/api/leads").then((response) => response.json()).then((data) => setLeads(data)).catch((error) => console.log(error)); }, []);
     useEffect(() => { const isAnyModalOpen = showViewModal || showDeleteModal; document.body.style.overflow = isAnyModalOpen ? "hidden" : "auto"; }, [showViewModal, showDeleteModal]);
     const openViewModal = (lead) => { setSelectedLead(lead); setShowViewModal(true); };
     const openDeleteModal = (id) => { setSelectedLead(id); setShowDeleteModal(true); };
     const confirmDelete = () => { deleteLead(selectedLeadId); setShowDeleteModal(false); setSelectedLead(null); };
+    useEffect(() => { fetchLeadStats(); }, []);
+    const fetchLeadStats = async () => {
+        try {
+            const response = await apiRequest("/api/leads");
+            await handleApiResponse(response);
+            const data = await response.json();
+            setLeads(data);
+        } catch (e) {
+            console.log(e);
+            toast.error("Failed to fetch leads. Please try again later.");
+        }
+    };
     const deleteLead = async (id) => {
         try {
             setDeletingLead(true);
-            await apiRequest(`/api/leads/${id}`, { method: "DELETE" });
+            const response = await apiRequest(`/api/leads/${id}`, { method: "DELETE" });
+            await handleApiResponse(response);
             setLeads(leads.filter((lead) => lead.id !== id));
             toast.success("Lead deleted successfully");
         } catch (error) {
             console.log(error);
-            toast.error("Failed to Delete Lead");
+            toast.error("Failed to delete leads. Please try again later.");
         } finally {
             setDeletingLead(false);
         }
@@ -59,11 +58,12 @@ export default function LeadManagement() {
         try {
             setUpdatingStatusId(id);
             const response = await apiRequest(`/api/leads/${id}/status?status=${status}`, { method: "PUT" });
+            await handleApiResponse(response);
             const updatedLead = await response.json();
             setLeads(leads.map((lead) => lead.id === id ? updatedLead : lead));
         } catch (error) {
             console.log(error);
-            toast.error("Failed to Update Lead Status");
+            toast.error("Failed to update leads. Please try again later.");
         } finally {
             setUpdatingStatusId(null);
         }
@@ -83,25 +83,11 @@ export default function LeadManagement() {
             </div>
             {/* SEARCH */}
             <div className="search-filter-container">
-                <input
-                    type="text"
-                    placeholder="Search leads..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="search-input"
-                />
-                <select
-                    value={statusFilter}
-                    onChange={(e) =>
-                        setStatusFilter(e.target.value)
-                    }
-                    className="filter-select"
-                >
+                <input type="text" placeholder="Search leads..." value={search} onChange={(e) => setSearch(e.target.value)} className="search-input" />
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
                     <option value="ALL">All Status</option>
                     {statusOptions.map((status) => (
-                        <option key={status} value={status}>
-                            {status}
-                        </option>
+                        <option key={status} value={status}>{status}</option>
                     ))}
                 </select>
             </div>
@@ -122,16 +108,11 @@ export default function LeadManagement() {
                     <tbody>
                         {filteredLeads.length === 0 ? (<tr>
                             <td colSpan="7">
-                                <EmptyState title="No Leads Found" description="There is no data to display in this table at the moment. New entries will appear here automatically."/>
+                                <EmptyState title="No Leads Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
                         </tr>
                         ) : (filteredLeads.map((lead, index) =>
-                            <tr key={lead.id} className={
-                                index % 2 === 0
-                                    ? "row-even"
-                                    : "row-odd"
-                            }
-                            >
+                            <tr key={lead.id} className={index % 2 === 0 ? "row-even" : "row-odd"}>
                                 <td>{lead.name}</td>
                                 <td>{lead.email}</td>
                                 <td>{lead.phone}</td>
