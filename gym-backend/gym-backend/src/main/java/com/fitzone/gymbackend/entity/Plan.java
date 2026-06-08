@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "plan")
-public class Plan {
+public class Plan extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,8 +14,8 @@ public class Plan {
 	private String price;
 	private String period;
 	private Boolean popular;
-	@Column(nullable=false)
-	private Boolean active=true;
+	@Column(nullable = false)
+	private Boolean active = true;
 
 	public Long getId() {
 		return Id;
@@ -64,7 +64,7 @@ public class Plan {
 	public void setPopular(Boolean popular) {
 		this.popular = popular;
 	}
-	
+
 	public Boolean getActive() {
 		return active;
 	}
@@ -73,7 +73,8 @@ public class Plan {
 		this.active = active;
 	}
 
-	public Plan(Long id, String name, String description, String price, String period, Boolean popular, Boolean active) {
+	public Plan(Long id, String name, String description, String price, String period, Boolean popular,
+			Boolean active) {
 		super();
 		Id = id;
 		this.name = name;
@@ -86,5 +87,5 @@ public class Plan {
 
 	public Plan() {
 	}
-	
+
 }

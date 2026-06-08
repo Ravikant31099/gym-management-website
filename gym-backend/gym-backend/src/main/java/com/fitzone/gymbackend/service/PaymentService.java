@@ -8,6 +8,7 @@ import com.fitzone.gymbackend.dto.PaymentResponse;
 import com.fitzone.gymbackend.entity.Customer;
 import com.fitzone.gymbackend.entity.Payment;
 import com.fitzone.gymbackend.entity.Plan;
+import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.repository.CustomerRepository;
 import com.fitzone.gymbackend.repository.PaymentRepository;
@@ -19,6 +20,9 @@ public class PaymentService {
 	private final PaymentRepository paymentRepository;
 	private final CustomerRepository customerRepository;
 	private final PlanRepository planRepository;
+
+	List<String> validStatuses = List.of("PAID", "PENDING", "FAILED");
+	List<String> validModes = List.of("CASH", "UPI", "CARD", "BANK_TRANSFER");
 
 	public PaymentService(PaymentRepository paymentRepository, CustomerRepository customerRepository,
 			PlanRepository planRepository) {
@@ -35,6 +39,18 @@ public class PaymentService {
 		Customer customer = customerRepository.findById(req.getCustomerId())
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		Plan plan = planRepository.findById(req.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		if (Boolean.TRUE.equals(customer.getArchived())) {
+			throw new BusinessException("Cannot create payment for archived customer");
+		}
+		if (!Boolean.TRUE.equals(plan.getActive())) {
+			throw new BusinessException("Cannot create payment for inactive plan");
+		}
+		if (validStatuses.contains(req.getStatus().toUpperCase())) {
+			throw new BusinessException("Invalid payment status");
+		}
+		if (!validModes.contains(req.getPaymentMode().toUpperCase())) {
+			throw new BusinessException("Invalid payment mode");
+		}
 		Payment payment = new Payment();
 		payment.setCustomer(customer);
 		payment.setPlan(plan);
@@ -51,6 +67,21 @@ public class PaymentService {
 		Customer customer = customerRepository.findById(req.getCustomerId())
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		Plan plan = planRepository.findById(req.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		if (Boolean.TRUE.equals(customer.getArchived())) {
+			throw new BusinessException("Cannot create payment for archived customer");
+		}
+		if (!Boolean.TRUE.equals(plan.getActive())) {
+			throw new BusinessException("Cannot create payment for inactive plan");
+		}
+		if ("INACTIVE".equalsIgnoreCase(customer.getStatus())) {
+			throw new BusinessException("Cannot create payment for inactive customer");
+		}
+		if (validStatuses.contains(req.getStatus().toUpperCase())) {
+			throw new BusinessException("Invalid payment status");
+		}
+		if (!validModes.contains(req.getPaymentMode().toUpperCase())) {
+			throw new BusinessException("Invalid payment mode");
+		}
 		payment.setCustomer(customer);
 		payment.setPlan(plan);
 		payment.setAmount(plan.getPrice());

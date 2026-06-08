@@ -3,6 +3,7 @@ package com.fitzone.gymbackend.service;
 import com.fitzone.gymbackend.dto.PlanRequest;
 import com.fitzone.gymbackend.dto.PlanResponse;
 import com.fitzone.gymbackend.entity.Plan;
+import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.repository.CustomerRepository;
@@ -30,6 +31,9 @@ public class PlanService {
 	}
 
 	public PlanResponse createPlan(PlanRequest p) {
+		if (planRepository.existsByNameIgnoreCase(p.getName())) {
+			throw new BusinessException("Plan name already exists");
+		}
 		Plan plan = new Plan();
 		plan.setName(p.getName());
 		plan.setDescription(p.getDescription());
@@ -41,6 +45,9 @@ public class PlanService {
 
 	public PlanResponse updateExistingPlan(Long id, PlanRequest p) {
 		Plan existing = planRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		if (planRepository.existsByNameIgnoreCaseAndIdNot(p.getName(), id)) {
+			throw new BusinessException("Plan name already exists");
+		}
 		existing.setName(p.getName());
 		existing.setDescription(p.getDescription());
 		existing.setPrice(p.getPrice());

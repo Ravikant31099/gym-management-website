@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "leads")
-public class Lead {
+public class Lead extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

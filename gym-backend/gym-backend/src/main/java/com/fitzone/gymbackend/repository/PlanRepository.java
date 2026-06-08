@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 	List<Plan> findByActiveTrue();
 	Optional<Plan> findByIdAndActiveTrue(Long id);
+	boolean existsByNameIgnoreCase(String name);
+	boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 }

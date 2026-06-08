@@ -40,6 +40,15 @@ public class CustomerService {
 		if (customerRepository.existsByEmail(c.getEmail())) {
 			throw new BusinessException("Customer email already exists");
 		}
+		if (c.getExpiryDate().isBefore(c.getJoinDate())) {
+			throw new BusinessException("Expiry date cannot be before join date");
+		}
+		if (c.getJoinDate().isAfter(LocalDate.now())) {
+			throw new BusinessException("Join date cannot be in the future");
+		}
+		if (!Boolean.TRUE.equals(plan.getActive())) {
+			throw new BusinessException("Selected plan is inactive");
+		}
 		Customer customer = new Customer();
 		customer.setName(c.getName());
 		customer.setEmail(c.getEmail());
@@ -60,6 +69,15 @@ public class CustomerService {
 		}
 		if (customerRepository.existsByEmailAndIdNot(c.getEmail(), id)) {
 			throw new BusinessException("Customer email already exists");
+		}
+		if (c.getExpiryDate().isBefore(c.getJoinDate())) {
+			throw new BusinessException("Expiry date cannot be before join date");
+		}
+		if (c.getJoinDate().isAfter(LocalDate.now())) {
+			throw new BusinessException("Join date cannot be in the future");
+		}
+		if (!Boolean.TRUE.equals(plan.getActive())) {
+			throw new BusinessException("Selected plan is inactive");
 		}
 		customer.setName(c.getName());
 		customer.setEmail(c.getEmail());
