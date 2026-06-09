@@ -1,7 +1,10 @@
 package com.fitzone.gymbackend.service;
 
 import java.time.LocalDate;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceInUseException;
@@ -28,8 +31,12 @@ public class CustomerService {
 		this.paymentRepository = paymentRepository;
 	}
 
-	public List<CustomerResponse> getAllCustomer() {
-		return customerRepository.findByArchivedFalse().stream().map(this::customerMapToResponse).toList();
+	public Page<CustomerResponse> getAllCustomer(int page, int size, String search) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		if (search == null || search.isBlank()) {
+			return customerRepository.findByArchivedFalse(pageable).map(this::customerMapToResponse);
+		}
+		return customerRepository.searchCustomers(search, pageable).map(this::customerMapToResponse);
 	}
 
 	public CustomerResponse saveCustomer(CustomerRequest c) {
@@ -93,7 +100,8 @@ public class CustomerService {
 		if (paymentRepository.existsByCustomerId(id)) {
 			throw new ResourceInUseException("Customer has payment records and cannot be deleted.");
 		}
-		Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Customer not found"));
+		Customer customer = customerRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		customer.setArchived(true);
 		customerRepository.save(customer);
 	}

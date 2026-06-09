@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "customer")
+@Table(name = "customer", indexes = { @Index(name = "idx_customer_phone", columnList = "phone"),
+		@Index(name = "idx_customer_email", columnList = "email"),
+		@Index(name = "idx_customer_status", columnList = "status"),
+		@Index(name = "idx_customer_archived", columnList = "archived") })
 public class Customer extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

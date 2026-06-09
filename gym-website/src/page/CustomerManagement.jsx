@@ -32,16 +32,23 @@ export default function CustomerManagement() {
     const [showRenewModal, setShowRenewModal] = useState(false);
     const [renewingCustomerId, setRenewingCustomerId] = useState(null);
     const [renewPlanId, setRenewPlanId] = useState("");
+    const [page, setPage] = useState(0);
+    const [size] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalRecords, setTotalRecords] = useState(0);
     const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
 
-    useEffect(() => { fetchCustomers(); fetchPlansForCustomer(); }, []);
+    useEffect(() => { fetchCustomers(); }, [page]);
+    useEffect(() => { fetchPlansForCustomer(); }, []);
     const fetchCustomers = async () => {
         try {
             setLoading(true);
-            const response = await apiRequest("/api/customers");
+            const response = await apiRequest(`/api/customers?page=${page}&size=${size}`);
             await handleApiResponse(response);
             const data = await response.json();
-            setCustomers(data);
+            setCustomers(data.content);
+            setTotalPages(data.totalPages);
+            setTotalRecords(data.totalElements);
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -110,6 +117,7 @@ export default function CustomerManagement() {
             toast.success("Customer Added Successfully");
             setShowAddModal(false);
             resetCustomerForm();
+            fetchCustomers();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -134,6 +142,7 @@ export default function CustomerManagement() {
             setCustomers(customers.map(customer => customer.id === selectedCustomer.id ? updatedCustomer : customer));
             toast.success("Customer Updated Successfully");
             setShowEditModal(false);
+            fetchCustomers();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -154,6 +163,7 @@ export default function CustomerManagement() {
             toast.success("Customer Deleted Successfully");
             setShowDeleteModal(false);
             setSelectedCustomerId(null);
+            fetchCustomers();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -240,6 +250,7 @@ export default function CustomerManagement() {
                     {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.name}>{plan.name}</option>))}
                 </select>
             </div>
+            <div className="table-summary"> Total Customers: {totalRecords}</div>
             {/* TABLE */}
             <div className="table-wrapper">
                 <table className="customer-table">
@@ -281,6 +292,14 @@ export default function CustomerManagement() {
                         ))}
                     </tbody>
                 </table>
+            </div>
+            {/* Pagination Content*/}
+            <div className="pagination-wrapper">
+                <div className="pagination-container">
+                    <button disabled={page === 0} onClick={() => setPage(prev => prev - 1)}>Previous</button>
+                    <span> Page {page + 1} of {totalPages}</span>
+                    <button disabled={page + 1 >= totalPages} onClick={() => setPage(prev => prev + 1)}>Next</button>
+                </div>
             </div>
             {/* Add Customer Modal */}
             {showAddModal && (<FormModal title="Add Customer" onClose={() => { resetCustomerForm(); setShowAddModal(false) }} loading={saving} onSubmit={handleAddCustomer} buttonText="Save Customer">

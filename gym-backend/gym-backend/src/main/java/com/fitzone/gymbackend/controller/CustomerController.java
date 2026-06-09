@@ -1,6 +1,6 @@
 package com.fitzone.gymbackend.controller;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +21,11 @@ public class CustomerController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
-		return ResponseEntity.ok(customerService.getAllCustomer());
+	public ResponseEntity<Page<CustomerResponse>> getAllCustomers(
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(name = "size", defaultValue = "10") int size,
+			@RequestParam(name = "search", required = false) String search) {
+		return ResponseEntity.ok(customerService.getAllCustomer(page, size, search));
 	}
 
 	@PostMapping
