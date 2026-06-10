@@ -26,12 +26,25 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 	boolean existsByEmailAndIdNot(String email, Long id);
 
 	@Query("""
-					Select c From Customer c Where c.archived = false AND LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))
-					OR c.phone LIKE CONCAT('%', :search, '%')
-					OR LOWER(c.email) LIKE LOWER(CONCAT('%', :search, '%')))
+			    SELECT c
+			    FROM Customer c
+			    WHERE c.archived = false
+			    AND (
+			        :search IS NULL
+			        OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))
+			        OR c.phone LIKE CONCAT('%', :search, '%')
+			        OR LOWER(c.email) LIKE LOWER(CONCAT('%', :search, '%'))
+			    )
+			    AND (
+			        :status IS NULL
+			        OR c.status = :status
+			    )
+			    AND (
+			        :planId IS NULL
+			        OR c.plan.id = :planId
+			    )
 			""")
-	Page<Customer> searchCustomers(@Param("search") String search, Pageable pageable);
-	
-	
+	Page<Customer> searchCustomers(@Param("search") String search, @Param("status") String status,
+			@Param("planId") Long planId, Pageable pageable);
 
 }

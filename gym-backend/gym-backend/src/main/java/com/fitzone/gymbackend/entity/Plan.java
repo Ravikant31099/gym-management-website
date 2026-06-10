@@ -3,7 +3,7 @@ package com.fitzone.gymbackend.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "plan")
+@Table(name = "plan", indexes = { @Index(name = "idx_plan_active", columnList = "active") })
 public class Plan extends BaseEntity {
 
 	@Id

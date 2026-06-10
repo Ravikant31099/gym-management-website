@@ -14,8 +14,10 @@ public class Customer extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
-	private String email;
+	@Column(nullable = false, unique = true)
 	private String phone;
+	@Column(nullable = false, unique = true)
+	private String email;
 	private LocalDate joinDate;
 	private LocalDate expiryDate;
 	private String status;

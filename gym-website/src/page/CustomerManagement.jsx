@@ -38,12 +38,28 @@ export default function CustomerManagement() {
     const [totalRecords, setTotalRecords] = useState(0);
     const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
 
-    useEffect(() => { fetchCustomers(); }, [page]);
+    useEffect(() => { fetchCustomers(); }, [page, searchTerm, statusFilter, planFilter]);
     useEffect(() => { fetchPlansForCustomer(); }, []);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchCustomers();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm, page]);
     const fetchCustomers = async () => {
         try {
             setLoading(true);
-            const response = await apiRequest(`/api/customers?page=${page}&size=${size}`);
+            const params = new URLSearchParams({ page, size });
+            if (searchTerm.trim()) {
+                params.append("search", searchTerm);
+            }
+            if (statusFilter !== "ALL") {
+                params.append("status", statusFilter);
+            }
+            if (planFilter !== "ALL") {
+                params.append("planId", planFilter);
+            }
+            const response = await apiRequest(`/api/customers?${params}`);
             await handleApiResponse(response);
             const data = await response.json();
             setCustomers(data.content);
@@ -175,15 +191,10 @@ export default function CustomerManagement() {
         setViewCustomer(customer);
         setShowViewModal(true);
     };
-    const filteredCustomers = customers.filter(customer => {
-        const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.phone.includes(searchTerm);
-        const customerStatus = getMembershipStatus(customer).category;
-        const matchesStatus = statusFilter === "ALL" || customerStatus === statusFilter;
-        const matchesPlan = planFilter === "ALL" || customer.planName === planFilter;
-        return (matchesSearch && matchesStatus && matchesPlan);
-    });
+    const handleSearchChange = (value) => {
+        setSearchTerm(value);
+        setPage(0);
+    };
     const resetCustomerForm = () => {
         setCustomerForm({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
     };
@@ -237,7 +248,7 @@ export default function CustomerManagement() {
             </div>
             {/* SEARCH */}
             <div className="search-filter-container">
-                <input type="text" placeholder="Search customer..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
+                <input type="text" placeholder="Search by Name, Phone or Email" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
                     <option value="ALL"> All Status </option>
                     <option value={CUSTOMER_STATUS.ACTIVE}> Active </option>
@@ -247,7 +258,7 @@ export default function CustomerManagement() {
                 </select>
                 <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
                     <option value="ALL"> All Plans</option>
-                    {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.name}>{plan.name}</option>))}
+                    {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
             </div>
             <div className="table-summary"> Total Customers: {totalRecords}</div>
@@ -267,12 +278,12 @@ export default function CustomerManagement() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredCustomers.length === 0 ? (<tr>
+                        {customers.length === 0 ? (<tr>
                             <td colSpan="8">
                                 <EmptyState title="No Customer Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
                         </tr>
-                        ) : filteredCustomers.map((customer) => (
+                        ) : customers.map((customer) => (
                             <tr key={customer.id} className="clickable-row" onClick={() => handleViewCustomer(customer)}>
                                 <td>{customer.name}</td>
                                 <td>{customer.email}</td>

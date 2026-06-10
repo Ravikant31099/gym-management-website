@@ -31,12 +31,10 @@ public class CustomerService {
 		this.paymentRepository = paymentRepository;
 	}
 
-	public Page<CustomerResponse> getAllCustomer(int page, int size, String search) {
+	public Page<CustomerResponse> getAllCustomer(int page, int size, String search, String status, Long planId) {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		if (search == null || search.isBlank()) {
-			return customerRepository.findByArchivedFalse(pageable).map(this::customerMapToResponse);
-		}
-		return customerRepository.searchCustomers(search, pageable).map(this::customerMapToResponse);
+		Page<Customer> customers = customerRepository.searchCustomers(search, status, planId, pageable);
+		return customers.map(this::customerMapToResponse);
 	}
 
 	public CustomerResponse saveCustomer(CustomerRequest c) {

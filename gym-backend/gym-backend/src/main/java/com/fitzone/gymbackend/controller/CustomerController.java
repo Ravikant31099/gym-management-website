@@ -24,8 +24,10 @@ public class CustomerController {
 	public ResponseEntity<Page<CustomerResponse>> getAllCustomers(
 			@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "10") int size,
-			@RequestParam(name = "search", required = false) String search) {
-		return ResponseEntity.ok(customerService.getAllCustomer(page, size, search));
+			@RequestParam(name = "search", required = false) String search,
+			@RequestParam(name = "status", required = false) String status,
+			@RequestParam(name = "planId", required = false) Long planId) {
+		return ResponseEntity.ok(customerService.getAllCustomer(page, size, search, status, planId));
 	}
 
 	@PostMapping
