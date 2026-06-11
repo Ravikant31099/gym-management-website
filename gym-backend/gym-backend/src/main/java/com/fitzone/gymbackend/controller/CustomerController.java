@@ -4,8 +4,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
+import com.fitzone.gymbackend.dto.CustomerStatsResponse;
 import com.fitzone.gymbackend.dto.RenewalRequest;
 import com.fitzone.gymbackend.service.CustomerService;
 import jakarta.validation.Valid;
@@ -51,5 +54,15 @@ public class CustomerController {
 	public ResponseEntity<CustomerResponse> renewMembership(@PathVariable("id") Long id,
 			@RequestBody RenewalRequest r) {
 		return ResponseEntity.ok(customerService.renewMemberShip(id, r.getPlanId()));
+	}
+
+	@GetMapping("/stats")
+	public ResponseEntity<CustomerStatsResponse> getCustomerStats() {
+		return ResponseEntity.ok(customerService.getCustomerStats());
+	}
+
+	@GetMapping("/analytics")
+	public ResponseEntity<CustomerAnalyticsResponse> getAnalytics() {
+		return ResponseEntity.ok(customerService.getCustomerAnalytics());
 	}
 }

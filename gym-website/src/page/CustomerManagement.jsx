@@ -45,7 +45,10 @@ export default function CustomerManagement() {
             fetchCustomers();
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchTerm, page]);
+    }, [searchTerm, page, statusFilter, planFilter]);
+    useEffect(() => {
+        setPage(0);
+    }, [searchTerm, statusFilter, planFilter]);
     const fetchCustomers = async () => {
         try {
             setLoading(true);
@@ -268,10 +271,8 @@ export default function CustomerManagement() {
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Email</th>
                             <th>Phone</th>
                             <th>Plan</th>
-                            <th>Join Date</th>
                             <th>Expiry Date</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -286,10 +287,8 @@ export default function CustomerManagement() {
                         ) : customers.map((customer) => (
                             <tr key={customer.id} className="clickable-row" onClick={() => handleViewCustomer(customer)}>
                                 <td>{customer.name}</td>
-                                <td>{customer.email}</td>
                                 <td>{customer.phone}</td>
                                 <td><span className={`plan-badge ${customer.planName.toLowerCase()}`}>{customer.planName}</span></td>
-                                <td>{formatDate(customer.joinDate)}</td>
                                 <td>{formatDate(customer.expiryDate)}</td>
                                 <td><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
                                 <td>

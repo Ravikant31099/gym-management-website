@@ -1,6 +1,13 @@
 package com.fitzone.gymbackend.service;
 
 import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +18,13 @@ import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.entity.Plan;
 import com.fitzone.gymbackend.repository.PlanRepository;
+import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
+import com.fitzone.gymbackend.dto.CustomerGrowthResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
+import com.fitzone.gymbackend.dto.CustomerStatsResponse;
+import com.fitzone.gymbackend.dto.PlanDistributionResponse;
+import com.fitzone.gymbackend.dto.RecentCustomerResponse;
 import com.fitzone.gymbackend.entity.Customer;
 import com.fitzone.gymbackend.repository.CustomerRepository;
 import com.fitzone.gymbackend.repository.PaymentRepository;
@@ -102,6 +114,39 @@ public class CustomerService {
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		customer.setArchived(true);
 		customerRepository.save(customer);
+	}
+
+	public CustomerStatsResponse getCustomerStats() {
+		Long totalCustomers = customerRepository.countByArchivedFalse();
+		Long activeCustomers = customerRepository.countByStatusAndArchivedFalse("ACTIVE");
+		Long expiredCustomers = customerRepository.countByStatusAndArchivedFalse("EXPIRED");
+		Long inactiveCustomers = customerRepository.countByStatusAndArchivedFalse("INACTIVE");
+		Long expiringCustomers = customerRepository.countExpiringCustomers(LocalDate.now(),
+				LocalDate.now().plusDays(7));
+		return new CustomerStatsResponse(totalCustomers, activeCustomers, expiredCustomers, expiringCustomers,
+				inactiveCustomers);
+	}
+
+	public CustomerAnalyticsResponse getCustomerAnalytics() {
+		CustomerStatsResponse stats = getCustomerStats();
+		List<PlanDistributionResponse> planDistribution = customerRepository.getPlanDistribution();
+		String mostPopularPlan = customerRepository.findMostPopularPlan().stream().findFirst().orElse("-");
+		List<RecentCustomerResponse> recentCustomers = customerRepository.getRecentCustomers(PageRequest.of(0, 5))
+				.getContent();
+		List<CustomerGrowthResponse> customerGrowth = buildCustomerGrowth();
+		return new CustomerAnalyticsResponse(stats, mostPopularPlan, planDistribution, customerGrowth, recentCustomers);
+	}
+
+	private List<CustomerGrowthResponse> buildCustomerGrowth() {
+		List<Customer> customers = customerRepository.findByArchivedFalse();
+		Map<Object, Long> growthMap = customers.stream()
+				.collect(Collectors.groupingBy(
+						customer -> customer.getJoinDate().getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
+						Collectors.counting()));
+		List<String> monthOrder = List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+				"Dec");
+		return growthMap.entrySet().stream().sorted(Comparator.comparingInt(e -> monthOrder.indexOf(e.getKey())))
+				.map(e -> new CustomerGrowthResponse((String) e.getKey(), e.getValue())).toList();
 	}
 
 	public CustomerResponse renewMemberShip(Long customerId, Long planId) {

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { apiRequest, handleApiResponse } from "../util/api";
-import {AdminSidebar,DashboardCard} from "../components/common/index";
+import { AdminSidebar, DashboardCard } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -30,30 +30,16 @@ export default function Admin() {
     };
     const fetchCustomerStats = async () => {
         try {
-            const response = await apiRequest("/api/customers");
+            const response = await apiRequest("/api/customers/stats");
             await handleApiResponse(response);
-            const customers = await response.json();
-            const today = new Date();
-            let active = 0;
-            let expiring = 0;
-            let expired = 0;
-            let inactive = 0;
-            customers.forEach(customer => {
-                if (customer.status === "INACTIVE") {
-                    inactive++;
-                    return;
-                }
-                const expiry = new Date(customer.expiryDate);
-                const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-                if (diffDays < 0) {
-                    expired++;
-                } else if (diffDays <= 7) {
-                    expiring++;
-                } else {
-                    active++;
-                }
+            const stats = await response.json();
+            setCustomerStats({
+                total: stats.totalCustomers,
+                active: stats.activeCustomers,
+                inactive: stats.inactiveCustomers,
+                expiring: stats.expiringCustomers,
+                expired: stats.expiredCustomers
             });
-            setCustomerStats({ total: customers.length, inactive, active, expiring, expired });
         } catch (error) {
             console.log(error);
             toast.error(error.message);
