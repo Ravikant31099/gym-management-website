@@ -120,4 +120,6 @@ Phase D (Commercial Version)
 1. Multi-Gym Support
 2. Subscription Billing
 3. SaaS Deployment
+
+Currently we are making Customer Management Production ready.
 */
