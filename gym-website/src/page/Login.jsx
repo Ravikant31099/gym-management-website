@@ -6,6 +6,7 @@ import { apiRequest, handleApiResponse } from "../util/api";
 import { setToken } from "../util/AuthUtils";
 import adminImage from "../assets/admin-bg.jpg";
 import "react-toastify/dist/ReactToastify.css";
+import gymLogo from "../assets/gym-logo.png";
 
 export default function Login() {
     const [username, setUsername] = useState("");
@@ -31,10 +32,14 @@ export default function Login() {
     };
     return (
         <main>
-            <section className="hero-section" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${adminImage})` }}>
+            <section className="login-hero-section" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${adminImage})` }}>
                 <div className="login-container">
                     <div className="brand-logo">
-                        <p className="logo">💪</p>
+                        <p className="logo">
+                            <div className="nav-logo-container">
+                                <img src={gymLogo} alt="Gym Logo" className="nav-gym-logo" />
+                            </div>
+                        </p>
                         <div className="logo-text">
                             <span className="fit">FIT</span><span className="zone">ZONE</span>
                         </div>

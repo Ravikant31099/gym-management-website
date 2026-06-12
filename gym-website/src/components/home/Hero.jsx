@@ -1,5 +1,6 @@
 import gymimage from "../../assets/gym.jpg";
 import '../../style/Home.css';
+import gymLogo from "../../assets/gym-logo.png";
 
 export default function Hero() {
   return (
@@ -7,7 +8,9 @@ export default function Hero() {
       <div className="hero-content">
         <span className="hero-eyebrow">FitZone Gym · Mumbai</span>
         <h1 className="hero-title"> Transform<br /> Your <span className="hero-accent">Body</span></h1>
-        <h1 className="hero-logo">💪</h1>
+        <div className="hero-logo-container">
+          <img src={gymLogo} alt="Gym Logo" className="my-gym-logo" />
+        </div>
         <p className="hero-subtitle">
           Build strength, confidence, and discipline — one rep at a time.
         </p>
