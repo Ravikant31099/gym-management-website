@@ -7,7 +7,7 @@ export default function Footer() {
                 Transform Your Body. Transform Your Life.
             </p>
             <p className="footer-copyright">
-                © 2026 Gym Website. All rights reserved.
+                © 2026 FitZone Gym. All rights reserved.
             </p>
         </footer>
     );

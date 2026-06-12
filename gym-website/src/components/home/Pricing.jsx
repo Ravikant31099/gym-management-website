@@ -3,13 +3,23 @@ import "react-toastify/dist/ReactToastify.css";
 import { formatCurrency } from '../../util/CommonUtil';
 import { apiRequest, handleApiResponse } from "../../util/api";
 import { toast, ToastContainer } from "react-toastify";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Pricing() {
-    useEffect(() => { fetchPlans(); }, []);
     const [plans, setPlans] = useState([]);
     const [showAllPlans, setShowAllPlans] = useState(false);
-    const visiblePlans = showAllPlans ? plans : plans.slice(0, 3);
+    const sectionRef = useRef(null);
+    useEffect(() => { fetchPlans(); }, []);
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+            { threshold: 0.1 }
+        );
+        const els = sectionRef.current?.querySelectorAll('.reveal');
+        els?.forEach((el) => observer.observe(el));
+        return () => observer.disconnect();
+    }, [plans, showAllPlans]);
+
     const fetchPlans = async () => {
         try {
             const response = await apiRequest("/api/plans", "GET");
@@ -17,20 +27,20 @@ export default function Pricing() {
             const data = await response.json();
             setPlans(data);
         } catch (error) {
-            console.log(error);
             toast.error(error.message);
         }
     };
+
+    const visiblePlans = showAllPlans ? plans : plans.slice(0, 3);
+
     return (
-        <section id="pricing" className="pricing-section">
+        <section id="pricing" className="pricing-section" ref={sectionRef}>
             <div className="container">
-                <h2 className="pricing-title">Membership Plans</h2>
+                <span className="section-eyebrow reveal">Flexible Options</span>
+                <h2 className="pricing-title reveal reveal-delay-1">Membership Plans</h2>
                 <div className="pricing-grid">
                     {visiblePlans.map((plan, index) => (
-                        <div
-                            className={`pricing-card ${plan.popular ? 'popular-card' : ''}`}
-                            key={index}
-                        >
+                        <div className={`pricing-card ${plan.popular ? 'popular-card' : ''} reveal reveal-delay-${index + 1}`} key={index}>
                             {plan.popular && <span className="popular-badge">Most Popular</span>}
                             <h3 className="plan-name">{plan.name}</h3>
                             <div className="price-container">
@@ -43,12 +53,13 @@ export default function Pricing() {
                 </div>
             </div>
             {plans.length > 3 && (
-                <div className="view-more-wrapper">
-                    <button className="view-more-btn" onClick={() => setShowAllPlans(!showAllPlans)}> {showAllPlans ? "Show Less" : "View More"}</button>
+                <div className="view-more-wrapper reveal">
+                    <button className="view-more-btn" onClick={() => setShowAllPlans(!showAllPlans)}>
+                        {showAllPlans ? "Show Less" : "View More Plans"}
+                    </button>
                 </div>
             )}
             <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </section>
-        
     );
 }

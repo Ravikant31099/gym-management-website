@@ -67,16 +67,16 @@ export default function Contact() {
                     </div>
                 )}
                 <div className="contact-container">
-                    {/* LEFT SIDE */}
+                    {/* LEFT SIDE — Moves below on mobile via CSS order: 2 */}
                     <div className="contact-info">
                         <h3>Get In Touch</h3>
-                        <a href="tel:+919890743706" target="_blank" className="contact-link"><p>📞 +91 98765 43210</p></a>
+                        <a href="tel:+919890743706" target="_blank" rel="noreferrer" className="contact-link"><p>📞 +91 98765 43210</p></a>
                         <a href="mailto:fitzonegym@gmail.com" target="_blank" rel="noreferrer" className="contact-link"><p>✉️ fitzone@gmail.com</p></a>
                         <div className="location-row">
-                            <a href="https://maps.google.com/?q=YOUR_GYM_LOCATION" target="_blank" rel="noreferrer" className="map-btn"> <FaMapMarkerAlt /> Mumbai, India</a>
+                            <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="map-btn"> <FaMapMarkerAlt /> Mumbai, India</a>
                         </div>
-                        <span className="contact-subtext"> Start your fitness journey today with FitZone Gym.
-                        </span>
+                        <span className="contact-subtext"> Start your fitness journey today with FitZone Gym.</span>
+
                         <div className="social-media-container">
                             <h3> Connect With Us</h3>
                             <div className="social-icons">
@@ -87,16 +87,16 @@ export default function Contact() {
                             </div>
                         </div>
                     </div>
-                    {/* RIGHT SIDE */}
+                    {/* RIGHT SIDE — Jumps to the top on mobile via CSS order: 1 */}
                     <div className="contact-form-wrapper">
                         <form onSubmit={handleSubmit} className="contact-form">
                             <div className="form-grid">
-                                <input type="text" placeholder="Your Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                                <input type="email" placeholder="Your Email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                                <input type="text" placeholder="Your Name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                                <input type="email" placeholder="Your Email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                                 <input type="text" placeholder="Phone Number" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
                                 <input type="text" placeholder="Subject" value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} />
                             </div>
-                            <textarea rows="5" placeholder="Your Message" value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} />
+                            <textarea rows="5" placeholder="Your Message" required value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} />
                             <button type="submit">Send Message</button>
                         </form>
                     </div>
