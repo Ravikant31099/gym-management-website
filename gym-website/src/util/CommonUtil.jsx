@@ -12,6 +12,23 @@ export const formatDate = (dateString) => {
     }
     return new Date(dateString).toLocaleDateString(APP_CONFIG.LOCALE);
 };
+export const formatDateTime = (dateString) => {
+    if (!dateString) {
+        return "-";
+    }
+    const date = new Date(dateString);
+    const options = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    };
+    const formatter = new Intl.DateTimeFormat(navigator.language, options);
+    const formattedDateTime = formatter.format(date);
+    return formattedDateTime;
+}
 export const getMembershipStatus = (customer) => {
     if (customer.status === "INACTIVE") {
         return { text: "Inactive", category: "INACTIVE", className: "inactive-status" };

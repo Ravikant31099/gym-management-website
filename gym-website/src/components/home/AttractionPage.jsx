@@ -2,6 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../../style/AttractionPage.css";
 import gymVideo from "../../assets/gym-Video.mp4";
+import gymImage1 from "../../assets/gym-gallery1.jpg";
+import gymImage2 from "../../assets/gym-gallery2.jpg";
+import gymImage3 from "../../assets/gym-gallery3.jpg";
+import gymImage4 from "../../assets/gym-gallery4.jpg";
 import { Dumbbell, ChartNoAxesCombined, Apple, UserRoundCog, Target, TrendingUp, ShieldCheck, Trophy } from "lucide-react";
 import { motion, useScroll } from "framer-motion";
 
@@ -95,15 +99,16 @@ export default function AttractionPage() {
         <a href="#problems">03</a>
         <a href="#features">04</a>
         <a href="#trust">05</a>
-        <a href="#journey">06</a>
-        <a href="#stories">07</a>
-        <a href="#contact">08</a>
+        <a href="#gallery">06</a>
+        <a href="#journey">07</a>
+        <a href="#stories">08</a>
+        <a href="#contact">09</a>
       </div>
       <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} />
       <section id="hero" className="hero">
         <video autoPlay muted loop playsInline className="hero-video">
-    <source src={gymVideo} type="video/mp4" />
-  </video>
+          <source src={gymVideo} type="video/mp4" />
+        </video>
         <div className="hero-overlay" />
         <motion.div className="hero-content" initial={{ opacity: 0, y: 70 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
           <span className="hero-badge"> FITNESS • DISCIPLINE • RESULTS</span>
@@ -184,9 +189,32 @@ export default function AttractionPage() {
           </div>
         </div>
       </section>
+      <section id="gallery" className="gallery-section">
+        <div className="container">
+          <h2 className="section-title"> Explore Our Facility</h2>
+          <p className="gallery-subtitle">
+            Designed to help you train smarter, push harder and achieve more.
+          </p>
+          <div className="gallery-grid">
+            <motion.div className="gallery-item large" whileHover={{ scale: 1.03 }}>
+              <img src={gymImage1} alt="Gym Floor" loading="lazy"/>
+            </motion.div>
+            <motion.div className="gallery-item" whileHover={{ scale: 1.03 }}>
+              <img src={gymImage2} alt="Strength Zone" loading="lazy"/>
+            </motion.div>
+            <motion.div className="gallery-item" whileHover={{ scale: 1.03 }}>
+              <img src={gymImage3} alt="Heavy Machinary" loading="lazy"/>
+            </motion.div>
+            <motion.div className="gallery-item" whileHover={{ scale: 1.03 }}>
+              <img src={gymImage4} alt="Calesthics" loading="lazy"/>
+            </motion.div>
+          </div>
+
+        </div>
+      </section>
       <section id="journey" className="roadmap-section">
         <div className="container">
-          <h2 className="section-title"> Your Transformation Journey</h2>
+          <h2 className="section-title"> Way To Transform </h2>
           <div className="journey-roadmap">
             {[
               "Join",

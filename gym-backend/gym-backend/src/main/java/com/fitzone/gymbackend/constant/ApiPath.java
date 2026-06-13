@@ -11,5 +11,7 @@ public class ApiPath {
 	public static final String GETPLANS = "/api/plans";
 	public static final String POSTLEADS = "/api/leads";
 	public static final String CUSTOMERS = "/api/customers/**";
+	public static final String CUSTOMERIMAGE = "/customer-images/*";
 	public static final String PAYMENTS = "/api/payments/**";
+	
 }

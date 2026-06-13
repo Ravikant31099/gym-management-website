@@ -35,11 +35,11 @@ export default function Login() {
             <section className="login-hero-section" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${adminImage})` }}>
                 <div className="login-container">
                     <div className="brand-logo">
-                        <p className="logo">
+                        <div className="logo">
                             <div className="nav-logo-container">
                                 <img src={gymLogo} alt="Gym Logo" className="nav-gym-logo" />
                             </div>
-                        </p>
+                        </div>
                         <div className="logo-text">
                             <span className="fit">FIT</span><span className="zone">ZONE</span>
                         </div>

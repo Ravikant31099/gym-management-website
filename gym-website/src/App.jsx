@@ -8,12 +8,14 @@ import PaymentAnalytics from "./page/PaymentAnalytics";
 import LeadAnalytics from "./page/LeadAnalytics";
 import Login from "./page/Login";
 import Home from "./page/Home";
+import CustomerDetails from "./page/CustomerDetails";
 import AttractionPage from "./components/home/AttractionPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import { useState, useEffect } from "react";
 import { clearToken } from "./util/AuthUtils";
+
 function ScrollToContactHandler() {
   const location = useLocation();
   useEffect(() => {
@@ -86,6 +88,12 @@ export default function App() {
         <Route path="/admin/payments/analytics" element={
           <ProtectedRoute>
             <PaymentAnalytics />
+          </ProtectedRoute>
+        }
+        />
+        <Route path="/admin/customers/:id" element={
+          <ProtectedRoute>
+            <CustomerDetails />
           </ProtectedRoute>
         }
         />

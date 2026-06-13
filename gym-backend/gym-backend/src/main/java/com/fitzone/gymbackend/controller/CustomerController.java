@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
+import com.fitzone.gymbackend.dto.CustomerDetailsResponse;
 import com.fitzone.gymbackend.dto.CustomerImageUploadResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
@@ -39,6 +40,11 @@ public class CustomerController {
 			@RequestParam(name = "planId", required = false) Long planId) {
 		return ResponseEntity.ok(
 				customerService.getAllCustomer(page, size, sortBy, sortDir, search, status, membershipStatus, planId));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<CustomerDetailsResponse> getCustomerDetails(@PathVariable("id") Long id) {
+		return ResponseEntity.ok(customerService.getCustomerDetails(id));
 	}
 
 	@PostMapping
@@ -77,7 +83,6 @@ public class CustomerController {
 	@PostMapping("/{id}/upload-image")
 	public ResponseEntity<CustomerImageUploadResponse> uploadCustomerImage(@PathVariable("id") Long id,
 			@RequestParam("file") MultipartFile file) throws IOException {
-		System.out.println("UPLOAD API HIT");
 		return ResponseEntity.ok(customerService.uploadCustomerImage(id, file));
 	}
 }

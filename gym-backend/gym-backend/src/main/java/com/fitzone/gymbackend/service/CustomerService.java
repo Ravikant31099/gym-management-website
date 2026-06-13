@@ -8,6 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +30,7 @@ import com.fitzone.gymbackend.entity.Plan;
 import com.fitzone.gymbackend.repository.PlanRepository;
 import com.fitzone.gymbackend.constant.CustomerConstants;
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
+import com.fitzone.gymbackend.dto.CustomerDetailsResponse;
 import com.fitzone.gymbackend.dto.CustomerGrowthResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
@@ -84,6 +86,27 @@ public class CustomerService {
 			customers = customerRepository.searchCustomers(search, status, planId, pageable);
 		}
 		return customers.map(this::customerMapToResponse);
+	}
+
+	public CustomerDetailsResponse getCustomerDetails(Long id) {
+		Customer customer = customerRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
+		CustomerDetailsResponse response = new CustomerDetailsResponse();
+		response.setId(customer.getId());
+		response.setName(customer.getName());
+		response.setPhone(customer.getPhone());
+		response.setEmail(customer.getEmail());
+		response.setStatus(customer.getStatus());
+		response.setJoinDate(customer.getJoinDate());
+		response.setExpiryDate(customer.getExpiryDate());
+		response.setPlanName(customer.getPlan() != null ? customer.getPlan().getName() : null);
+		response.setProfileImageUrl(customer.getProfileImageUrl());
+		response.setImageUpdatedAt(customer.getImageUpdatedAt());
+		response.setImageUpdatedBy(customer.getImageUpdatedBy());
+		if (customer.getExpiryDate() != null) {
+			response.setDaysRemaining(ChronoUnit.DAYS.between(LocalDate.now(), customer.getExpiryDate()));
+		}
+		return response;
 	}
 
 	public CustomerResponse saveCustomer(CustomerRequest c) {
@@ -196,7 +219,7 @@ public class CustomerService {
 	}
 
 	private CustomerResponse customerMapToResponse(Customer c) {
-		return new CustomerResponse(c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getProfileImageUrl(),
+		return new CustomerResponse(c.getId(), c.getProfileImageUrl(), c.getName(), c.getEmail(), c.getPhone(),
 				c.getJoinDate(), c.getExpiryDate(), c.getStatus(), c.getPlan().getId(), c.getPlan().getName(),
 				c.getPlan().getPrice());
 	}
@@ -242,10 +265,7 @@ public class CustomerService {
 		if (contentType == null || !contentType.startsWith("image/")) {
 			throw new BusinessException("Only image files are allowed");
 		}
-		Path uploadPath = Paths.get(
-		        storageProperties.getRootPath(),
-		        StorageFolders.CUSTOMER_IMAGES
-		);
+		Path uploadPath = Paths.get(storageProperties.getRootPath(), StorageFolders.CUSTOMER_IMAGES);
 		if (!Files.exists(uploadPath)) {
 			Files.createDirectories(uploadPath);
 		}

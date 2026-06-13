@@ -8,6 +8,7 @@ import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index
 import { Pencil, Trash2, RefreshCw } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
+import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import AdminLayout from "../components/layout/AdminLayout";
 
@@ -39,7 +40,8 @@ export default function CustomerManagement() {
     const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
     const [sortBy, setSortBy] = useState("name");
     const [sortDir, setSortDir] = useState("asc");
-
+    const navigate = useNavigate();
+    
     useEffect(() => { fetchCustomers(); }, [page, searchTerm, statusFilter, planFilter]);
     useEffect(() => { fetchPlansForCustomer(); }, []);
     useEffect(() => {
@@ -81,6 +83,7 @@ export default function CustomerManagement() {
     };
     const fetchPlansForCustomer = async () => {
         try {
+            setLoading(true);
             const response = await apiRequest("/api/plans", "GET");
             await handleApiResponse(response);
             const data = await response.json();
@@ -88,6 +91,8 @@ export default function CustomerManagement() {
         } catch (error) {
             console.log(error);
             toast.error(error.message);
+        } finally {
+            setLoading(false);
         }
     };
     const handleChange = (e) => {
@@ -196,8 +201,7 @@ export default function CustomerManagement() {
         }
     };
     const handleViewCustomer = (customer) => {
-        setViewCustomer(customer);
-        setShowViewModal(true);
+        navigate(`/admin/customers/${customer.id}`);
     };
     const handleSearchChange = (value) => {
         setSearchTerm(value);

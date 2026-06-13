@@ -514,3 +514,41 @@
 .attraction-page .hero-video {
   filter: brightness(0.45);
 }
+
+.attraction-page .gallery-section {
+  background: var(--bg-secondary);
+}
+
+.attraction-page .gallery-subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: -40px auto 60px;
+}
+
+.attraction-page .gallery-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 280px 280px;
+  gap: 20px;
+}
+
+.attraction-page .gallery-item {
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.attraction-page .gallery-item.large {
+  grid-row: span 2;
+}
+
+.attraction-page .gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.attraction-page .gallery-item:hover img {
+  transform: scale(1.08);
+}
