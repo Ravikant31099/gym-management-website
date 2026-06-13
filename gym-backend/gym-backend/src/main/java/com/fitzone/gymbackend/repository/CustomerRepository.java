@@ -17,9 +17,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 	boolean existsByPlanId(Long planId);
 
 	Page<Customer> findByArchivedFalse(Pageable pageable);
-	
+
 	List<Customer> findByArchivedFalse();
-	
+
 	Optional<Customer> findByIdAndArchivedFalse(Long id);
 
 	Long countByArchivedFalse();
@@ -100,4 +100,43 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 			    ORDER BY c.joinDate DESC
 			""")
 	Page<RecentCustomerResponse> getRecentCustomers(Pageable pageable);
+
+	@Query("""
+			    SELECT c
+			    FROM Customer c
+			    WHERE c.archived = false
+			    AND c.status = 'ACTIVE'
+			    AND c.expiryDate BETWEEN :today AND :expiryLimit
+			    AND (
+			        :search IS NULL
+			        OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))
+			        OR c.phone LIKE CONCAT('%', :search, '%')
+			        OR LOWER(c.email) LIKE LOWER(CONCAT('%', :search, '%'))
+			    )
+			    AND (
+			        :planId IS NULL
+			        OR c.plan.id = :planId
+			    )
+			""")
+	Page<Customer> findExpiringCustomers(@Param("search") String search, @Param("planId") Long planId,
+			@Param("today") LocalDate today, @Param("expiryLimit") LocalDate expiryLimit, Pageable pageable);
+
+	@Query("""
+			    SELECT c
+			    FROM Customer c
+			    WHERE c.archived = false
+			    AND c.expiryDate < :today
+			    AND (
+			        :search IS NULL
+			        OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))
+			        OR c.phone LIKE CONCAT('%', :search, '%')
+			        OR LOWER(c.email) LIKE LOWER(CONCAT('%', :search, '%'))
+			    )
+			    AND (
+			        :planId IS NULL
+			        OR c.plan.id = :planId
+			    )
+			""")
+	Page<Customer> findExpiredCustomers(@Param("search") String search, @Param("planId") Long planId,
+			@Param("today") LocalDate today, Pageable pageable);
 }

@@ -200,6 +200,8 @@ export default function PaymentManagement() {
             {/* Search and Filters */}
             <div className="search-filter-container">
                 <input type="text" placeholder="Search Customer..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            </div>
+            <div className="search-filter-container">
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
                     <option value="ALL">All Status</option>
                     <option value={PAYMENT_STATUS.PAID}>Paid</option>

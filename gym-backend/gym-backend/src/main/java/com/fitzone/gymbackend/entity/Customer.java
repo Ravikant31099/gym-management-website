@@ -3,6 +3,7 @@ package com.fitzone.gymbackend.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customer", indexes = { @Index(name = "idx_customer_phone", columnList = "phone"),
@@ -26,6 +27,19 @@ public class Customer extends BaseEntity {
 	private Plan plan;
 	@Column(nullable = false)
 	private Boolean archived = false;
+	@Column(name = "profile_image_url")
+	private String profileImageUrl;
+	private LocalDateTime imageUpdatedAt;
+
+	public String getImageUpdatedBy() {
+		return imageUpdatedBy;
+	}
+
+	public void setImageUpdatedBy(String imageUpdatedBy) {
+		this.imageUpdatedBy = imageUpdatedBy;
+	}
+
+	private String imageUpdatedBy;
 
 	public Long getId() {
 		return id;
@@ -99,13 +113,30 @@ public class Customer extends BaseEntity {
 		this.archived = archived;
 	}
 
+	public String getProfileImageUrl() {
+		return profileImageUrl;
+	}
+
+	public void setProfileImageUrl(String profileImageUrl) {
+		this.profileImageUrl = profileImageUrl;
+	}
+	
+	public LocalDateTime getImageUpdatedAt() {
+		return imageUpdatedAt;
+	}
+
+	public void setImageUpdatedAt(LocalDateTime imageUpdatedAt) {
+		this.imageUpdatedAt = imageUpdatedAt;
+	}
+
 	public Customer() {
 	}
 
-	public Customer(Long id, String name, String email, String phone, LocalDate joinDate, LocalDate expiryDate,
-			String status, Plan plan, boolean archived) {
+	public Customer(Long id, String profileImageUrl, String name, String email, String phone, LocalDate joinDate,
+			LocalDate expiryDate, String status, Plan plan, boolean archived) {
 		super();
 		this.id = id;
+		this.profileImageUrl = profileImageUrl;
 		this.name = name;
 		this.email = email;
 		this.phone = phone;

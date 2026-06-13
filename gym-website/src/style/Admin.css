@@ -441,7 +441,8 @@
 }
 
 .filter-select {
-    width: 220px;
+    max-width: 300px;
+    width: 290px;
     flex-shrink: 0;
     height: 54px;
     padding: 0 44px 0 22px;

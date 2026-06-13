@@ -28,21 +28,6 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollTo
                         </div>
                     </div>
                     <div className="sidebar-group">
-                        <div className={`sidebar-item ${location.pathname.startsWith("/admin/leads") ? "parent-active" : ""}`} onClick={() => toggleSubmenu('leads')}>
-                            <div className="sidebar-item-left">
-                                <UserCheck size={18} />
-                                <span>Leads</span>
-                            </div>
-                            {openSubmenus.leads ? <ChevronUp size={16} className="chevron" /> : <ChevronDown size={16} className="chevron" />}
-                        </div>
-                        {openSubmenus.leads && (
-                            <div className="sidebar-submenu">
-                                <div className={`submenu-item ${location.pathname === "/admin/leads" ? "active" : ""}`} onClick={() => navigate("/admin/leads")}>Overview</div>
-                                <div className={`submenu-item ${location.pathname === "/admin/leads/analytics" ? "active" : ""}`} onClick={() => navigate("/admin/leads/analytics")}>Lead Analytics</div>
-                            </div>
-                        )}
-                    </div>
-                    <div className="sidebar-group">
                         <div className={`sidebar-item ${location.pathname.startsWith("/admin/customers") ? "parent-active" : ""}`} onClick={() => toggleSubmenu('customers')}>
                             <div className="sidebar-item-left">
                                 <Users size={18} />
@@ -57,7 +42,6 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollTo
                             </div>
                         )}
                     </div>
-
                     <div className="sidebar-group">
                         <div className={`sidebar-item ${location.pathname.startsWith("/admin/payments") ? "parent-active" : ""}`} onClick={() => toggleSubmenu('payments')}>
                             <div className="sidebar-item-left">
@@ -70,6 +54,21 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollTo
                             <div className="sidebar-submenu">
                                 <div className={`submenu-item ${location.pathname === "/admin/payments" ? "active" : ""}`} onClick={() => navigate("/admin/payments")}>Overview</div>
                                 <div className={`submenu-item ${location.pathname === "/admin/payments/analytics" ? "active" : ""}`} onClick={() => navigate("/admin/payments/analytics")}>Payment Analytics</div>
+                            </div>
+                        )}
+                    </div>
+                    <div className="sidebar-group">
+                        <div className={`sidebar-item ${location.pathname.startsWith("/admin/leads") ? "parent-active" : ""}`} onClick={() => toggleSubmenu('leads')}>
+                            <div className="sidebar-item-left">
+                                <UserCheck size={18} />
+                                <span>Leads</span>
+                            </div>
+                            {openSubmenus.leads ? <ChevronUp size={16} className="chevron" /> : <ChevronDown size={16} className="chevron" />}
+                        </div>
+                        {openSubmenus.leads && (
+                            <div className="sidebar-submenu">
+                                <div className={`submenu-item ${location.pathname === "/admin/leads" ? "active" : ""}`} onClick={() => navigate("/admin/leads")}>Overview</div>
+                                <div className={`submenu-item ${location.pathname === "/admin/leads/analytics" ? "active" : ""}`} onClick={() => navigate("/admin/leads/analytics")}>Lead Analytics</div>
                             </div>
                         )}
                     </div>

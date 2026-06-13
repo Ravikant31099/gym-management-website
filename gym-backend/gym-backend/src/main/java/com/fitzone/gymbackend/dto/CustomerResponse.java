@@ -13,11 +13,13 @@ public class CustomerResponse {
 	private Long planId;
 	private String planName;
 	private String planPrice;
+	private String profileImageUrl;
 
-	public CustomerResponse(Long id, String name, String email, String phone, LocalDate joinDate, LocalDate expiryDate,
-			String status, Long planId, String planName, String planPrice) {
+	public CustomerResponse(Long id, String profileImageUrl, String name, String email, String phone,
+			LocalDate joinDate, LocalDate expiryDate, String status, Long planId, String planName, String planPrice) {
 		super();
 		this.id = id;
+		this.profileImageUrl = profileImageUrl;
 		this.name = name;
 		this.email = email;
 		this.phone = phone;
@@ -107,6 +109,14 @@ public class CustomerResponse {
 
 	public void setPlanPrice(String planPrice) {
 		this.planPrice = planPrice;
+	}
+
+	public String getProfileImageUrl() {
+		return profileImageUrl;
+	}
+
+	public void setProfileImageUrl(String profileImageUrl) {
+		this.profileImageUrl = profileImageUrl;
 	}
 
 }

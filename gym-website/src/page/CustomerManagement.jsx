@@ -33,10 +33,12 @@ export default function CustomerManagement() {
     const [renewingCustomerId, setRenewingCustomerId] = useState(null);
     const [renewPlanId, setRenewPlanId] = useState("");
     const [page, setPage] = useState(0);
-    const [size] = useState(1);
+    const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
     const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
+    const [sortBy, setSortBy] = useState("name");
+    const [sortDir, setSortDir] = useState("asc");
 
     useEffect(() => { fetchCustomers(); }, [page, searchTerm, statusFilter, planFilter]);
     useEffect(() => { fetchPlansForCustomer(); }, []);
@@ -45,7 +47,7 @@ export default function CustomerManagement() {
             fetchCustomers();
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchTerm, page, statusFilter, planFilter]);
+    }, [searchTerm, page, sortBy, sortDir, statusFilter, planFilter]);
     useEffect(() => {
         setPage(0);
     }, [searchTerm, statusFilter, planFilter]);
@@ -62,6 +64,8 @@ export default function CustomerManagement() {
             if (planFilter !== "ALL") {
                 params.append("planId", planFilter);
             }
+            params.append("sortBy", sortBy);
+            params.append("sortDir", sortDir);
             const response = await apiRequest(`/api/customers?${params}`);
             await handleApiResponse(response);
             const data = await response.json();
@@ -126,6 +130,7 @@ export default function CustomerManagement() {
         e.preventDefault();
         setSaving(true);
         if (!validateForm()) {
+            setSaving(false);
             return;
         }
         try {
@@ -252,6 +257,8 @@ export default function CustomerManagement() {
             {/* SEARCH */}
             <div className="search-filter-container">
                 <input type="text" placeholder="Search by Name, Phone or Email" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
+            </div>
+            <div className="search-filter-container">
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
                     <option value="ALL"> All Status </option>
                     <option value={CUSTOMER_STATUS.ACTIVE}> Active </option>
@@ -263,9 +270,17 @@ export default function CustomerManagement() {
                     <option value="ALL"> All Plans</option>
                     {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
+                <select className="filter-select" value={`${sortBy}-${sortDir}`} onChange={(e) => { const [field, direction] = e.target.value.split("-"); setSortBy(field); setSortDir(direction); }}>
+                    <option value="name-asc">🔤 Name (A to Z)</option>
+                    <option value="name-desc">🔤 Name (Z to A)</option>
+                    <option value="plan-asc">📊 Plan (Low to High)</option>
+                    <option value="plan-desc">📊 Plan (High to Low)</option>
+                    <option value="expiryDate-asc">⏳ Expiring Soonest</option>
+                    <option value="expiryDate-desc">📅 Expiring Latest</option>
+                </select>
             </div>
-            <div className="table-summary"> Total Customers: {totalRecords}</div>
             {/* TABLE */}
+            <div className="table-summary"> Total Customers: {totalRecords}</div>
             <div className="table-wrapper">
                 <table className="customer-table">
                     <thead>
