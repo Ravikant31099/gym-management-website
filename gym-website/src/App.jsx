@@ -8,22 +8,38 @@ import PaymentAnalytics from "./page/PaymentAnalytics";
 import LeadAnalytics from "./page/LeadAnalytics";
 import Login from "./page/Login";
 import Home from "./page/Home";
+import AttractionPage from "./components/home/AttractionPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import { useState, useEffect } from "react";
-import {clearToken } from "./util/AuthUtils";
-
+import { clearToken } from "./util/AuthUtils";
+function ScrollToContactHandler() {
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.scrollToContact) {
+      setTimeout(() => {
+        const element = document.getElementById('contact');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 400);
+    }
+  }, [location]);
+}
 export default function App() {
   const [sessionExpired, setSessionExpired] = useState(false);
-  useEffect(() => { const handleSessionExpired = () => { setSessionExpired(true);};
+  useEffect(() => {
+    const handleSessionExpired = () => { setSessionExpired(true); };
     window.addEventListener("session-expired", handleSessionExpired);
     return () => { window.removeEventListener("session-expired", handleSessionExpired); };
   }, []);
   return (
     <main>
+      <ScrollToContactHandler />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/start-journey" element={<AttractionPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={
           <ProtectedRoute>
@@ -79,7 +95,7 @@ export default function App() {
           <div className="session-modal">
             <h2>Session Expired</h2>
             <p> Your session has expired. Please login again. </p>
-            <button onClick={() => { clearToken(); setSessionExpired(false); window.location.href = "/login";}}>Login Again</button>
+            <button onClick={() => { clearToken(); setSessionExpired(false); window.location.href = "/login"; }}>Login Again</button>
           </div>
         </div>
       )}

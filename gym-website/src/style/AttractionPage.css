@@ -1,0 +1,516 @@
+.attraction-page {
+  --bg: #050505;
+  --bg-secondary: #0d0d0d;
+  --card: #111111;
+  --border: #232323;
+  --text: #ffffff;
+  --text-secondary: #a1a1aa;
+  --accent: #ff5e14;
+  --accent-light: #ff7d3b;
+
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+.attraction-page section {
+  padding: 120px 24px;
+}
+
+.attraction-page .container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.attraction-page .section-title {
+  text-align: center;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  margin-bottom: 80px;
+  line-height: 1.1;
+}
+
+.attraction-page .primary-btn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 18px 40px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.attraction-page .primary-btn:hover {
+  background: var(--accent-light);
+  transform: translateY(-3px);
+}
+
+.attraction-page .scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--accent);
+  transform-origin: left;
+  z-index: 9999;
+}
+
+.attraction-page .hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+}
+
+.attraction-page .hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center,
+      rgba(255, 94, 20, 0.18),
+      transparent 65%);
+}
+
+.attraction-page .hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1000px;
+}
+
+.attraction-page .hero-badge {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  margin-bottom: 30px;
+}
+
+.attraction-page .hero-content h1 {
+  font-size: clamp(3.5rem, 9vw, 7rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -3px;
+  background-image: linear-gradient(45deg, #a8afda, #413947);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  width: fit-content;
+}
+
+.attraction-page .hero-content p {
+  margin-top: 24px;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  line-height: 1.8;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.attraction-page .stats-section {
+  background: var(--bg-secondary);
+}
+
+.attraction-page .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.attraction-page .stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 30px;
+  text-align: center;
+}
+
+.attraction-page .stat-card h3 {
+  font-size: 3rem;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.attraction-page .stat-card p {
+  color: var(--text-secondary);
+}
+
+.attraction-page .problem-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.attraction-page .problem-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.attraction-page .problem-card:hover {
+  border-color: rgba(255, 94, 20, 0.4);
+  box-shadow: 0 0 30px rgba(255, 94, 20, 0.12);
+}
+
+.attraction-page .problem-icon {
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+
+.attraction-page .problem-card h3 {
+  font-size: 1.3rem;
+}
+
+.attraction-page .features-section {
+  background: var(--bg-secondary);
+}
+
+.attraction-page .features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.attraction-page .feature-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 32px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.attraction-page .feature-card:hover {
+  border-color: rgba(255, 94, 20, 0.4);
+  box-shadow: 0 0 30px rgba(255, 94, 20, 0.12);
+}
+
+.attraction-page .feature-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(255, 94, 20, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+
+.attraction-page .feature-card h3 {
+  margin-bottom: 14px;
+  font-size: 1.4rem;
+}
+
+.attraction-page .feature-card p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.attraction-page .roadmap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.attraction-page .roadmap-step {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px 28px;
+  font-weight: 600;
+}
+
+.attraction-page .roadmap-line {
+  width: 50px;
+  height: 2px;
+  background: var(--accent);
+}
+
+.attraction-page .experience-section {
+  text-align: center;
+}
+
+.attraction-page .experience-section p {
+  max-width: 850px;
+  margin: auto;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  line-height: 1.8;
+}
+
+.attraction-page .timeline-section {
+  background: var(--bg-secondary);
+}
+
+.attraction-page .timeline {
+  max-width: 900px;
+  margin: auto;
+}
+
+.attraction-page .timeline-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.attraction-page .timeline-card:hover {
+  border-color: rgba(255, 94, 20, 0.4);
+}
+
+.attraction-page .timeline-phase {
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.attraction-page .timeline-card p {
+  color: var(--text-secondary);
+}
+
+.attraction-page .testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.attraction-page .testimonial-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 50px 45px;
+}
+
+.attraction-page .testimonial-card:hover {
+  border-color: rgba(255, 94, 20, 0.4);
+  box-shadow: 0 0 30px rgba(255, 94, 20, 0.12);
+}
+
+.attraction-page .testimonial-card p {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+.attraction-page .testimonial-card h4 {
+  color: #fff;
+}
+
+.attraction-page .cta-section {
+  text-align: center;
+}
+
+.attraction-page .cta-content {
+  max-width: 900px;
+  margin: auto;
+}
+
+.attraction-page .cta-content h2 {
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.attraction-page .cta-content p {
+  margin: 24px 0 40px;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+}
+
+.attraction-page .floating-cta {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  z-index: 999;
+  border: none;
+  background: var(--accent);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(255, 94, 20, 0.3);
+}
+
+.attraction-page .floating-cta:hover {
+  transform: translateY(-3px);
+}
+
+@media (max-width: 992px) {
+
+  .attraction-page .problem-grid,
+  .attraction-page .features-grid,
+  .attraction-page .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .attraction-page .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .attraction-page section {
+    padding: 90px 20px;
+  }
+
+  .attraction-page .problem-grid,
+  .attraction-page .features-grid,
+  .attraction-page .stats-grid,
+  .attraction-page .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .attraction-page .hero-content h1 {
+    letter-spacing: -1px;
+  }
+
+  .attraction-page .roadmap {
+    flex-direction: column;
+  }
+
+  .attraction-page .roadmap-line {
+    width: 2px;
+    height: 30px;
+  }
+}
+
+.attraction-page .journey-roadmap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.attraction-page .journey-step {
+  text-align: center;
+}
+
+.attraction-page .journey-number {
+  width: 70px;
+  height: 70px;
+  margin: auto auto 20px;
+  border-radius: 50%;
+  background: rgba(255, 94, 20, 0.12);
+  border: 1px solid rgba(255, 94, 20, 0.3);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.attraction-page .journey-step h3 {
+  font-size: 1.1rem;
+}
+
+.attraction-page .trust-section {
+  background: var(--bg);
+}
+
+.attraction-page .trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.attraction-page .trust-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.attraction-page .trust-card span {
+  color: var(--accent);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.attraction-page .trust-card:hover {
+  border-color: rgba(255, 94, 20, 0.4);
+}
+
+.attraction-page .section-nav {
+  position: fixed;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 999;
+}
+
+.attraction-page .section-nav a {
+  display: block;
+  color: #666;
+  text-decoration: none;
+  margin: 16px 0;
+  font-weight: 700;
+  transition: 0.3s;
+}
+
+.attraction-page .section-nav a:hover {
+  color: var(--accent);
+}
+
+.feature-card,
+.problem-card,
+.trust-card,
+.timeline-card,
+.testimonial-card,
+.journey-step {
+  will-change: transform;
+}
+
+.attraction-page .hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.attraction-page .hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.75));
+  z-index: 1;
+}
+
+.attraction-page .hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.attraction-page .hero-video {
+  filter: brightness(0.45);
+}

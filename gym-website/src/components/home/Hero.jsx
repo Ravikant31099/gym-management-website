@@ -1,8 +1,11 @@
 import gymimage from "../../assets/gym.jpg";
 import '../../style/Home.css';
 import gymLogo from "../../assets/gym-logo.png";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Hero() {
+  const navigate = useNavigate();
   return (
     <section className="hero-section" style={{ '--hero-bg': `url(${gymimage})` }}>
       <div className="hero-content">
@@ -14,7 +17,7 @@ export default function Hero() {
         <p className="hero-subtitle">
           Build strength, confidence, and discipline — one rep at a time.
         </p>
-        <button className="hero-cta-btn" type="button">
+        <button className="hero-cta-btn" type="button" onClick={() => navigate('/start-journey')}>
           Start Your Journey
         </button>
       </div>
