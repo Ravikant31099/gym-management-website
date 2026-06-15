@@ -95,9 +95,6 @@ export default function CustomerManagement() {
             setLoading(false);
         }
     };
-    const handleChange = (e) => {
-        setCustomerForm({ ...customerForm, [e.target.name]: e.target.value });
-    };
     const validateForm = () => {
         if (!customerForm.name.trim()) {
             toast.error("Name is required");
@@ -154,30 +151,8 @@ export default function CustomerManagement() {
             setSaving(false);
         }
     };
-    const handleEditClick = (customer) => {
-        setSelectedCustomer(customer);
-        setCustomerForm({ name: customer.name, email: customer.email, phone: customer.phone, joinDate: customer.joinDate, expiryDate: customer.expiryDate, status: customer.status, planId: customer.planId });
-        setShowEditModal(true);
-    };
-    const handleUpdateCustomer = async () => {
-        setUpdating(true);
-        if (!validateForm()) {
-            return;
-        }
-        try {
-            const response = await apiRequest(`/api/customers/${selectedCustomer.id}`, { method: "PUT", body: JSON.stringify(customerForm) });
-            await handleApiResponse(response);
-            const updatedCustomer = await response.json();
-            setCustomers(customers.map(customer => customer.id === selectedCustomer.id ? updatedCustomer : customer));
-            toast.success("Customer Updated Successfully");
-            setShowEditModal(false);
-            fetchCustomers();
-        } catch (error) {
-            console.log(error);
-            toast.error(error.message);
-        } finally {
-            setUpdating(false);
-        }
+    const handleChange = (e) => {
+        setCustomerForm({ ...customerForm, [e.target.name]: e.target.value });
     };
     const handleDeleteClick = (id) => {
         setSelectedCustomerId(id);
@@ -312,7 +287,6 @@ export default function CustomerManagement() {
                                 <td><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
                                 <td>
                                     <div className="icon-btn">
-                                        <button className="edit-icn" onClick={(e) => { e.stopPropagation(); handleEditClick(customer) }}> <Pencil size={24} /> </button>
                                         <button className="delete-icn" onClick={(e) => { e.stopPropagation(); handleDeleteClick(customer.id) }}> <Trash2 size={24} /> </button>
                                         <button className="renew-icn" onClick={(e) => { e.stopPropagation(); openRenewModal(customer) }}> <RefreshCw size={24} /> </button>
                                     </div>
@@ -347,38 +321,9 @@ export default function CustomerManagement() {
                 </select>
             </FormModal>
             )}
-            {/* Edit Customer Model */}
-            {showEditModal && (<FormModal title="Edit Customer" onClose={() => setShowEditModal(false)} onSubmit={handleUpdateCustomer} loading={updating} buttonText="Update Customer">
-                <input type="text" name="name" placeholder="Name" className="search-input" value={customerForm.name} onChange={handleChange} />
-                <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
-                <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
-                <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" />
-                <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" />
-                <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange}>
-                    <option value="">Select Plan</option>
-                    {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
-                </select>
-                <select name="status" value={customerForm.status} className="filter-select-modal" onChange={handleChange}>
-                    <option value={CUSTOMER_STATUS.ACTIVE}> ACTIVE</option>
-                    <option value={CUSTOMER_STATUS.INACTIVE}>INACTIVE</option>
-                </select>
-            </FormModal>
-            )}
+            
             {/*Delete Customer Model */}
             {showDeleteModal && (<ConfirmModal title="Delete Customer" description="Are you sure you want to delete this customer?" onClose={() => setShowDeleteModal(false)} onConfirm={deleteCustomer} loading={deleting} />)}
-            {/* View Customer Model */}
-            {showViewModal && viewCustomer && (
-                <ViewModal title="Customer Details" onClose={() => setShowViewModal(false)}>
-                    <DetailItem label="Name" value={viewCustomer.name} />
-                    <DetailItem label="Email" value={viewCustomer.email} />
-                    <DetailItem label="Phone" value={viewCustomer.phone} />
-                    <DetailItem label="Plan" value={viewCustomer.planName} />
-                    <DetailItem label="Plan Price" value={formatCurrency(viewCustomer.planPrice)} />
-                    <DetailItem label="Join Date" value={formatDate(viewCustomer.joinDate)} />
-                    <DetailItem label="Expiry Date" value={formatDate(viewCustomer.expiryDate)} />
-                    <DetailItem label="Status" value={getMembershipStatus(viewCustomer).text} />
-                </ViewModal>
-            )}
             {/* Renewal Modal */}
             {showRenewModal && (<FormModal title="Renew Membership" onClose={() => setShowRenewModal(false)} onSubmit={renewMembership} loading={updating} buttonText="Renew">
                 <div className="form-group">
