@@ -1,9 +1,8 @@
 import '../../style/Home.css';
-import "react-toastify/dist/ReactToastify.css";
 import { formatCurrency } from '../../util/CommonUtil';
 import { apiRequest, handleApiResponse } from "../../util/api";
-import { toast, ToastContainer } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function Pricing() {
     const [plans, setPlans] = useState([]);
@@ -59,7 +58,6 @@ export default function Pricing() {
                     </button>
                 </div>
             )}
-            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </section>
     );
 }

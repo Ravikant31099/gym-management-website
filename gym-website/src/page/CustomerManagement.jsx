@@ -6,11 +6,11 @@ import { formatDate, formatCurrency, getMembershipStatus } from "../util/CommonU
 import { APP_CONFIG, CUSTOMER_STATUS } from "../constants/AppConstants";
 import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
 import { Pencil, Trash2, RefreshCw } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
 import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import AdminLayout from "../components/layout/AdminLayout";
+import { toast } from "react-toastify";
 
 export default function CustomerManagement() {
     const [customers, setCustomers] = useState([]);
@@ -335,7 +335,6 @@ export default function CustomerManagement() {
                 </div>
             </FormModal>
             )}
-            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </AdminLayout>
     );
 }

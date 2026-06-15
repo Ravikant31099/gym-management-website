@@ -2332,8 +2332,8 @@
     align-items: center;
 }
 
-.status-badge,
-.plan-badge {
+.status-badge-det,
+.plan-badge-det {
     padding: 0.45rem 1.25rem;
     border-radius: 99px;
     font-size: 0.75rem;
@@ -2343,27 +2343,27 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.plan-badge {
+.plan-badge-det {
     background: rgba(255, 255, 255, 0.06);
     color: #f1f5f9;
     border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.status-badge.active,
-.status-badge.active-status {
+.status-badge-det.active,
+.status-badge-det.active-status {
     background-color: rgba(22, 163, 74, 0.15);
     color: #4ade80;
     border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
-.status-badge.inactive,
-.status-badge.expired {
+.status-badge-det.inactive,
+.status-badge-det.expired {
     background-color: rgba(220, 38, 38, 0.15);
     color: #f87171;
     border: 1px solid rgba(248, 113, 113, 0.3);
 }
 
-.status-badge.pending {
+.status-badge-det.pending {
     background-color: rgba(202, 138, 4, 0.15);
     color: #facc15;
     border: 1px solid rgba(250, 204, 21, 0.3);
@@ -2560,4 +2560,131 @@
         width: 100%;
         text-align: center;
     }
+}
+
+.file-input {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 
+              0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 24px;
+  max-width: 440px;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.file-input h2, 
+.file-input .modal-title {
+  color: #1a1f36;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.file-input input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  border: 2px dashed #e3e8ee;
+  border-radius: 12px;
+  background: #f8f9fa;
+  color: #4f566b;
+  font-size: 0.95rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.file-input input[type="file"]:hover {
+  background: #f1f3f5;
+  border-color: #635bff;
+}
+
+.file-input input[type="file"]:focus {
+  outline: none;
+  border-color: #635bff;
+  box-shadow: 0 0 0 4px rgba(99, 91, 255, 0.12);
+}
+
+.file-input input[type="file"]::file-selector-button {
+  border: none;
+  background: #635bff;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin-right: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  box-shadow: 0 2px 4px rgba(99, 91, 255, 0.2);
+}
+
+.file-input input[type="file"]::file-selector-button:hover {
+  background: #0a2540; 
+}
+
+.image-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  width: auto;
+  height: auto;
+  margin: 20px auto 0 auto;
+  border-radius: 50%;
+  border: 2px solid #cdffff;
+  object-fit: cover;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05),
+              0 0 0 1px rgba(0, 0, 0, 0.04);
+  animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.file-input button,
+.file-input .submit-btn {
+  background: #635bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-input button:hover {
+  background: #4a43df;
+}
+
+.file-input button:disabled {
+  background: #a3acb9;
+  cursor: not-allowed;
+}
+
+.customer-profile-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 42px;
+    font-weight: 700;
+    background: radial-gradient(circle, #D8BFD8 0%, transparent 60%);
+    color: white;
 }

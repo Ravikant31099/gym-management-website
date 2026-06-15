@@ -1,7 +1,5 @@
 import "../style/Admin.css";
-import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatCurrency } from "../util/CommonUtil";
 import { APP_CONFIG, PLAN_PERIOD, PLAN_TYPE } from "../constants/AppConstants";
@@ -9,6 +7,7 @@ import ConfirmModal from "../components/modals/ConfirmModal";
 import FormModal from "../components/modals/FormModal";
 import AdminLayout from "../components/Layout/AdminLayout";
 import { AdminSidebar, EmptyState } from "../components/common/index";
+import { toast } from "react-toastify";
 
 export default function PlanManagement() {
     const [plans, setPlans] = useState([]);
@@ -242,7 +241,6 @@ export default function PlanManagement() {
                     </label>
                 </FormModal>
             )}
-            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </AdminLayout>
     );
 }

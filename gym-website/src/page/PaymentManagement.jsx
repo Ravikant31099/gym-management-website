@@ -5,9 +5,9 @@ import { getAmountValue, formatCurrency } from "../util/CommonUtil";
 import { APP_CONFIG, PAYMENT_STATUS, PAYMENT_MODE } from "../constants/AppConstants";
 import { AdminSidebar, DashboardCard, DetailItem, EmptyState } from "../components/common/index";
 import { formatDate } from "../util/CommonUtil";
-import { toast, ToastContainer } from "react-toastify";
 import { ConfirmModal, FormModal, PaymentViewModal } from "../components/modals/index";
 import AdminLayout from "../components/layout/AdminLayout";
+import { toast } from "react-toastify";
 
 export default function PaymentManagement() {
     const [payments, setPayments] = useState([]);
@@ -162,7 +162,7 @@ export default function PaymentManagement() {
             setFilteredCustomers([]);
             return;
         }
-        const filtered = customers.filter(customer => customer.name.toLowerCase().includes(value.toLowerCase()) || customer.phone?.includes(value));
+        const filtered = customers?.content.filter(customer => customer.name.toLowerCase().includes(value.toLowerCase()) || customer.phone?.includes(value));
         setFilteredCustomers(filtered);
     };
     const resetPaymentForm = () => {
@@ -353,7 +353,6 @@ export default function PaymentManagement() {
             )}
             {/* Delete Payment Modal */}
             {showDeleteModal && (<ConfirmModal title="Delete Payment" description="Are you sure you want to delete this Payment?" onClose={() => setShowDeleteModal(false)} onConfirm={deletePayment} loading={deleting} />)}
-            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </AdminLayout>
     );
 };

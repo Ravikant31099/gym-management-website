@@ -1,12 +1,11 @@
 import "../style/Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { setToken } from "../util/AuthUtils";
 import adminImage from "../assets/admin-bg.jpg";
-import "react-toastify/dist/ReactToastify.css";
 import gymLogo from "../assets/gym-logo.png";
+import { toast } from "react-toastify";
 
 export default function Login() {
     const [username, setUsername] = useState("");
@@ -59,7 +58,6 @@ export default function Login() {
                     </form>
                 </div>
             </section>
-            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </main>
     );
 }

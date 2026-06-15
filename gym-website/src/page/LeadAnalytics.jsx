@@ -1,10 +1,10 @@
 import "../style/Admin.css";
 import { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { AdminSidebar } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
+import { toast } from "react-toastify";
 
 export default function LeadAnalytics() {
     const [leads, setLeads] = useState([]);
@@ -88,7 +88,6 @@ export default function LeadAnalytics() {
                     </ResponsiveContainer>
                 </div>
             </div>
-            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </AdminLayout>
     );
 }

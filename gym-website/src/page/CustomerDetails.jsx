@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
 import { APP_CONFIG, CUSTOMER_STATUS } from "../constants/AppConstants";
 import AdminLayout from "../components/layout/AdminLayout";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate, formatDateTime } from "../util/CommonUtil";
 import { ViewModal, FormModal } from "../components/modals/index";
 import DatePicker from "react-datepicker";
-
+import { toast } from "react-toastify";
 export default function CustomerDetails() {
     const { id } = useParams();
     const [customer, setCustomer] = useState(null);
@@ -17,6 +16,11 @@ export default function CustomerDetails() {
     const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [plans, setPlans] = useState([]);
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const BASE_URL = import.meta.env.VITE_API_LOCALURL;
+
     useEffect(() => { fetchCustomerDetails(); }, [id]);
     useEffect(() => { fetchPlansForCustomer(); }, []);
     const fetchCustomerDetails = async () => {
@@ -63,10 +67,8 @@ export default function CustomerDetails() {
             await handleApiResponse(response);
             await response.json();
             toast.success("Customer Updated Successfully");
-            setTimeout(() => {
-                setShowEditModal(false);
-                fetchCustomerDetails();
-            }, 1000);
+            setShowEditModal(false);
+            fetchCustomerDetails();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -110,6 +112,34 @@ export default function CustomerDetails() {
     const handleChange = (e) => {
         setCustomerForm({ ...customerForm, [e.target.name]: e.target.value });
     };
+    const uploadCustomerImage = async () => {
+        if (!selectedImage) {
+            toast.error("Please select an image");
+            return;
+        }
+        try {
+            setUploadingImage(true);
+            const formData = new FormData();
+            formData.append("file", selectedImage);
+            const token = sessionStorage.getItem("token");
+            const response = await fetch(`${BASE_URL}/api/customers/${customer.id}/upload-image`,
+                { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
+            await handleApiResponse(response);
+            toast.success("Profile image uploaded successfully");
+            setSelectedImage(null);
+            setShowImageModal(false);
+            fetchCustomerDetails();
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message);
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+    const closeImageModal = () => {
+        setSelectedImage(null);
+        setShowImageModal(false);
+    };
     if (loading) {
         return (
             <AdminLayout>
@@ -139,13 +169,13 @@ export default function CustomerDetails() {
             </div>
             <div className="customer-details-container">
                 <div className="customer-profile-card">
-                    <img src={customer.profileImageUrl ? `http://localhost:8080${customer.profileImageUrl}` : "/default-avatar.png"} alt={customer.name} className="customer-profile-image" />
+                    {customer.profileImageUrl ? (<img src={`http://localhost:8080${customer.profileImageUrl}`} alt={customer.name} className="customer-profile-image" />) : (<div className="customer-profile-placeholder">     {customer.name?.charAt(0).toUpperCase()} </div>)}
                     <div className="profile-info">
                         <h1>{customer.name}</h1>
                         <p className="customer-id">Customer ID : #{customer.id}</p>
                         <div className="profile-badges">
-                            <span className={`status-badge ${customer.status.toLowerCase()}`}>{customer.status}</span>
-                            <span className="plan-badge">{customer.planName}
+                            <span className={`status-badge-det ${customer.status.toLowerCase()}`}>{customer.status}</span>
+                            <span className="plan-badge-det">{customer.planName}
                             </span>
                         </div>
                     </div>
@@ -214,7 +244,7 @@ export default function CustomerDetails() {
                     </div>
                 </div>
                 <div className="details-actions">
-                    <button className="primary-btn"> Upload Image</button>
+                    <button className="primary-btn" onClick={() => setShowImageModal(true)}> Upload Image</button>
                     <button className="secondary-btn" onClick={() => openEditCustomer(customer)}>Edit Customer</button>
                 </div>
             </div>
@@ -235,7 +265,11 @@ export default function CustomerDetails() {
                 </select>
             </FormModal>
             )}
-            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+            {showImageModal && (<FormModal title="Upload Customer Image" className="file-input" onClose={closeImageModal} onSubmit={uploadCustomerImage} loading={uploadingImage} buttonText="Upload">
+                <input type="file" accept="image/*" onChange={(e) => setSelectedImage(e.target.files[0])} />
+                {selectedImage && (<img src={URL.createObjectURL(selectedImage)} alt="Preview" className="image-preview" />)}
+            </FormModal>
+            )}
         </AdminLayout>
     );
 }

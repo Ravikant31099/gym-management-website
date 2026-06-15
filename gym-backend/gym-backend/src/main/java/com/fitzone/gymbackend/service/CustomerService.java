@@ -100,6 +100,7 @@ public class CustomerService {
 		response.setJoinDate(customer.getJoinDate());
 		response.setExpiryDate(customer.getExpiryDate());
 		response.setPlanName(customer.getPlan() != null ? customer.getPlan().getName() : null);
+		response.setPlanId(customer.getPlan() != null ? customer.getPlan().getId() : null);
 		response.setProfileImageUrl(customer.getProfileImageUrl());
 		response.setImageUpdatedAt(customer.getImageUpdatedAt());
 		response.setImageUpdatedBy(customer.getImageUpdatedBy());

@@ -1,5 +1,5 @@
 import { getToken } from "../util/AuthUtils";
-const BASE_URL = import.meta.env.VITE_API_LOCALURL;;
+const BASE_URL = import.meta.env.VITE_API_LOCALURL;
 
 export async function apiRequest(endpoint, options = {}) {
     const token = getToken();

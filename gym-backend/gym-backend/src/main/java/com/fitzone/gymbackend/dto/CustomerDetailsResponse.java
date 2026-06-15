@@ -10,6 +10,7 @@ public class CustomerDetailsResponse {
 	private String email;
 	private String status;
 	private String planName;
+	private Long planId;
 	private LocalDate joinDate;
 	private LocalDate expiryDate;
 	private String profileImageUrl;
@@ -64,7 +65,15 @@ public class CustomerDetailsResponse {
 	public void setPlanName(String planName) {
 		this.planName = planName;
 	}
+	
+	public Long getPlanId() {
+		return planId;
+	}
 
+	public void setPlanId(Long planId) {
+		this.planId = planId;
+	}
+	
 	public LocalDate getJoinDate() {
 		return joinDate;
 	}

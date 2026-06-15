@@ -1,12 +1,11 @@
 import "../style/Admin.css";
-import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { LEAD_STATUS } from "../constants/AppConstants";
 import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
 import { ConfirmModal, ViewModal } from "../components/modals/index";
 import AdminLayout from "../components/layout/AdminLayout";
+import { toast } from "react-toastify";
 
 export default function LeadManagement() {
     const [leads, setLeads] = useState([]);
@@ -154,7 +153,6 @@ export default function LeadManagement() {
             {showDeleteModal && (
                 <ConfirmModal title="Delete Lead" description="Are you sure you want to delete this lead?" onClose={() => setShowDeleteModal(false)} onConfirm={confirmDelete} loading={deletingLead} />
             )}
-            <ToastContainer position="top-right" autoClose={3000} theme="dark" />
         </AdminLayout>
     );
 }
