@@ -30,9 +30,6 @@ export default function CustomerManagement() {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [planFilter, setPlanFilter] = useState("ALL");
-    const [showRenewModal, setShowRenewModal] = useState(false);
-    const [renewingCustomerId, setRenewingCustomerId] = useState(null);
-    const [renewPlanId, setRenewPlanId] = useState("");
     const [page, setPage] = useState(0);
     const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
@@ -185,37 +182,6 @@ export default function CustomerManagement() {
     const resetCustomerForm = () => {
         setCustomerForm({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
     };
-    const openRenewModal = (customer) => {
-        setRenewingCustomerId(customer.id);
-        setRenewPlanId(customer.planId);
-        setShowRenewModal(true);
-    };
-    const renewMembership = async () => {
-        try {
-            setUpdating(true);
-            const response = await apiRequest(`/api/customers/${renewingCustomerId}/renew`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ planId: renewPlanId })
-            }
-            );
-            if (!response.ok) {
-                toast.error("Failed to renew membership");
-                return;
-            }
-            const updatedCustomer = await response.json();
-            setCustomers(customers.map(customer => customer.id === renewingCustomerId ? updatedCustomer : customer));
-            toast.success("Membership renewed successfully");
-            setShowRenewModal(false);
-            setRenewingCustomerId(null);
-        } catch (error) {
-            console.log(error);
-            toast.error("Something went wrong"
-            );
-        } finally {
-            setUpdating(false);
-        }
-    };
     return (
         <AdminLayout>
             <div className="header-card">
@@ -288,7 +254,6 @@ export default function CustomerManagement() {
                                 <td>
                                     <div className="icon-btn">
                                         <button className="delete-icn" onClick={(e) => { e.stopPropagation(); handleDeleteClick(customer.id) }}> <Trash2 size={24} /> </button>
-                                        <button className="renew-icn" onClick={(e) => { e.stopPropagation(); openRenewModal(customer) }}> <RefreshCw size={24} /> </button>
                                     </div>
                                 </td>
                             </tr>
@@ -324,17 +289,6 @@ export default function CustomerManagement() {
             
             {/*Delete Customer Model */}
             {showDeleteModal && (<ConfirmModal title="Delete Customer" description="Are you sure you want to delete this customer?" onClose={() => setShowDeleteModal(false)} onConfirm={deleteCustomer} loading={deleting} />)}
-            {/* Renewal Modal */}
-            {showRenewModal && (<FormModal title="Renew Membership" onClose={() => setShowRenewModal(false)} onSubmit={renewMembership} loading={updating} buttonText="Renew">
-                <div className="form-group">
-                    <select value={renewPlanId} className="search-input" onChange={(e) => setRenewPlanId(e.target.value)}>
-                        {plans.map(plan => (
-                            <option key={plan.id} value={plan.id}>{plan.name}</option>))
-                        }
-                    </select>
-                </div>
-            </FormModal>
-            )}
         </AdminLayout>
     );
 }

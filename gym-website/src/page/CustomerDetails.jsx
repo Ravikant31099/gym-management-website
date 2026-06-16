@@ -5,6 +5,7 @@ import AdminLayout from "../components/layout/AdminLayout";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate, formatDateTime } from "../util/CommonUtil";
 import { ViewModal, FormModal } from "../components/modals/index";
+import { Loader, EmptyState } from "../components/common/Loader";
 import DatePicker from "react-datepicker";
 import { toast } from "react-toastify";
 export default function CustomerDetails() {
@@ -19,6 +20,9 @@ export default function CustomerDetails() {
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [showRenewModal, setShowRenewModal] = useState(false);
+    const [renewingCustomerId, setRenewingCustomerId] = useState(null);
+    const [renewPlanId, setRenewPlanId] = useState("");
     const BASE_URL = import.meta.env.VITE_API_LOCALURL;
 
     useEffect(() => { fetchCustomerDetails(); }, [id]);
@@ -140,17 +144,44 @@ export default function CustomerDetails() {
         setSelectedImage(null);
         setShowImageModal(false);
     };
+    const openRenewModal = (customer) => {
+        setRenewingCustomerId(customer.id);
+        setRenewPlanId(customer.planId);
+        setShowRenewModal(true);
+    };
+    const renewMembership = async () => {
+        try {
+            setUpdating(true);
+            const response = await apiRequest(`/api/customers/${renewingCustomerId}/renew`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ planId: renewPlanId })
+            }
+            );
+            await handleApiResponse(response);
+            await response.json();
+            toast.success("Membership renewed successfully");
+            setShowRenewModal(false);
+            setRenewingCustomerId(null);
+        } catch (error) {
+            console.log(error);
+            toast.error("Something went wrong"
+            );
+        } finally {
+            setUpdating(false);
+        }
+    };
     if (loading) {
         return (
             <AdminLayout>
-                <p>Loading...</p>
+                <Loader />
             </AdminLayout>
         );
     }
     if (!customer) {
         return (
             <AdminLayout>
-                <p>Customer not found</p>
+                <EmptyState title="Customer Not Found" description="The requested customer does not exist or has been deleted." />
             </AdminLayout>
         );
     }
@@ -244,6 +275,7 @@ export default function CustomerDetails() {
                     </div>
                 </div>
                 <div className="details-actions">
+                    <button className="success-btn" onClick={() => openRenewModal(customer)}> Renew Membership </button>
                     <button className="primary-btn" onClick={() => setShowImageModal(true)}> Upload Image</button>
                     <button className="secondary-btn" onClick={() => openEditCustomer(customer)}>Edit Customer</button>
                 </div>
@@ -265,9 +297,22 @@ export default function CustomerDetails() {
                 </select>
             </FormModal>
             )}
+            {/* Upload Customer Image Model */}
             {showImageModal && (<FormModal title="Upload Customer Image" className="file-input" onClose={closeImageModal} onSubmit={uploadCustomerImage} loading={uploadingImage} buttonText="Upload">
                 <input type="file" accept="image/*" onChange={(e) => setSelectedImage(e.target.files[0])} />
                 {selectedImage && (<img src={URL.createObjectURL(selectedImage)} alt="Preview" className="image-preview" />)}
+            </FormModal>
+            )}
+            {/* Renew Membership Modal */}
+            {showRenewModal && (<FormModal title="Renew Membership" onClose={() => setShowRenewModal(false)} onSubmit={renewMembership} loading={updating} buttonText="Renew">
+                <div className="form-group">
+                    <div className="table-summary">Current Plan: <strong>{customer.planName}</strong></div>
+                    <select value={renewPlanId} className="filter-select-modal" onChange={(e) => setRenewPlanId(e.target.value)}>
+                        {plans.map(plan => (
+                            <option key={plan.id} value={plan.id}>{plan.name}</option>))
+                        }
+                    </select>
+                </div>
             </FormModal>
             )}
         </AdminLayout>
