@@ -5,7 +5,7 @@ import AdminLayout from "../components/layout/AdminLayout";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate, formatDateTime } from "../util/CommonUtil";
 import { ViewModal, FormModal } from "../components/modals/index";
-import { Loader, EmptyState } from "../components/common/Loader";
+import { Loader, EmptyState } from "../components/common";
 import DatePicker from "react-datepicker";
 import { toast } from "react-toastify";
 export default function CustomerDetails() {
@@ -163,6 +163,7 @@ export default function CustomerDetails() {
             toast.success("Membership renewed successfully");
             setShowRenewModal(false);
             setRenewingCustomerId(null);
+            fetchCustomerDetails();
         } catch (error) {
             console.log(error);
             toast.error("Something went wrong"
@@ -298,8 +299,8 @@ export default function CustomerDetails() {
             </FormModal>
             )}
             {/* Upload Customer Image Model */}
-            {showImageModal && (<FormModal title="Upload Customer Image" className="file-input" onClose={closeImageModal} onSubmit={uploadCustomerImage} loading={uploadingImage} buttonText="Upload">
-                <input type="file" accept="image/*" onChange={(e) => setSelectedImage(e.target.files[0])} />
+            {showImageModal && (<FormModal title="Upload Customer Image" onClose={closeImageModal} onSubmit={uploadCustomerImage} loading={uploadingImage} buttonText="Upload">
+                <input type="file" accept="image/*" className="inputFile" onChange={(e) => setSelectedImage(e.target.files[0])} />
                 {selectedImage && (<img src={URL.createObjectURL(selectedImage)} alt="Preview" className="image-preview" />)}
             </FormModal>
             )}

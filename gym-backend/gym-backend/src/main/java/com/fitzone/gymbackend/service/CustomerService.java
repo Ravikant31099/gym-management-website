@@ -27,6 +27,7 @@ import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.entity.Plan;
+import com.fitzone.gymbackend.enums.CustomerActivityType;
 import com.fitzone.gymbackend.repository.PlanRepository;
 import com.fitzone.gymbackend.constant.CustomerConstants;
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
@@ -51,6 +52,7 @@ public class CustomerService {
 	private final PlanRepository planRepository;
 	private final PaymentRepository paymentRepository;
 	private final StorageProperties storageProperties;
+	private final CustomerActivityLogService customerActivityLogService;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -58,11 +60,13 @@ public class CustomerService {
 	private static final List<String> ALLOWED_SORT_FIELDS = List.of("name", "expiryDate", "status", "plan");
 
 	public CustomerService(CustomerRepository customerRepository, PlanRepository planRepository,
-			PaymentRepository paymentRepository, StorageProperties storageProperties) {
+			PaymentRepository paymentRepository, StorageProperties storageProperties,
+			CustomerActivityLogService customerActivityLogService) {
 		this.customerRepository = customerRepository;
 		this.planRepository = planRepository;
 		this.paymentRepository = paymentRepository;
 		this.storageProperties = storageProperties;
+		this.customerActivityLogService = customerActivityLogService;
 	}
 
 	public Page<CustomerResponse> getAllCustomer(int page, int size, String sortBy, String sortDir, String search,
@@ -126,7 +130,10 @@ public class CustomerService {
 		customer.setExpiryDate(c.getExpiryDate());
 		customer.setStatus(c.getStatus());
 		customer.setPlan(plan);
-		return customerMapToResponse(customerRepository.save(customer));
+		Customer savedCustomer = customerRepository.save(customer);
+		customerActivityLogService.logActivity(savedCustomer, CustomerActivityType.CUSTOMER_CREATED, "Customer created",
+				"admin");
+		return customerMapToResponse(savedCustomer);
 	}
 
 	public CustomerResponse updateCustomer(Long id, CustomerRequest c) {
@@ -146,7 +153,10 @@ public class CustomerService {
 		customer.setExpiryDate(c.getExpiryDate());
 		customer.setStatus(c.getStatus());
 		customer.setPlan(plan);
-		return customerMapToResponse(customerRepository.save(customer));
+		Customer savedCustomer = customerRepository.save(customer);
+		customerActivityLogService.logActivity(customer, CustomerActivityType.CUSTOMER_UPDATED,
+				"Customer details updated", "admin");
+		return customerMapToResponse(savedCustomer);
 	}
 
 	public void archivedCustomer(Long id) {
@@ -156,6 +166,8 @@ public class CustomerService {
 		Customer customer = customerRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		customer.setArchived(true);
+		customerActivityLogService.logActivity(customer, CustomerActivityType.CUSTOMER_DELETED, "Customer deleted",
+				"admin");
 		customerRepository.save(customer);
 	}
 
@@ -203,7 +215,10 @@ public class CustomerService {
 				: today.plusMonths(months);
 		customer.setExpiryDate(newExpiry);
 		customer.setPlan(plan);
-		return customerMapToResponse(customerRepository.save(customer));
+		Customer savedCustomer = customerRepository.save(customer);
+		customerActivityLogService.logActivity(customer, CustomerActivityType.MEMBERSHIP_RENEWED, "Membership renewed",
+				"admin");
+		return customerMapToResponse(savedCustomer);
 	}
 
 	private int getPlanMonths(String period) {
@@ -280,6 +295,8 @@ public class CustomerService {
 		customer.setImageUpdatedAt(LocalDateTime.now());
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		customer.setImageUpdatedBy(username);
+		customerActivityLogService.logActivity(customer, CustomerActivityType.PROFILE_IMAGE_UPLOADED,
+				"Profile image uploaded", "admin");
 		customerRepository.save(customer);
 		return new CustomerImageUploadResponse(customer.getId(), customer.getName(), imageUrl, LocalDateTime.now(),
 				username, "Customer image uploaded successfully");

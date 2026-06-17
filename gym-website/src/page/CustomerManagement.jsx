@@ -20,7 +20,6 @@ export default function CustomerManagement() {
     const [updating, setUpdating] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedCustomerId, setSelectedCustomerId] = useState(null);
     const [deleting, setDeleting] = useState(false);

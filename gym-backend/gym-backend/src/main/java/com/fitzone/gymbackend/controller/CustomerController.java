@@ -1,6 +1,7 @@
 package com.fitzone.gymbackend.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,9 @@ import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
 import com.fitzone.gymbackend.dto.CustomerStatsResponse;
 import com.fitzone.gymbackend.dto.RenewalRequest;
+import com.fitzone.gymbackend.service.CustomerActivityLogService;
 import com.fitzone.gymbackend.service.CustomerService;
+import com.fitzone.gymbackend.dto.CustomerActivityResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -23,9 +26,11 @@ import jakarta.validation.Valid;
 public class CustomerController {
 
 	private final CustomerService customerService;
+	private final CustomerActivityLogService customerActivityLogService;
 
-	public CustomerController(CustomerService customerService) {
+	public CustomerController(CustomerService customerService, CustomerActivityLogService customerActivityLogService) {
 		this.customerService = customerService;
+		this.customerActivityLogService = customerActivityLogService;
 	}
 
 	@GetMapping
@@ -84,5 +89,10 @@ public class CustomerController {
 	public ResponseEntity<CustomerImageUploadResponse> uploadCustomerImage(@PathVariable("id") Long id,
 			@RequestParam("file") MultipartFile file) throws IOException {
 		return ResponseEntity.ok(customerService.uploadCustomerImage(id, file));
+	}
+
+	@GetMapping("/{id}/activities")
+	public ResponseEntity<List<CustomerActivityResponse>> getCustomerActivities(@PathVariable("id") Long id) {
+		return ResponseEntity.ok(customerActivityLogService.getCustomerActivities(id));
 	}
 }
