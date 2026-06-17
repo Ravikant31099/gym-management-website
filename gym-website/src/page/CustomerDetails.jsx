@@ -23,9 +23,10 @@ export default function CustomerDetails() {
     const [showRenewModal, setShowRenewModal] = useState(false);
     const [renewingCustomerId, setRenewingCustomerId] = useState(null);
     const [renewPlanId, setRenewPlanId] = useState("");
+    const [activities, setActivities] = useState([]);
     const BASE_URL = import.meta.env.VITE_API_LOCALURL;
 
-    useEffect(() => { fetchCustomerDetails(); }, [id]);
+    useEffect(() => { fetchCustomerDetails(); fetchCustomerActivities(); }, [id]);
     useEffect(() => { fetchPlansForCustomer(); }, []);
     const fetchCustomerDetails = async () => {
         try {
@@ -55,6 +56,19 @@ export default function CustomerDetails() {
             setLoading(false);
         }
     };
+    const fetchCustomerActivities = async () => {
+        try {
+            setLoading(true);
+            const response = await apiRequest(`/api/customers/${id}/activities`);
+            await handleApiResponse(response);
+            const data = await response.json();
+            setActivities(data);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
     const openEditCustomer = (customer) => {
         setSelectedCustomer(customer);
         setCustomerForm({ name: customer.name, email: customer.email, phone: customer.phone, joinDate: customer.joinDate, expiryDate: customer.expiryDate, status: customer.status, planId: customer.planId });
@@ -73,6 +87,7 @@ export default function CustomerDetails() {
             toast.success("Customer Updated Successfully");
             setShowEditModal(false);
             fetchCustomerDetails();
+            fetchCustomerActivities();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -133,6 +148,7 @@ export default function CustomerDetails() {
             setSelectedImage(null);
             setShowImageModal(false);
             fetchCustomerDetails();
+            fetchCustomerActivities();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -274,6 +290,18 @@ export default function CustomerDetails() {
                             <strong className={customer.daysRemaining <= 0 ? "text-danger" : customer.daysRemaining <= 7 ? "text-warning" : "text-success"}> {customer.daysRemaining <= 0 ? "Critical" : customer.daysRemaining <= 7 ? "Needs Attention" : "Healthy"}</strong>
                         </div>
                     </div>
+                </div>
+                <div className="details-card activity-card">
+                    <h3>Customer Activity</h3>{activities.length === 0 ? (<p>No activity found</p>) : (activities.map(activity => (
+                        <div key={activity.createdAt} className="activity-item">
+                            <div className="activity-dot"></div>
+                            <div className="activity-Context">
+                                <strong>Activity: {activity.description}</strong>
+                                <p> Performed By: {activity.performedBy}</p>
+                                <p> Date: {formatDateTime(activity.createdAt)}</p>
+                            </div>
+                        </div>
+                    )))}
                 </div>
                 <div className="details-actions">
                     <button className="success-btn" onClick={() => openRenewModal(customer)}> Renew Membership </button>

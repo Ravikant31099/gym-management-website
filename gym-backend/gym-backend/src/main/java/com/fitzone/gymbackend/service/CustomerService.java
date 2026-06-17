@@ -131,8 +131,8 @@ public class CustomerService {
 		customer.setStatus(c.getStatus());
 		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
-		customerActivityLogService.logActivity(savedCustomer, CustomerActivityType.CUSTOMER_CREATED, "Customer created",
-				"admin");
+		customerActivityLogService.logActivity(savedCustomer, CustomerActivityType.CUSTOMER_CREATED,
+				"Customer created");
 		return customerMapToResponse(savedCustomer);
 	}
 
@@ -155,7 +155,7 @@ public class CustomerService {
 		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
 		customerActivityLogService.logActivity(customer, CustomerActivityType.CUSTOMER_UPDATED,
-				"Customer details updated", "admin");
+				"Customer details updated");
 		return customerMapToResponse(savedCustomer);
 	}
 
@@ -166,8 +166,7 @@ public class CustomerService {
 		Customer customer = customerRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		customer.setArchived(true);
-		customerActivityLogService.logActivity(customer, CustomerActivityType.CUSTOMER_DELETED, "Customer deleted",
-				"admin");
+		customerActivityLogService.logActivity(customer, CustomerActivityType.CUSTOMER_DELETED, "Customer deleted");
 		customerRepository.save(customer);
 	}
 
@@ -216,8 +215,7 @@ public class CustomerService {
 		customer.setExpiryDate(newExpiry);
 		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
-		customerActivityLogService.logActivity(customer, CustomerActivityType.MEMBERSHIP_RENEWED, "Membership renewed",
-				"admin");
+		customerActivityLogService.logActivity(customer, CustomerActivityType.MEMBERSHIP_RENEWED, "Membership renewed");
 		return customerMapToResponse(savedCustomer);
 	}
 
@@ -296,7 +294,7 @@ public class CustomerService {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		customer.setImageUpdatedBy(username);
 		customerActivityLogService.logActivity(customer, CustomerActivityType.PROFILE_IMAGE_UPLOADED,
-				"Profile image uploaded", "admin");
+				"Profile image uploaded");
 		customerRepository.save(customer);
 		return new CustomerImageUploadResponse(customer.getId(), customer.getName(), imageUrl, LocalDateTime.now(),
 				username, "Customer image uploaded successfully");
