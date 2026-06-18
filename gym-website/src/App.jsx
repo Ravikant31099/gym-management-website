@@ -149,4 +149,6 @@ Phase D (Commercial Version)
 3. SaaS Deployment
 
 Currently we are making Customer Management Production ready.
+
+private BigDecimal revenueThisMonth; - This will be implement when we will optimized the payment module.
 */

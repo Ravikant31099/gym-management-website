@@ -304,7 +304,7 @@ export default function CustomerDetails() {
                     )))}
                 </div>
                 <div className="details-actions">
-                    <button className="success-btn" onClick={() => openRenewModal(customer)}> Renew Membership </button>
+                    <button className="success-btn" onClick={() => openRenewModal(customer)}> Renew Member </button>
                     <button className="primary-btn" onClick={() => setShowImageModal(true)}> Upload Image</button>
                     <button className="secondary-btn" onClick={() => openEditCustomer(customer)}>Edit Customer</button>
                 </div>

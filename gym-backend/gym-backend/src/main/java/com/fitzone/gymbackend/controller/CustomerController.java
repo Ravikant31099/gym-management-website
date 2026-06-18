@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
 import com.fitzone.gymbackend.dto.CustomerDetailsResponse;
+import com.fitzone.gymbackend.dto.CustomerExpiryReminderResponse;
 import com.fitzone.gymbackend.dto.CustomerImageUploadResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
@@ -94,5 +95,10 @@ public class CustomerController {
 	@GetMapping("/{id}/activities")
 	public ResponseEntity<List<CustomerActivityResponse>> getCustomerActivities(@PathVariable("id") Long id) {
 		return ResponseEntity.ok(customerActivityLogService.getCustomerActivities(id));
+	}
+
+	@GetMapping("/expiring-soon")
+	public ResponseEntity<List<CustomerExpiryReminderResponse>> getExpiringSoonCustomers() {
+		return ResponseEntity.ok(customerService.getExpiringSoonCustomers());
 	}
 }

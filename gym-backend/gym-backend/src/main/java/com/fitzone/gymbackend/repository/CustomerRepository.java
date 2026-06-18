@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.fitzone.gymbackend.dto.PlanDistributionResponse;
 import com.fitzone.gymbackend.dto.RecentCustomerResponse;
 import com.fitzone.gymbackend.entity.Customer;
@@ -139,4 +138,29 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 			""")
 	Page<Customer> findExpiredCustomers(@Param("search") String search, @Param("planId") Long planId,
 			@Param("today") LocalDate today, Pageable pageable);
+
+	@Query("""
+			SELECT COUNT(c)
+			FROM Customer c
+			WHERE c.status = 'ACTIVE'
+			""")
+	Long countActiveMembers();
+
+	@Query("""
+			SELECT COUNT(c)
+			FROM Customer c
+			WHERE c.expiryDate = CURRENT_DATE
+			""")
+	Long countExpiringToday();
+
+	@Query("""
+			SELECT COUNT(c)
+			FROM Customer c
+			WHERE c.expiryDate < CURRENT_DATE
+			""")
+	Long countExpiredMembers();
+
+	List<Customer> findByExpiryDateBetween(LocalDate startDate, LocalDate endDate);
+
+	Long countByJoinDateBetween(LocalDate startDate, LocalDate endDate);
 }

@@ -32,6 +32,7 @@ import com.fitzone.gymbackend.repository.PlanRepository;
 import com.fitzone.gymbackend.constant.CustomerConstants;
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
 import com.fitzone.gymbackend.dto.CustomerDetailsResponse;
+import com.fitzone.gymbackend.dto.CustomerExpiryReminderResponse;
 import com.fitzone.gymbackend.dto.CustomerGrowthResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
@@ -40,6 +41,7 @@ import com.fitzone.gymbackend.dto.PlanDistributionResponse;
 import com.fitzone.gymbackend.dto.CustomerImageUploadResponse;
 import com.fitzone.gymbackend.dto.RecentCustomerResponse;
 import com.fitzone.gymbackend.entity.Customer;
+import com.fitzone.gymbackend.repository.CustomerActivityLogRepository;
 import com.fitzone.gymbackend.repository.CustomerRepository;
 import com.fitzone.gymbackend.repository.PaymentRepository;
 import com.fitzone.gymbackend.constant.StorageFolders;
@@ -53,6 +55,7 @@ public class CustomerService {
 	private final PaymentRepository paymentRepository;
 	private final StorageProperties storageProperties;
 	private final CustomerActivityLogService customerActivityLogService;
+	private final CustomerActivityLogRepository customerActivityLogRepository;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -61,12 +64,14 @@ public class CustomerService {
 
 	public CustomerService(CustomerRepository customerRepository, PlanRepository planRepository,
 			PaymentRepository paymentRepository, StorageProperties storageProperties,
-			CustomerActivityLogService customerActivityLogService) {
+			CustomerActivityLogService customerActivityLogService,
+			CustomerActivityLogRepository customerActivityLogRepository) {
 		this.customerRepository = customerRepository;
 		this.planRepository = planRepository;
 		this.paymentRepository = paymentRepository;
 		this.storageProperties = storageProperties;
 		this.customerActivityLogService = customerActivityLogService;
+		this.customerActivityLogRepository = customerActivityLogRepository;
 	}
 
 	public Page<CustomerResponse> getAllCustomer(int page, int size, String sortBy, String sortDir, String search,
@@ -171,14 +176,21 @@ public class CustomerService {
 	}
 
 	public CustomerStatsResponse getCustomerStats() {
-		Long totalCustomers = customerRepository.countByArchivedFalse();
-		Long activeCustomers = customerRepository.countByStatusAndArchivedFalse("ACTIVE");
-		Long expiredCustomers = customerRepository.countByStatusAndArchivedFalse("EXPIRED");
-		Long inactiveCustomers = customerRepository.countByStatusAndArchivedFalse("INACTIVE");
-		Long expiringCustomers = customerRepository.countExpiringCustomers(LocalDate.now(),
-				LocalDate.now().plusDays(7));
-		return new CustomerStatsResponse(totalCustomers, activeCustomers, expiredCustomers, expiringCustomers,
-				inactiveCustomers);
+		LocalDate today = LocalDate.now();
+		LocalDate firstDayOfMonth = today.withDayOfMonth(1);
+		LocalDateTime monthStart = firstDayOfMonth.atStartOfDay();
+		LocalDateTime now = LocalDateTime.now();
+		CustomerStatsResponse response = new CustomerStatsResponse();
+		response.setTotalCustomers(customerRepository.countByArchivedFalse());
+		response.setActiveCustomers(customerRepository.countActiveMembers());
+		response.setInactiveCustomers(customerRepository.countByStatusAndArchivedFalse("INACTIVE"));
+		response.setExpiringToday(customerRepository.countExpiringToday());
+		response.setExpiringCustomers(customerRepository.countExpiringCustomers(today, today.plusDays(7)));
+		response.setExpiredCustomers(customerRepository.countExpiredMembers());
+		response.setNewCustomersThisMonth(customerRepository.countByJoinDateBetween(firstDayOfMonth, today));
+		response.setRenewalsThisMonth(customerActivityLogRepository
+				.countByActivityTypeAndCreatedAtBetween(CustomerActivityType.MEMBERSHIP_RENEWED.name(), monthStart, now));
+		return response;
 	}
 
 	public CustomerAnalyticsResponse getCustomerAnalytics() {
@@ -298,5 +310,21 @@ public class CustomerService {
 		customerRepository.save(customer);
 		return new CustomerImageUploadResponse(customer.getId(), customer.getName(), imageUrl, LocalDateTime.now(),
 				username, "Customer image uploaded successfully");
+	}
+
+	public List<CustomerExpiryReminderResponse> getExpiringSoonCustomers() {
+		LocalDate today = LocalDate.now();
+		LocalDate nextWeek = today.plusDays(7);
+		List<Customer> customers = customerRepository.findByExpiryDateBetween(today, nextWeek);
+		return customers.stream().map(customer -> {
+			CustomerExpiryReminderResponse response = new CustomerExpiryReminderResponse();
+			response.setId(customer.getId());
+			response.setName(customer.getName());
+			response.setPhone(customer.getPhone());
+			response.setPlanName(customer.getPlan() != null ? customer.getPlan().getName() : null);
+			response.setExpiryDate(customer.getExpiryDate());
+			response.setDaysRemaining(ChronoUnit.DAYS.between(today, customer.getExpiryDate()));
+			return response;
+		}).toList();
 	}
 }
