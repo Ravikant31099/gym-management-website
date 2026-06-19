@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
 import com.fitzone.gymbackend.dto.CustomerDetailsResponse;
 import com.fitzone.gymbackend.dto.CustomerExpiryReminderResponse;
+import com.fitzone.gymbackend.dto.CustomerExportResponse;
 import com.fitzone.gymbackend.dto.CustomerImageUploadResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
@@ -100,5 +101,13 @@ public class CustomerController {
 	@GetMapping("/expiring-soon")
 	public ResponseEntity<List<CustomerExpiryReminderResponse>> getExpiringSoonCustomers() {
 		return ResponseEntity.ok(customerService.getExpiringSoonCustomers());
+	}
+
+	@GetMapping("/export")
+	public ResponseEntity<List<CustomerExportResponse>> exportCustomers(
+			@RequestParam(name = "search", required = false) String search,
+			@RequestParam(name = "status", required = false) String status,
+			@RequestParam(name = "planId", required = false) Long planId) {
+		return ResponseEntity.ok(customerService.exportCustomers(search, status, planId));
 	}
 }

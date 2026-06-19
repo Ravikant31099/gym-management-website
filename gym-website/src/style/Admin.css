@@ -1618,6 +1618,44 @@
     box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #1efc01f6;
 }
 
+.table-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+}
+
+.export-btn {
+    background-color: transparent;
+    border: 1px solid transparent; 
+    padding: 6px; 
+    cursor: pointer;
+    outline: none;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out; 
+}
+
+.export-btn:hover {
+    color: #0a5c30;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(16, 124, 65, 0.25);
+    filter: drop-shadow(0 0 2px #107c41);
+    border-radius: 15px;
+}
+
+.export-btn:hover svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.export-btn:focus-visible {
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #107c41; 
+}
+
 /* Customer Analytics CSS */
 .customer-analytics-section {
     background: #121b2e;

@@ -33,6 +33,7 @@ import com.fitzone.gymbackend.constant.CustomerConstants;
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
 import com.fitzone.gymbackend.dto.CustomerDetailsResponse;
 import com.fitzone.gymbackend.dto.CustomerExpiryReminderResponse;
+import com.fitzone.gymbackend.dto.CustomerExportResponse;
 import com.fitzone.gymbackend.dto.CustomerGrowthResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
@@ -188,8 +189,8 @@ public class CustomerService {
 		response.setExpiringCustomers(customerRepository.countExpiringCustomers(today, today.plusDays(7)));
 		response.setExpiredCustomers(customerRepository.countExpiredMembers());
 		response.setNewCustomersThisMonth(customerRepository.countByJoinDateBetween(firstDayOfMonth, today));
-		response.setRenewalsThisMonth(customerActivityLogRepository
-				.countByActivityTypeAndCreatedAtBetween(CustomerActivityType.MEMBERSHIP_RENEWED.name(), monthStart, now));
+		response.setRenewalsThisMonth(customerActivityLogRepository.countByActivityTypeAndCreatedAtBetween(
+				CustomerActivityType.MEMBERSHIP_RENEWED.name(), monthStart, now));
 		return response;
 	}
 
@@ -324,6 +325,35 @@ public class CustomerService {
 			response.setPlanName(customer.getPlan() != null ? customer.getPlan().getName() : null);
 			response.setExpiryDate(customer.getExpiryDate());
 			response.setDaysRemaining(ChronoUnit.DAYS.between(today, customer.getExpiryDate()));
+			return response;
+		}).toList();
+	}
+
+	public List<CustomerExportResponse> exportCustomers(String search, String status, Long planId) {
+		List<Customer> customers;
+		if ("EXPIRING".equalsIgnoreCase(status)) {
+			customers = customerRepository.findExpiringCustomers(search, planId, LocalDate.now(),
+					LocalDate.now().plusDays(7), Pageable.unpaged()).getContent();
+		} else if ("EXPIRED".equalsIgnoreCase(status)) {
+			customers = customerRepository.findExpiredCustomers(search, planId, LocalDate.now(), Pageable.unpaged())
+					.getContent();
+		} else {
+			customers = customerRepository.searchCustomers(search, status, planId, Pageable.unpaged()).getContent();
+		}
+		return customers.stream().map(c -> {
+			CustomerExportResponse response = new CustomerExportResponse();
+			response.setId(c.getId());
+			response.setName(c.getName());
+			response.setEmail(c.getEmail());
+			response.setPhone(c.getPhone());
+			response.setPlanName(c.getPlan() != null ? c.getPlan().getName() : "-");
+			response.setStatus(c.getStatus());
+			response.setJoinDate(c.getJoinDate() != null ? c.getJoinDate().toString() : "");
+			response.setExpiryDate(c.getExpiryDate() != null ? c.getExpiryDate().toString() : "");
+			long daysRemaining = c.getExpiryDate() != null
+					? java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), c.getExpiryDate())
+					: 0;
+			response.setDaysRemaining(daysRemaining);
 			return response;
 		}).toList();
 	}

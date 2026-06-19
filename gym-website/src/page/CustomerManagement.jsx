@@ -5,7 +5,7 @@ import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate, formatCurrency, getMembershipStatus } from "../util/CommonUtil";
 import { APP_CONFIG, CUSTOMER_STATUS } from "../constants/AppConstants";
 import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
-import { Pencil, Trash2, RefreshCw } from "lucide-react";
+import { Trash2, FileSpreadsheet } from "lucide-react";
 import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
@@ -26,6 +26,7 @@ export default function CustomerManagement() {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [showViewModal, setShowViewModal] = useState(false);
     const [viewCustomer, setViewCustomer] = useState(null);
+    const [exporting, setExporting] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [planFilter, setPlanFilter] = useState("ALL");
@@ -37,7 +38,7 @@ export default function CustomerManagement() {
     const [sortBy, setSortBy] = useState("name");
     const [sortDir, setSortDir] = useState("asc");
     const navigate = useNavigate();
-    
+
     useEffect(() => { fetchCustomers(); }, [page, searchTerm, statusFilter, planFilter]);
     useEffect(() => { fetchPlansForCustomer(); }, []);
     useEffect(() => {
@@ -181,6 +182,73 @@ export default function CustomerManagement() {
     const resetCustomerForm = () => {
         setCustomerForm({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
     };
+    const handleExportCustomers = async () => {
+        try {
+            setExporting(true);
+            const params = new URLSearchParams();
+            if (searchTerm.trim()) {
+                params.append("search", searchTerm);
+            }
+            if (statusFilter !== "ALL") {
+                params.append("status", statusFilter);
+            }
+            if (planFilter !== "ALL") {
+                params.append("planId", planFilter);
+            }
+            const response = await apiRequest(`/api/customers/export?${params}`);
+            await handleApiResponse(response);
+            const data = await response.json();
+            if (!data || data.length === 0) {
+                toast.warning("No customer data found");
+                return;
+            }
+            exportToCsv(data);
+            toast.success("Customer report exported successfully");
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message);
+        } finally {
+            setExporting(false);
+        }
+    };
+    const exportToCsv = (data) => {
+        const headers = [
+            "ID",
+            "Name",
+            "Email",
+            "Phone",
+            "Plan",
+            "Status",
+            "Join Date",
+            "Expiry Date",
+            "Days Remaining"
+        ];
+        const rows = data.map(customer => [
+            customer.id,
+            customer.name,
+            customer.email,
+            customer.phone,
+            customer.planName,
+            customer.status,
+            customer.joinDate,
+            customer.expiryDate,
+            customer.daysRemaining
+        ]);
+        const csvContent = [headers.join(","), ...rows.map(row => row.map(value => `"${value ?? ""}"`).join(","))].join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        let fileName = "fitzone_customers";
+        if (statusFilter !== "ALL") {
+            fileName += `_${statusFilter.toLowerCase()}`;
+        }
+        fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
     return (
         <AdminLayout>
             <div className="header-card">
@@ -224,7 +292,10 @@ export default function CustomerManagement() {
                 </select>
             </div>
             {/* TABLE */}
-            <div className="table-summary"> Total Customers: {totalRecords}</div>
+            <div className="table-top">
+                <div className="table-summary"> Total Customers: {totalRecords}</div>
+                <button className="export-btn" title="Export Customers to Excel" onClick={handleExportCustomers}> {exporting ? "..." : ""}<FileSpreadsheet color="#30c40f" size={24} strokeWidth={2} /></button>
+            </div>
             <div className="table-wrapper">
                 <table className="customer-table">
                     <thead>
@@ -285,7 +356,6 @@ export default function CustomerManagement() {
                 </select>
             </FormModal>
             )}
-            
             {/*Delete Customer Model */}
             {showDeleteModal && (<ConfirmModal title="Delete Customer" description="Are you sure you want to delete this customer?" onClose={() => setShowDeleteModal(false)} onConfirm={deleteCustomer} loading={deleting} />)}
         </AdminLayout>
