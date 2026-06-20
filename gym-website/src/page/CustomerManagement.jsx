@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate, formatCurrency, getMembershipStatus } from "../util/CommonUtil";
 import { APP_CONFIG, CUSTOMER_STATUS } from "../constants/AppConstants";
-import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
+import { AdminSidebar, Loader, DetailItem, EmptyState } from "../components/common/index";
 import { Trash2, FileSpreadsheet } from "lucide-react";
 import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
 import { useNavigate } from "react-router-dom";
@@ -245,6 +245,13 @@ export default function CustomerManagement() {
         link.click();
         document.body.removeChild(link);
     };
+    if (loading) {
+        return (
+            <AdminLayout>
+                <Loader />
+            </AdminLayout>
+        );
+    };
     return (
         <AdminLayout>
             <div className="header-card">
@@ -336,7 +343,7 @@ export default function CustomerManagement() {
                 </div>
             </div>
             {/* Add Customer Modal */}
-            {showAddModal && (<FormModal title="Add Customer" onClose={() => { resetCustomerForm(); setShowAddModal(false) }} loading={saving} onSubmit={handleAddCustomer} buttonText="Save Customer">
+            {showAddModal && (<FormModal title="Add Customer" onClose={() => { resetCustomerForm(); setShowAddModal(false) }} loading={saving} onSubmit={handleAddCustomer} buttonText="Save">
                 <input type="text" name="name" placeholder="Name" className="search-input" value={customerForm.name} onChange={handleChange} />
                 <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
                 <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />

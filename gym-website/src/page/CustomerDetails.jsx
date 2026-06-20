@@ -194,7 +194,7 @@ export default function CustomerDetails() {
                 <Loader />
             </AdminLayout>
         );
-    }
+    };
     if (!customer) {
         return (
             <AdminLayout>

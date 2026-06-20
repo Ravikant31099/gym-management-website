@@ -2,7 +2,7 @@ import "../style/Admin.css";
 import { Component, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { AdminSidebar, DashboardCard } from "../components/common/index";
+import { AdminSidebar, DashboardCard, EmptyState } from "../components/common/index";
 import { toast } from "react-toastify";
 import { formatDate } from "../util/CommonUtil";
 import AdminLayout from "../components/layout/AdminLayout";
@@ -98,7 +98,12 @@ export default function Admin() {
                         </tr>
                     </thead>
                     <tbody>
-                        {expiringCustomers.map(customer => (
+                        {expiringCustomers.length === 0 ? (<tr>
+                            <td colSpan="8">
+                                <EmptyState title="No Customer Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
+                            </td>
+                        </tr>
+                        ) : expiringCustomers.map(customer => (
                             <tr key={customer.id} className="table-row">
                                 <td className="customer-name">{customer.name}</td>
                                 <td className="phone-number">{customer.phone}</td>

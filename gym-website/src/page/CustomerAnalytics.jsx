@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate } from "../util/CommonUtil";
-import { AdminSidebar, DashboardCard } from "../components/common/index";
+import { AdminSidebar, DashboardCard, EmptyState } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function CustomerAnalytics() {
@@ -113,13 +113,17 @@ export default function CustomerAnalytics() {
                                 <th>Members</th>
                             </tr>
                         </thead>
-                        <tbody>{
-                            analytics?.planDistribution?.map(plan => (
-                                <tr key={plan.planName}>
-                                    <td>{plan.planName}</td>
-                                    <td>{plan.count}</td>
-                                </tr>
-                            ))
+                        <tbody>{analytics?.planDistribution?.length === 0 ? (<tr>
+                            <td colSpan="8">
+                                <EmptyState title="No Customer Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
+                            </td>
+                        </tr>
+                        ) : analytics?.planDistribution?.map(plan => (
+                            <tr key={plan.planName}>
+                                <td>{plan.planName}</td>
+                                <td>{plan.count}</td>
+                            </tr>
+                        ))
                         }
                         </tbody>
                     </table>
