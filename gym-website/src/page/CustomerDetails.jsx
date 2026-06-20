@@ -210,9 +210,8 @@ export default function CustomerDetails() {
                     <h1 className="dashboard-title">Customer Overview</h1>
                     <p className="dashboard-subtitle"> View and manage customer details </p>
                 </div>
-                <div className="admin-badge">
-                    <div className="badge-dot" />
-                    <span> FitZone Admin</span>
+                <div>
+                    <button className="success-btn" onClick={() => openRenewModal(customer)}> Renew Plan </button>
                 </div>
             </div>
             <div className="customer-details-container">
@@ -304,22 +303,22 @@ export default function CustomerDetails() {
                     )))}
                 </div>
                 <div className="details-actions">
-                    <button className="success-btn" onClick={() => openRenewModal(customer)}> Renew Member </button>
                     <button className="primary-btn" onClick={() => setShowImageModal(true)}> Upload Image</button>
                     <button className="secondary-btn" onClick={() => openEditCustomer(customer)}>Edit Customer</button>
                 </div>
             </div>
             {/* Edit Customer Model */}
-            {showEditModal && (<FormModal title="Edit Customer" onClose={() => setShowEditModal(false)} onSubmit={handleUpdateCustomer} loading={updating} buttonText="Update Customer">
+            {showEditModal && (<FormModal title="Edit Customer" onClose={() => setShowEditModal(false)} onSubmit={handleUpdateCustomer} loading={updating} buttonText="Update">
                 <input type="text" name="name" placeholder="Name" className="search-input" value={customerForm.name} onChange={handleChange} />
                 <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
                 <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
-                <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" />
-                <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" />
-                <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange}>
+                <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" disabled/>
+                <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" disabled/>
+                <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange} disabled>
                     <option value="">Select Plan</option>
                     {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
+                <p className="readonly-note"> Membership details can only be changed through the Membership Renewal flow.</p>
                 <select name="status" value={customerForm.status} className="filter-select-modal" onChange={handleChange}>
                     <option value={CUSTOMER_STATUS.ACTIVE}> ACTIVE</option>
                     <option value={CUSTOMER_STATUS.INACTIVE}>INACTIVE</option>

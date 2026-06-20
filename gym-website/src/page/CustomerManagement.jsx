@@ -34,7 +34,7 @@ export default function CustomerManagement() {
     const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
-    const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
+    const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", status: "ACTIVE", planId: "" });
     const [sortBy, setSortBy] = useState("name");
     const [sortDir, setSortDir] = useState("asc");
     const navigate = useNavigate();
@@ -115,10 +115,6 @@ export default function CustomerManagement() {
             toast.error("Join date required");
             return false;
         }
-        if (!customerForm.expiryDate) {
-            toast.error("Expiry date required");
-            return false;
-        }
         if (!customerForm.planId) {
             toast.error("Select a plan");
             return false;
@@ -180,7 +176,7 @@ export default function CustomerManagement() {
         setPage(0);
     };
     const resetCustomerForm = () => {
-        setCustomerForm({ name: "", email: "", phone: "", joinDate: "", expiryDate: "", status: "ACTIVE", planId: "" });
+        setCustomerForm({ name: "", email: "", phone: "", joinDate: "", status: "ACTIVE", planId: "" });
     };
     const handleExportCustomers = async () => {
         try {
@@ -345,11 +341,11 @@ export default function CustomerManagement() {
                 <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
                 <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
                 <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" />
-                <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" />
                 <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange}>
                     <option value="">Select Plan</option>
                     {plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
+                <p className="readonly-note"> Expiry date will be automatically calculated based on the selected plan.</p>
                 <select name="status" value={customerForm.status} className="filter-select-modal" onChange={handleChange}>
                     <option value={CUSTOMER_STATUS.ACTIVE}>ACTIVE</option>
                     <option value={CUSTOMER_STATUS.INACTIVE}>INACTIVE</option>

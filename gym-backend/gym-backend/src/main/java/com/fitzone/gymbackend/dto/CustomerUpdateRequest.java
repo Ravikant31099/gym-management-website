@@ -1,35 +1,25 @@
 package com.fitzone.gymbackend.dto;
 
-import java.time.LocalDate;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class CustomerRequest {
-
+public class CustomerUpdateRequest {
 	@NotBlank(message = "Name is required")
-	@Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
+	@Size(min = 2, max = 50)
 	private String name;
 
 	@NotBlank(message = "Email is required")
 	@Email(message = "Invalid email format")
-	@Size(max = 100, message = "Email cannot exceed 100 characters")
 	private String email;
 
 	@NotBlank(message = "Phone number is required")
-	@Pattern(regexp = "^[0-9]{10}$",message = "Phone number must be 10 digits")
+	@Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")
 	private String phone;
-
-	@NotNull(message = "Join date is required")
-	private LocalDate joinDate;
 
 	@NotBlank(message = "Status is required")
 	private String status;
-
-	@NotNull(message = "Plan is required")
-	private Long planId;
 
 	public String getName() {
 		return name;
@@ -55,14 +45,6 @@ public class CustomerRequest {
 		this.phone = phone;
 	}
 
-	public LocalDate getJoinDate() {
-		return joinDate;
-	}
-
-	public void setJoinDate(LocalDate joinDate) {
-		this.joinDate = joinDate;
-	}
-
 	public String getStatus() {
 		return status;
 	}
@@ -70,17 +52,4 @@ public class CustomerRequest {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-
-	public Long getPlanId() {
-		return planId;
-	}
-
-	public void setPlanId(Long planId) {
-		this.planId = planId;
-	}
-
-	public CustomerRequest() {
-
-	}
-
 }

@@ -38,6 +38,7 @@ import com.fitzone.gymbackend.dto.CustomerGrowthResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
 import com.fitzone.gymbackend.dto.CustomerStatsResponse;
+import com.fitzone.gymbackend.dto.CustomerUpdateRequest;
 import com.fitzone.gymbackend.dto.PlanDistributionResponse;
 import com.fitzone.gymbackend.dto.CustomerImageUploadResponse;
 import com.fitzone.gymbackend.dto.RecentCustomerResponse;
@@ -133,7 +134,9 @@ public class CustomerService {
 		customer.setEmail(c.getEmail());
 		customer.setPhone(c.getPhone());
 		customer.setJoinDate(c.getJoinDate());
-		customer.setExpiryDate(c.getExpiryDate());
+		LocalDate expiryDate = calculateExpiryDate(c.getJoinDate(), plan.getPeriod());
+		customer.setJoinDate(c.getJoinDate());
+		customer.setExpiryDate(expiryDate);
 		customer.setStatus(c.getStatus());
 		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
@@ -142,23 +145,15 @@ public class CustomerService {
 		return customerMapToResponse(savedCustomer);
 	}
 
-	public CustomerResponse updateCustomer(Long id, CustomerRequest c) {
+	public CustomerResponse updateCustomer(Long id, CustomerUpdateRequest c) {
 		Customer customer = customerRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
-		Plan plan = planRepository.findById(c.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
-		if (!Boolean.TRUE.equals(plan.getActive())) {
-			throw new BusinessException("Selected plan is inactive");
-		}
-		validCustomerEmailAndPhone(c, id);
-		validCustomerDates(c);
+		validCustomerEmailAndPhoneForUpdate(c, id);
 		validateCustomerStatus(c.getStatus());
 		customer.setName(c.getName());
 		customer.setEmail(c.getEmail());
 		customer.setPhone(c.getPhone());
-		customer.setJoinDate(c.getJoinDate());
-		customer.setExpiryDate(c.getExpiryDate());
 		customer.setStatus(c.getStatus());
-		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
 		customerActivityLogService.logActivity(customer, CustomerActivityType.CUSTOMER_UPDATED,
 				"Customer details updated");
@@ -245,6 +240,11 @@ public class CustomerService {
 		};
 	}
 
+	private LocalDate calculateExpiryDate(LocalDate joinDate, String planPeriod) {
+		int months = getPlanMonths(planPeriod);
+		return joinDate.plusMonths(months);
+	}
+
 	private CustomerResponse customerMapToResponse(Customer c) {
 		return new CustomerResponse(c.getId(), c.getProfileImageUrl(), c.getName(), c.getEmail(), c.getPhone(),
 				c.getJoinDate(), c.getExpiryDate(), c.getStatus(), c.getPlan().getId(), c.getPlan().getName(),
@@ -259,11 +259,17 @@ public class CustomerService {
 	}
 
 	private void validCustomerDates(CustomerRequest c) {
-		if (c.getExpiryDate().isBefore(c.getJoinDate())) {
-			throw new BusinessException("Expiry date cannot be before join date");
-		}
 		if (c.getJoinDate().isAfter(LocalDate.now())) {
 			throw new BusinessException("Join date cannot be in the future");
+		}
+	}
+
+	private void validCustomerEmailAndPhoneForUpdate(CustomerUpdateRequest c, Long id) {
+		if (customerRepository.existsByPhoneAndIdNot(c.getPhone(), id)) {
+			throw new BusinessException("Customer phone already exists");
+		}
+		if (customerRepository.existsByEmailAndIdNot(c.getEmail(), id)) {
+			throw new BusinessException("Customer email already exists");
 		}
 	}
 

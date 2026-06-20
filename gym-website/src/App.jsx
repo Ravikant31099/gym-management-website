@@ -113,21 +113,22 @@ export default function App() {
     </main>
   );
 }
+
 /*
 Lead Management - Working in Progress
 Login/Logout - Work in Progress
 Lead Analytics - Work in Progress
 Plan Management - Work in Progress
-Plan Renewal - Work in Progress. 
-Customer Management - Work in Progress
-Customer Analytics -  Work in Progress
 User Application Page - Work in Progress 
-imporvement idea(User Application Page) :
-Need to add animated website, 
-on click of service complete infromation to be displayed, 
-on click plan full detials of plan to be displayed, 
-Need to add Weekly Rush Line graph beside Bmi Calculator.
-More Feedback option on click - view top 10 feedback, on screen only top 3 feedback.
+imporvement idea(User Application Page) : Work in Progress
+Need to add Weekly Rush Line graph beside Bmi Calculator.  : Work in Progress
+More Feedback option on click - 6 feedback on main page, 3 on extended page : Work in Progress
+on click of service full details to be displayed 
+on click plan full detials of plan to be displayed
+
+Plan Renewal - Completed 
+Customer Management - Completed
+Customer Analytics -  Completed
 
 Phase A
 1. Loader Integration
@@ -137,18 +138,25 @@ Phase A
 5. Feedback management
 6. Services Management
 7. Attendance Management
+
 Phase B
 1. Email Notifications
 2. Role Management
+
 Phase C
 1. Razorpay Integration
 2. WhatsApp Notifications
+
 Phase D (Commercial Version)
 1. Multi-Gym Support
 2. Subscription Billing
 3. SaaS Deployment
 
-Currently we are making Customer Management Production ready.
+Current Activity: 
+1. We are making Customer Management Production ready. - Completed.
+2. We are making payment Management Production ready. - To Do
 
+To Do Activity:
 private BigDecimal revenueThisMonth; - This will be implement when we will optimized the payment module.
+Whenever we add or renew customer, payment has to be done in that case we should add record in payment table as pending. later admin user will update it as success.
 */

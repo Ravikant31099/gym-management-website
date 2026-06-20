@@ -17,6 +17,7 @@ import com.fitzone.gymbackend.dto.CustomerImageUploadResponse;
 import com.fitzone.gymbackend.dto.CustomerRequest;
 import com.fitzone.gymbackend.dto.CustomerResponse;
 import com.fitzone.gymbackend.dto.CustomerStatsResponse;
+import com.fitzone.gymbackend.dto.CustomerUpdateRequest;
 import com.fitzone.gymbackend.dto.RenewalRequest;
 import com.fitzone.gymbackend.service.CustomerActivityLogService;
 import com.fitzone.gymbackend.service.CustomerService;
@@ -60,9 +61,9 @@ public class CustomerController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable("id") Long id,
-			@Valid @RequestBody CustomerRequest c) {
-		return ResponseEntity.ok(customerService.updateCustomer(id, c));
+	public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id,
+			@Valid @RequestBody CustomerUpdateRequest request) {
+		return ResponseEntity.ok(customerService.updateCustomer(id, request));
 	}
 
 	@DeleteMapping("/{id}")
