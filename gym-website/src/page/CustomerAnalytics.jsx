@@ -120,8 +120,8 @@ export default function CustomerAnalytics() {
                         </tr>
                         ) : analytics?.planDistribution?.map(plan => (
                             <tr key={plan.planName}>
-                                <td>{plan.planName}</td>
-                                <td>{plan.count}</td>
+                                <td data-label="Plan">{plan.planName}</td>
+                                <td data-label="Members">{plan.count}</td>
                             </tr>
                         ))
                         }

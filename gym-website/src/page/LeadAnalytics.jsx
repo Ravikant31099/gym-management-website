@@ -1,6 +1,6 @@
 import "../style/Admin.css";
 import { useEffect, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { AdminSidebar } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
@@ -54,36 +54,29 @@ export default function LeadAnalytics() {
             </div>
             {/* LEAD CHARTS */}
             <div className="charts-grid">
-                <div className="chart-card">
-                    <h2>Leads Analytics</h2>
-                    <ResponsiveContainer width="100%" height="85%">
+                <div className="analytics-chart-card">
+                    <h3>Leads Analytics</h3>
+                    <ResponsiveContainer width="100%" height={350}>
                         <BarChart data={chartData}>
                             <XAxis dataKey="name" stroke="#94a3b8" />
                             <YAxis stroke="#94a3b8" />
-                            <Tooltip />
-                            <Bar
-                                dataKey="value"
-                                fill="#22c55e"
-                                radius={[10, 10, 0, 0]}
-                            />
+                            <Tooltip formatter={(value) => [`${value}`, "Customer"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#1d4ed8" }} labelStyle={{ color: "#1d4ed8" }} itemStyle={{ color: "#1d4ed8" }} />
+                            <Bar dataKey="value" radius={[10, 10, 0, 0]} fill="#22c55e" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="chart-card">
-                    <h2>Lead Distribution</h2>
-                    <ResponsiveContainer width="100%" height="85%">
+                <div className="analytics-chart-card">
+                    <h3>Lead Distribution</h3>
+                    <ResponsiveContainer width="100%" height={320}>
                         <PieChart>
-                            <Pie
-                                data={chartData}
-                                dataKey="value"
-                                outerRadius={100}
-                                label
-                            >
+                            <Pie data={chartData} dataKey="value" cx="50%" cy="50%" outerRadius={100} label >
                                 <Cell fill="#f59e0b" />
                                 <Cell fill="#3b82f6" />
                                 <Cell fill="#22c55e" />
                                 <Cell fill="#ef4444" />
                             </Pie>
+                            <Tooltip />
+                            <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>

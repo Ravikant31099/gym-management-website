@@ -2,7 +2,7 @@ import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { getAmountValue, formatCurrency } from "../util/CommonUtil";
-import { APP_CONFIG, PAYMENT_STATUS, PAYMENT_MODE } from "../constants/AppConstants";
+import { APP_CONFIG, PAYMENT_STATUS, PAYMENT_MODE, PAYMENT_DEFAULT_SORT, DEFAULT_FILTER } from "../constants/AppConstants";
 import { AdminSidebar, Loader, DashboardCard, DetailItem, EmptyState } from "../components/common/index";
 import { formatDate } from "../util/CommonUtil";
 import { FileSpreadsheet, RefreshCcw } from "lucide-react";
@@ -25,18 +25,18 @@ export default function PaymentManagement() {
     const [selectedPaymentId, setSelectedPaymentId] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState("ALL");
-    const [modeFilter, setModeFilter] = useState("ALL");
-    const [planFilter, setPlanFilter] = useState("ALL");
+    const [statusFilter, setStatusFilter] = useState(DEFAULT_FILTER);
+    const [modeFilter, setModeFilter] = useState(DEFAULT_FILTER);
+    const [planFilter, setPlanFilter] = useState(DEFAULT_FILTER);
     const [page, setPage] = useState(0);
     const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [sortBy, setSortBy] = useState("paymentDate");
     const [sortDir, setSortDir] = useState("desc");
-    const resetFilters = () => { setSearchTerm(""); setStatusFilter("ALL"); setPlanFilter("ALL"); setSortDir("desc"); setPage(0); };
+    const resetFilters = () => { setSearchTerm(""); setStatusFilter(DEFAULT_FILTER); setModeFilter(DEFAULT_FILTER); setPlanFilter(DEFAULT_FILTER); setSortDir(PAYMENT_DEFAULT_SORT); setPage(0); };
 
-    useEffect(() => { loadInitialData(); }, [debouncedSearch, page, statusFilter, planFilter, sortBy, sortDir]);
+    useEffect(() => { loadInitialData(); }, [debouncedSearch, page, statusFilter, planFilter, modeFilter, sortBy, sortDir]);
     useEffect(() => { setPage(0); }, [searchTerm, statusFilter, modeFilter, planFilter]);
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -60,7 +60,7 @@ export default function PaymentManagement() {
             if (!initialLoad) {
                 setTableLoading(true);
             }
-            const params = new URLSearchParams({ page, size, search: searchTerm || "", status: statusFilter === "ALL" ? "" : statusFilter, mode: modeFilter === "ALL" ? "" : modeFilter, planId: planFilter === "ALL" ? "" : planFilter, sortBy, sortDir });
+            const params = new URLSearchParams({ page, size, search: searchTerm || "", status: statusFilter === DEFAULT_FILTER ? "" : statusFilter, mode: modeFilter === DEFAULT_FILTER ? "" : modeFilter, planId: planFilter === DEFAULT_FILTER ? "" : planFilter, sortBy, sortDir });
             const response = await apiRequest(`/api/payments?${params}`);
             await handleApiResponse(response);
             const data = await response.json();
@@ -114,13 +114,13 @@ export default function PaymentManagement() {
             if (searchTerm.trim()) {
                 params.append("search", searchTerm);
             }
-            if (statusFilter !== "ALL") {
+            if (statusFilter !== DEFAULT_FILTER) {
                 params.append("status", statusFilter);
             }
-            if (modeFilter !== "ALL") {
+            if (modeFilter !== DEFAULT_FILTER) {
                 params.append("mode", modeFilter);
             }
-            if (planFilter !== "ALL") {
+            if (planFilter !== DEFAULT_FILTER) {
                 params.append("planId", planFilter);
             }
             params.append("sortBy", sortBy);
@@ -150,7 +150,7 @@ export default function PaymentManagement() {
         const url = URL.createObjectURL(blob);
         link.href = url;
         let fileName = "fitzone_payments";
-        if (statusFilter !== "ALL") {
+        if (statusFilter !== DEFAULT_FILTER) {
             fileName += `_${statusFilter.toLowerCase()}`;
         }
         fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
@@ -189,20 +189,20 @@ export default function PaymentManagement() {
             </div>
             <div className="search-filter-container">
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
-                    <option value="ALL">All Status</option>
+                    <option value={DEFAULT_FILTER}>All Status</option>
                     <option value={PAYMENT_STATUS.PAID}>Paid</option>
                     <option value={PAYMENT_STATUS.PENDING}>Pending</option>
                     <option value={PAYMENT_STATUS.FAILED}>Failed</option>
                 </select>
                 <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)} className="filter-select">
-                    <option value="ALL">All Modes</option>
+                    <option value={DEFAULT_FILTER}>All Modes</option>
                     <option value={PAYMENT_MODE.UPI}> UPI</option>
                     <option value={PAYMENT_MODE.CASH}>Cash</option>
                     <option value={PAYMENT_MODE.CARD}>Card</option>
                     <option value={PAYMENT_MODE.BANK_TRANSFER}>Bank Transfer</option>
                 </select>
                 <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
-                    <option value="ALL">All Plans</option>
+                    <option value={DEFAULT_FILTER}>All Plans</option>
                     {plans.map(plan => (<option key={plan.id} value={plan.id}>{plan.name} </option>))}
                 </select>
             </div>
@@ -239,11 +239,11 @@ export default function PaymentManagement() {
                         </tr>
                         ) : payments.map(payment => (
                             <tr key={payment.id} className="payment-clickable-row" onClick={() => { setSelectedPayment(payment); setShowPaymentModal(true); }}>
-                                <td>{payment.customerName}</td>
-                                <td>{payment.planName}</td>
-                                <td>{payment.amount}</td>
-                                <td>{formatDate(payment.paymentDate)}</td>
-                                <td><span className={`payment-status ${payment.status.toLowerCase()}`}>{payment.status}</span></td>
+                                <td data-label="Customer">{payment.customerName}</td>
+                                <td data-label="Plan">{payment.planName}</td>
+                                <td data-label="Amount">{payment.amount}</td>
+                                <td data-label="Date">{formatDate(payment.paymentDate)}</td>
+                                <td data-label="Status"><span className={`payment-status ${payment.status.toLowerCase()}`}>{payment.status}</span></td>
                             </tr>
                         ))}
                     </tbody>

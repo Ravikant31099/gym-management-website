@@ -86,9 +86,9 @@ export default function PaymentAnalytics() {
                         <tbody>{analytics?.topPlans.map(
                             (plan, index) => (
                                 <tr key={plan.plan}>
-                                    <td> {index === 0 && "1"} {index === 1 && "2"} {index === 2 && "3"} {index > 2 && `#${index + 1}`}</td>
-                                    <td>{plan.plan}</td>
-                                    <td><span className="revenue-pill">{formatCurrency(plan.revenue)}</span></td>
+                                    <td data-label="Rank"> {index === 0 && "1"} {index === 1 && "2"} {index === 2 && "3"} {index > 2 && `#${index + 1}`}</td>
+                                    <td data-label="Plan">{plan.plan}</td>
+                                    <td data-label="Revenue"><span className="revenue-pill">{formatCurrency(plan.revenue)}</span></td>
                                 </tr>))}
                         </tbody>
                     </table>

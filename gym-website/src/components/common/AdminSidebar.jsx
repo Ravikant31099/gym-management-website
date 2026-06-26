@@ -2,6 +2,7 @@ import "../../style/Admin.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { clearToken } from "../../util/AuthUtils";
+import gymLogo from "../../assets/gym-logo.png";
 import { LayoutDashboard, UserCheck, Users, CreditCard, ChevronDown, ChevronUp, Layers, LogOut } from 'lucide-react';
 
 export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollToTop, scrollToSection, leadsRef, analyticsRef }) {
@@ -19,7 +20,16 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollTo
         <main>
             {isSidebarOpen && (<div className="modal-overlay" style={{ zIndex: 1999 }} onClick={() => setIsSidebarOpen(false)} />)}
             <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
-                <div className="sidebar-header">FitZone</div>
+                <div className="brand-logo sidebar-header">
+                    <div className="logo">
+                        <div className="nav-logo-container">
+                            <img src={gymLogo} alt="Gym Logo" className="nav-gym-logo" />
+                        </div>
+                    </div>
+                    <div className="logo-text">
+                        <span className="fit">FIT</span><span className="zone">ZONE</span>
+                    </div>
+                </div>
                 <div className="sidebar-menu">
                     <div className={`sidebar-item ${location.pathname === "/admin" ? "active" : ""}`} onClick={() => navigate("/admin")}>
                         <div className="sidebar-item-left">

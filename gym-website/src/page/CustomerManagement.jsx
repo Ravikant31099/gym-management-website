@@ -3,7 +3,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate, formatCurrency, getMembershipStatus } from "../util/CommonUtil";
-import { APP_CONFIG, CUSTOMER_STATUS, PAYMENT_STATUS, PAYMENT_MODE, DEFAULT_SORT } from "../constants/AppConstants";
+import { APP_CONFIG, CUSTOMER_STATUS, PAYMENT_STATUS, PAYMENT_MODE, CUSTOMER_DEFAULT_SORT, DEFAULT_FILTER } from "../constants/AppConstants";
 import { AdminSidebar, Loader, DetailItem, EmptyState } from "../components/common/index";
 import { Trash2, FileSpreadsheet, RefreshCcw } from "lucide-react";
 import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
@@ -30,17 +30,17 @@ export default function CustomerManagement() {
     const [exporting, setExporting] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState("ALL");
-    const [planFilter, setPlanFilter] = useState("ALL");
+    const [statusFilter, setStatusFilter] = useState(DEFAULT_FILTER);
+    const [planFilter, setPlanFilter] = useState(DEFAULT_FILTER);
     const [page, setPage] = useState(0);
     const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
     const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", status: "ACTIVE", planId: "", paymentMode: "UPI", paymentStatus: "PAID", paymentRemarks: "" });
     const [sortBy, setSortBy] = useState("name");
-    const [sortDir, setSortDir] = useState("asc");
+    const [sortDir, setSortDir] = useState(CUSTOMER_DEFAULT_SORT);
     const navigate = useNavigate();
-    const resetFilters = () => { setSearchTerm(""); setStatusFilter("ALL"); setPlanFilter("ALL"); setSortDir(DEFAULT_SORT); setPage(0); };
+    const resetFilters = () => { setSearchTerm(""); setStatusFilter(DEFAULT_FILTER); setPlanFilter(DEFAULT_FILTER); setSortDir(CUSTOMER_DEFAULT_SORT); setPage(0); };
 
     useEffect(() => { loadInitialData(); }, [debouncedSearch, page, statusFilter, planFilter, sortBy, sortDir]);
     useEffect(() => { setPage(0); }, [searchTerm, statusFilter, planFilter]);
@@ -70,10 +70,10 @@ export default function CustomerManagement() {
             if (searchTerm.trim()) {
                 params.append("search", searchTerm);
             }
-            if (statusFilter !== "ALL") {
+            if (statusFilter !== DEFAULT_FILTER) {
                 params.append("status", statusFilter);
             }
-            if (planFilter !== "ALL") {
+            if (planFilter !== DEFAULT_FILTER) {
                 params.append("planId", planFilter);
             }
             params.append("sortBy", sortBy);
@@ -197,10 +197,10 @@ export default function CustomerManagement() {
             if (searchTerm.trim()) {
                 params.append("search", searchTerm);
             }
-            if (statusFilter !== "ALL") {
+            if (statusFilter !== DEFAULT_FILTER) {
                 params.append("status", statusFilter);
             }
-            if (planFilter !== "ALL") {
+            if (planFilter !== DEFAULT_FILTER) {
                 params.append("planId", planFilter);
             }
             const response = await apiRequest(`/api/customers/export?${params}`);
@@ -228,7 +228,7 @@ export default function CustomerManagement() {
         const url = URL.createObjectURL(blob);
         link.href = url;
         let fileName = "fitzone_customers";
-        if (statusFilter !== "ALL") {
+        if (statusFilter !== DEFAULT_FILTER) {
             fileName += `_${statusFilter.toLowerCase()}`;
         }
         fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
@@ -267,14 +267,14 @@ export default function CustomerManagement() {
             </div>
             <div className="search-filter-container">
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
-                    <option value="ALL"> All Status </option>
+                    <option value={DEFAULT_FILTER}> All Status </option>
                     <option value={CUSTOMER_STATUS.ACTIVE}> Active </option>
                     <option value={CUSTOMER_STATUS.EXPIRING}> Expiring </option>
                     <option value={CUSTOMER_STATUS.EXPIRED}> Expired </option>
                     <option value={CUSTOMER_STATUS.INACTIVE}> Inactive </option>
                 </select>
                 <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
-                    <option value="ALL"> All Plans</option>
+                    <option value={DEFAULT_FILTER}> All Plans</option>
                     {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
                 <select className="filter-select" value={`${sortBy}-${sortDir}`} onChange={(e) => { const [field, direction] = e.target.value.split("-"); setSortBy(field); setSortDir(direction); }}>
@@ -320,12 +320,12 @@ export default function CustomerManagement() {
                         </tr>
                         ) : customers.map((customer) => (
                             <tr key={customer.id} className="clickable-row" onClick={() => handleViewCustomer(customer)}>
-                                <td>{customer.name}</td>
-                                <td>{customer.phone}</td>
-                                <td><span className={`plan-badge ${customer.planName.toLowerCase()}`}>{customer.planName}</span></td>
-                                <td>{formatDate(customer.expiryDate)}</td>
-                                <td><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
-                                <td>
+                                <td data-label="Name">{customer.name}</td>
+                                <td data-label="Phone">{customer.phone}</td>
+                                <td data-label="Plan"><span className={`plan-badge ${customer.planName.toLowerCase()}`}>{customer.planName}</span></td>
+                                <td data-label="Expiry Date">{formatDate(customer.expiryDate)}</td>
+                                <td data-label="Status"><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
+                                <td data-label="Action">
                                     <div className="icon-btn">
                                         <button className="delete-icn" onClick={(e) => { e.stopPropagation(); handleDeleteClick(customer.id) }}> <Trash2 size={24} /> </button>
                                     </div>

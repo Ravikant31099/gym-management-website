@@ -178,16 +178,16 @@ export default function PlanManagement() {
                             </td>
                         </tr>) : (filteredPlans.map((plan) => (
                             <tr key={plan.id}>
-                                <td>{plan.name}</td>
-                                <td>{plan.description}</td>
-                                <td>{formatCurrency(plan.price)}</td>
-                                <td>{plan.period}</td>
-                                <td>
+                                <td data-label="Name">{plan.name}</td>
+                                <td data-label="Description"><span>{plan.description}</span></td>
+                                <td data-label="Price">{formatCurrency(plan.price)}</td>
+                                <td data-label="Period">{plan.period}</td>
+                                <td data-label="Popular">
                                     {plan.popular ?
                                         (<span className="popular-yes">Yes</span>) : (<span className="popular-no">No</span>)
                                     }
                                 </td>
-                                <td>
+                                <td data-label="Action">
                                     <div className="action-buttons">
                                         <button className="view-btn" onClick={() => openEditModal(plan)}> Edit </button>
                                         <button className="delete-btn" onClick={() => openDeleteModal(plan.id)}> Delete</button>

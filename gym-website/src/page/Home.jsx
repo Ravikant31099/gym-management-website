@@ -6,17 +6,24 @@ import Contact from "../components/home/Contact";
 import Footer from "../components/home/Footer";
 import Testimonals from "../components/home/Testimonals";
 import BMICalculator from "../components/home/BMICalculator";
+import { useState } from 'react';
 
 function App() {
+  const [selectedPlanMessage, setSelectedPlanMessage] = useState('');
+
   return (
     <main>
       <Navbar />
       <Hero />
       <Service />
-      <Pricing />
+      <Pricing onSelectPlan={(planName) => setSelectedPlanMessage({
+        name: planName,
+        text: `Hey FitZone Team! I'm ready to crush my fitness goals and want to get started with the ${planName}. Please guide me with the next steps!`,
+        timestamp: Date.now()
+      })} />
       <BMICalculator />
       <Testimonals />
-      <Contact />
+      <Contact planMessage={selectedPlanMessage} />
       <Footer />
     </main>
   );

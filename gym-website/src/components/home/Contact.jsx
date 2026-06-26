@@ -1,18 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import '../../style/Home.css';
 import { FaInstagram, FaFacebook, FaWhatsapp, FaYoutube, FaMapMarkerAlt } from 'react-icons/fa';
 
-export default function Contact() {
+export default function Contact({ planMessage }) {
     const [success, setSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
-    });
+    const [infoMessage, setInfoMessage] = useState("");
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
 
+    useEffect(() => {
+        if (planMessage && planMessage.text) {
+            setFormData((prevData) => ({
+                ...prevData,
+                message: planMessage.text,
+                subject: `Gym Membership - ${planMessage.name}`
+            }));
+            setInfoMessage(`Awesome choice! 🙌 Just drop your contact info below, and our fitness expert will reach out to you soon.`);
+            const timer = setTimeout(() => { setInfoMessage(""); }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [planMessage]);
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -28,13 +35,7 @@ export default function Contact() {
                 setTimeout(() => {
                     setSuccess(false);
                 }, 3000);
-                setFormData({
-                    name: "",
-                    email: "",
-                    phone: "",
-                    subject: "",
-                    message: ""
-                });
+                setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
             } else {
                 const errorData = await response.json();
                 const messages = Object.values(errorData);
@@ -55,7 +56,7 @@ export default function Contact() {
     return (
         <section id="contact">
             <div className="container">
-                <h2 className="contact-title">Contact Us</h2>
+                <h2 className="contact-title">{formData.subject ? `Join ${formData.subject.split(' - ')[1]}` : "Contact Us"}</h2>
                 {success && (
                     <div className="alert alert-success">
                         Message Sent Successfully ✅
@@ -64,6 +65,11 @@ export default function Contact() {
                 {errorMessage && (
                     <div className="alert alert-error">
                         {errorMessage}
+                    </div>
+                )}
+                {infoMessage && (
+                    <div className="alert alert-info" style={{ backgroundColor: '#e1f5fe', color: '#0288d1', padding: '10px', borderRadius: '5px', marginBottom: '15px', fontWeight: 'bold' }}>
+                        ℹ️ {infoMessage}
                     </div>
                 )}
                 <div className="contact-container">
@@ -76,7 +82,6 @@ export default function Contact() {
                             <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="map-btn"> <FaMapMarkerAlt /> Mumbai, India</a>
                         </div>
                         <span className="contact-subtext"> Start your fitness journey today with FitZone Gym.</span>
-
                         <div className="social-media-container">
                             <h3> Connect With Us</h3>
                             <div className="social-icons">

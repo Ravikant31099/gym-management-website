@@ -132,26 +132,39 @@ Login/Logout - Work in Progress
 Admin User Registration with Role - Work in Progress 
 
 Phase B
-2. Dashboard Upgrade
-3. Export Reports
-5. Feedback management
-6. Services Management
+1. Dashboard Upgrade
+2. Services Management - To be shown on user Application
+3. Offer Management - To be shown on user Application
+4. Feedback management - To be shown on user Application 
 
 Phase C
-1. Attendance Management
-2. Trainer Management
-3. Role Management
+1. Attendance Management - Rush Hour to be shown on user Website
+2. Role Management
+3. Trainer Management - To be shown on user Website
+4. Export Reports (Revenue Report/Membership Report/Expiring Members/Attendance Report/Trainer Performance/Lead Conversion/Monthly Business Summary)
 
 Phase D
-1. WhatsApp Notifications
-2. Email Notifications
-3. Razorpay Integration
+1. Settings Managment(Gym Details/Logo Upload/GST Number/Invoice Prefix/Currency/Timezone/WhatsApp Templates/Email Templates/Theme)- Same to be updated on shown Website
+2. WhatsApp Notifications
+3. Email Notifications
+4. Razorpay Integration
 
-Phase E (Commercial Version)
+Phase E — Production Hardening
+1. Centralized exception handling review
+2. Logging improvements
+3. API documentation (Swagger/OpenAPI)
+4. Backup/restore strategy
+5. Performance optimization
+6. Database indexing review
+7. Security review
+8. Final UX polish
+9. Integration testing
+
+Phase F (Commercial Version)
 1. Multi-Gym Support
 2. Subscription Billing
 3. SaaS Deployment
 
-Phase F
+Phase G
 1. Bug Fixes if any.
 */

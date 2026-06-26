@@ -4,7 +4,7 @@ import { apiRequest, handleApiResponse } from "../../util/api";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
-export default function Pricing() {
+export default function Pricing({ onSelectPlan }) {
     const [plans, setPlans] = useState([]);
     const [showAllPlans, setShowAllPlans] = useState(false);
     const sectionRef = useRef(null);
@@ -18,7 +18,6 @@ export default function Pricing() {
         els?.forEach((el) => observer.observe(el));
         return () => observer.disconnect();
     }, [plans, showAllPlans]);
-
     const fetchPlans = async () => {
         try {
             const response = await apiRequest("/api/plans", "GET");
@@ -29,9 +28,16 @@ export default function Pricing() {
             toast.error(error.message);
         }
     };
-
     const visiblePlans = showAllPlans ? plans : plans.slice(0, 3);
-
+    const handleChoosePlan = (planName) => {
+        if (onSelectPlan) {
+            onSelectPlan(planName);
+        }
+        const contactSection = document.getElementById('contact');
+        if (contactSection) {
+            contactSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
     return (
         <section id="pricing" className="pricing-section" ref={sectionRef}>
             <div className="container">
@@ -46,7 +52,7 @@ export default function Pricing() {
                                 <span className="price-amount">{formatCurrency(plan.price)}</span>
                                 <span className="price-period">{plan.period}</span>
                             </div>
-                            <button className="pricing-btn" type="button">Choose Plan</button>
+                            <button className="pricing-btn" type="button" onClick={() => handleChoosePlan(plan.name)}>Choose Plan</button>
                         </div>
                     ))}
                 </div>

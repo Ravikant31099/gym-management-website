@@ -112,12 +112,12 @@ export default function LeadManagement() {
                         </tr>
                         ) : (filteredLeads.map((lead, index) =>
                             <tr key={lead.id} className={index % 2 === 0 ? "row-even" : "row-odd"}>
-                                <td>{lead.name}</td>
-                                <td>{lead.email}</td>
-                                <td>{lead.phone}</td>
-                                <td>{lead.subject}</td>
-                                <td title={lead.message} className="message-cell">{lead.message} </td>
-                                <td>
+                                <td data-label="Name">{lead.name}</td>
+                                <td data-label="Email"><span>{lead.email}</span></td>
+                                <td data-label="Phone">{lead.phone}</td>
+                                <td data-label="Subject">{lead.subject}</td>
+                                <td data-label="Message"title={lead.message} className="message-cell"><span>{lead.message}</span> </td>
+                                <td data-label="Status">
                                     <select value={lead.status || "NEW"} onChange={(e) => updateStatus(lead.id, e.target.value)}
                                         className="status-select"
                                         disabled={updatingStatusId === lead.id}>
@@ -126,7 +126,7 @@ export default function LeadManagement() {
                                         ))}
                                     </select>
                                 </td>
-                                <td>
+                                <td data-label="Action">
                                     <div className="action-buttons">
                                         <button className="view-btn" onClick={() => openViewModal(lead)}> View</button>
                                         <button className="delete-btn" onClick={() => openDeleteModal(lead.id)}> Delete</button>
