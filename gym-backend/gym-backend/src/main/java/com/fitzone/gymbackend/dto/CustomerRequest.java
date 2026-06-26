@@ -19,7 +19,7 @@ public class CustomerRequest {
 	private String email;
 
 	@NotBlank(message = "Phone number is required")
-	@Pattern(regexp = "^[0-9]{10}$",message = "Phone number must be 10 digits")
+	@Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")
 	private String phone;
 
 	@NotNull(message = "Join date is required")
@@ -30,6 +30,15 @@ public class CustomerRequest {
 
 	@NotNull(message = "Plan is required")
 	private Long planId;
+
+	@NotBlank(message = "Payment mode is required")
+	private String paymentMode;
+
+	@NotBlank(message = "Payment status is required")
+	private String paymentStatus;
+
+	@Size(max = 500)
+	private String paymentRemarks;
 
 	public String getName() {
 		return name;
@@ -77,6 +86,30 @@ public class CustomerRequest {
 
 	public void setPlanId(Long planId) {
 		this.planId = planId;
+	}
+
+	public String getPaymentMode() {
+		return paymentMode;
+	}
+
+	public void setPaymentMode(String paymentMode) {
+		this.paymentMode = paymentMode;
+	}
+
+	public String getPaymentStatus() {
+		return paymentStatus;
+	}
+
+	public void setPaymentStatus(String paymentStatus) {
+		this.paymentStatus = paymentStatus;
+	}
+
+	public String getPaymentRemarks() {
+		return paymentRemarks;
+	}
+
+	public void setPaymentRemarks(String paymentRemarks) {
+		this.paymentRemarks = paymentRemarks;
 	}
 
 	public CustomerRequest() {

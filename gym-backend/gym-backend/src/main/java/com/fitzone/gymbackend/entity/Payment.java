@@ -1,6 +1,8 @@
 package com.fitzone.gymbackend.entity;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -17,7 +19,7 @@ public class Payment extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(name = "plan_id", nullable = false)
 	private Plan plan;
-	private String amount;
+	private BigDecimal amount;
 	private LocalDate paymentDate;
 	private String paymentMode;
 	private String status;
@@ -26,7 +28,7 @@ public class Payment extends BaseEntity {
 	public Payment() {
 	}
 
-	public Payment(Long id, Customer customer, Plan plan, String amount, LocalDate paymentDate, String paymentMode,
+	public Payment(Long id, Customer customer, Plan plan, BigDecimal amount, LocalDate paymentDate, String paymentMode,
 			String status, String remarks) {
 		this.id = id;
 		this.customer = customer;
@@ -62,11 +64,11 @@ public class Payment extends BaseEntity {
 		this.plan = plan;
 	}
 
-	public String getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
 
-	public void setAmount(String amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 

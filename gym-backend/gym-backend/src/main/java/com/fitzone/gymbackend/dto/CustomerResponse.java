@@ -1,5 +1,6 @@
 package com.fitzone.gymbackend.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class CustomerResponse {
@@ -12,11 +13,11 @@ public class CustomerResponse {
 	private String status;
 	private Long planId;
 	private String planName;
-	private String planPrice;
+	private BigDecimal planPrice;
 	private String profileImageUrl;
 
 	public CustomerResponse(Long id, String profileImageUrl, String name, String email, String phone,
-			LocalDate joinDate, LocalDate expiryDate, String status, Long planId, String planName, String planPrice) {
+			LocalDate joinDate, LocalDate expiryDate, String status, Long planId, String planName, BigDecimal planPrice) {
 		super();
 		this.id = id;
 		this.profileImageUrl = profileImageUrl;
@@ -103,11 +104,11 @@ public class CustomerResponse {
 		this.planName = planName;
 	}
 
-	public String getPlanPrice() {
+	public BigDecimal getPlanPrice() {
 		return planPrice;
 	}
 
-	public void setPlanPrice(String planPrice) {
+	public void setPlanPrice(BigDecimal planPrice) {
 		this.planPrice = planPrice;
 	}
 

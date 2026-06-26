@@ -14,7 +14,6 @@ export default function ViewModal({
                 <h2 className="modal-title">{title}</h2>
                 <div className="modal-grid">{children}</div>
                 <div className="confirm-modal-actions">
-                    <button className="payment-edit-btn" onClick={onEdit}>Edit</button>
                     <button className="payment-delete-btn" onClick={onDelete}>Delete</button>
                 </div>
             </div>

@@ -72,10 +72,10 @@ public class CustomerController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PutMapping("/{id}/renew")
+	@PostMapping("/{id}/renew")
 	public ResponseEntity<CustomerResponse> renewMembership(@PathVariable("id") Long id,
-			@RequestBody RenewalRequest r) {
-		return ResponseEntity.ok(customerService.renewMemberShip(id, r.getPlanId()));
+			@RequestBody RenewalRequest request) {
+		return ResponseEntity.ok(customerService.renewMemberShip(id, request));
 	}
 
 	@GetMapping("/stats")

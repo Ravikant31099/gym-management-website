@@ -1,5 +1,7 @@
 package com.fitzone.gymbackend.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -11,7 +13,7 @@ public class Plan extends BaseEntity {
 	private Long Id;
 	private String name;
 	private String description;
-	private String price;
+	private BigDecimal price;
 	private String period;
 	private Boolean popular;
 	@Column(nullable = false)
@@ -41,12 +43,12 @@ public class Plan extends BaseEntity {
 		this.description = description;
 	}
 
-	public String getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
 
-	public void setPrice(String price) {
-		this.price = price;
+	public void setPrice(BigDecimal string) {
+		this.price = string;
 	}
 
 	public String getPeriod() {
@@ -73,7 +75,7 @@ public class Plan extends BaseEntity {
 		this.active = active;
 	}
 
-	public Plan(Long id, String name, String description, String price, String period, Boolean popular,
+	public Plan(Long id, String name, String description, BigDecimal price, String period, Boolean popular,
 			Boolean active) {
 		super();
 		Id = id;

@@ -1,16 +1,17 @@
 package com.fitzone.gymbackend.dto;
 
+import java.math.BigDecimal;
 
 public class PlanResponse {
 	
 	private Long Id;
 	private String name;
 	private String description;
-	private String price;
+	private BigDecimal price;
 	private String period;
 	private Boolean popular;
 	
-	public PlanResponse(Long id, String name, String description, String price, String period, Boolean popular) {
+	public PlanResponse(Long id, String name, String description, BigDecimal price, String period, Boolean popular) {
 		super();
 		Id = id;
 		this.name = name;
@@ -44,11 +45,11 @@ public class PlanResponse {
 		this.description = description;
 	}
 
-	public String getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
 
-	public void setPrice(String price) {
+	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
 

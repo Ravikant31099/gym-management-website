@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { APP_CONFIG, CUSTOMER_STATUS } from "../constants/AppConstants";
+import { APP_CONFIG, CUSTOMER_STATUS, PAYMENT_STATUS, PAYMENT_MODE } from "../constants/AppConstants";
 import AdminLayout from "../components/layout/AdminLayout";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate, formatDateTime } from "../util/CommonUtil";
@@ -21,8 +21,7 @@ export default function CustomerDetails() {
     const [selectedImage, setSelectedImage] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [showRenewModal, setShowRenewModal] = useState(false);
-    const [renewingCustomerId, setRenewingCustomerId] = useState(null);
-    const [renewPlanId, setRenewPlanId] = useState("");
+    const [renewalForm, setRenewalForm] = useState({ planId: "", paymentMode: "UPI", paymentStatus: "PAID", paymentRemarks: "" });
     const [activities, setActivities] = useState([]);
     const BASE_URL = import.meta.env.VITE_API_LOCALURL;
 
@@ -118,14 +117,6 @@ export default function CustomerDetails() {
             toast.error("Join date required");
             return false;
         }
-        if (!customerForm.expiryDate) {
-            toast.error("Expiry date required");
-            return false;
-        }
-        if (!customerForm.planId) {
-            toast.error("Select a plan");
-            return false;
-        }
         return true;
     };
     const handleChange = (e) => {
@@ -161,25 +152,40 @@ export default function CustomerDetails() {
         setShowImageModal(false);
     };
     const openRenewModal = (customer) => {
-        setRenewingCustomerId(customer.id);
-        setRenewPlanId(customer.planId);
+        setSelectedCustomer(customer);
+        setRenewalForm({ planId: customer.planId || "", paymentMode: PAYMENT_MODE.UPI, paymentStatus: PAYMENT_STATUS.PAID, paymentRemarks: "" });
         setShowRenewModal(true);
+    };
+    const resetRenewForm = () => {
+        setRenewalForm({ planId: "", paymentMode: "UPI", paymentStatus: "PAID", paymentRemarks: "" });
+    };
+    const validateRenewForm = () => {
+        if (!renewalForm.paymentRemarks) {
+            toast.error("Payment remarks required");
+            return false;
+        }
+        return true;
     };
     const renewMembership = async () => {
         try {
+            if (!validateRenewForm()) {
+                setUpdating(false);
+                return;
+            }
             setUpdating(true);
-            const response = await apiRequest(`/api/customers/${renewingCustomerId}/renew`, {
-                method: "PUT",
+            const response = await apiRequest(`/api/customers/${selectedCustomer.id}/renew`, {
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ planId: renewPlanId })
+                body: JSON.stringify(renewalForm)
             }
             );
             await handleApiResponse(response);
             await response.json();
             toast.success("Membership renewed successfully");
             setShowRenewModal(false);
-            setRenewingCustomerId(null);
+            resetRenewForm();
             fetchCustomerDetails();
+            fetchCustomerActivities();
         } catch (error) {
             console.log(error);
             toast.error("Something went wrong"
@@ -312,8 +318,8 @@ export default function CustomerDetails() {
                 <input type="text" name="name" placeholder="Name" className="search-input" value={customerForm.name} onChange={handleChange} />
                 <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
                 <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
-                <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" disabled/>
-                <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" disabled/>
+                <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" disabled />
+                <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" disabled />
                 <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange} disabled>
                     <option value="">Select Plan</option>
                     {Array.isArray(plans) && plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
@@ -332,15 +338,28 @@ export default function CustomerDetails() {
             </FormModal>
             )}
             {/* Renew Membership Modal */}
-            {showRenewModal && (<FormModal title="Renew Membership" onClose={() => setShowRenewModal(false)} onSubmit={renewMembership} loading={updating} buttonText="Renew">
-                <div className="form-group">
-                    <div className="table-summary">Current Plan: <strong>{customer.planName}</strong></div>
-                    <select value={renewPlanId} className="filter-select-modal" onChange={(e) => setRenewPlanId(e.target.value)}>
-                        {plans.map(plan => (
-                            <option key={plan.id} value={plan.id}>{plan.name}</option>))
-                        }
-                    </select>
-                </div>
+            {showRenewModal && (<FormModal title="Renew Membership" onClose={() => { resetRenewForm(); setShowRenewModal(false); }} onSubmit={renewMembership} loading={updating} buttonText="Renew">
+                <div className="table-summary">Current Plan: <strong>{customer.planName}</strong></div>
+                <select value={renewalForm.planId} className="filter-select-modal" onChange={(e) => setRenewalForm({ ...renewalForm, planId: Number(e.target.value) })}>
+                    <option value="">Select Plan</option>{plans.map(plan => (
+                        <option key={plan.id} value={plan.id}>
+                            {plan.name}
+                        </option>
+                    ))}
+                </select>
+                <p className="readonly-note"> Expiry date will be automatically calculated based on the selected plan.</p>
+                <select value={renewalForm.paymentMode} onChange={(e) => setRenewalForm({ ...renewalForm, paymentMode: e.target.value })} className="filter-select-modal">
+                    <option value={PAYMENT_MODE.UPI}>UPI</option>
+                    <option value={PAYMENT_MODE.CASH}>Cash</option>
+                    <option value={PAYMENT_MODE.CARD}>Card</option>
+                    <option value={PAYMENT_MODE.BANK_TRANSFER}>Bank Transfer</option>
+                </select>
+                <select value={renewalForm.paymentStatus} onChange={(e) => setRenewalForm({ ...renewalForm, paymentStatus: e.target.value })} className="filter-select-modal">
+                    <option value={PAYMENT_STATUS.PAID}>Paid</option>
+                    <option value={PAYMENT_STATUS.PENDING}>Pending</option>
+                    <option value={PAYMENT_STATUS.FAILED}>Failed</option>
+                </select>
+                <input type="text" placeholder="Enter Remarks" className="search-input" value={renewalForm.paymentRemarks} onChange={(e) => setRenewalForm({ ...renewalForm, paymentRemarks: e.target.value })} />
             </FormModal>
             )}
         </AdminLayout>

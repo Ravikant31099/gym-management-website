@@ -1,5 +1,7 @@
 package com.fitzone.gymbackend.dto;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -17,7 +19,7 @@ public class PlanRequest {
 
 	@NotBlank(message = "Plan price is required")
 	@Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "Invalid price format")
-	private String price;
+	private BigDecimal price;
 
 	@NotBlank(message = "Please Enter Plan Period")
 	private String period;
@@ -41,11 +43,11 @@ public class PlanRequest {
 		this.description = description;
 	}
 
-	public String getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
 
-	public void setPrice(String price) {
+	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
 

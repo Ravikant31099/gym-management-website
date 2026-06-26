@@ -19,7 +19,7 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollTo
         <main>
             {isSidebarOpen && (<div className="modal-overlay" style={{ zIndex: 1999 }} onClick={() => setIsSidebarOpen(false)} />)}
             <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
-                <div className="sidebar-header">FitZone Admin</div>
+                <div className="sidebar-header">FitZone</div>
                 <div className="sidebar-menu">
                     <div className={`sidebar-item ${location.pathname === "/admin" ? "active" : ""}`} onClick={() => navigate("/admin")}>
                         <div className="sidebar-item-left">

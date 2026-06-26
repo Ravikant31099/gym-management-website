@@ -1,14 +1,16 @@
 package com.fitzone.gymbackend.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class PaymentResponse {
+
 	private Long id;
-	private Long customerId;
 	private String customerName;
-	private Long planId;
+	private Long customerId;
 	private String planName;
-	private String amount;
+	private Long planId;
+	private BigDecimal amount;
 	private LocalDate paymentDate;
 	private String paymentMode;
 	private String status;
@@ -18,13 +20,14 @@ public class PaymentResponse {
 		super();
 	}
 
-	public PaymentResponse(Long id, Long customerId, String customerName, Long planId, String planName, String amount,
-			LocalDate paymentDate, String paymentMode, String status, String remarks) {
+	public PaymentResponse(Long id, String customerName, Long customerId, String planName, Long planId,
+			BigDecimal amount, LocalDate paymentDate, String paymentMode, String status, String remarks) {
+		super();
 		this.id = id;
-		this.customerId = customerId;
 		this.customerName = customerName;
-		this.planId = planId;
+		this.customerId = customerId;
 		this.planName = planName;
+		this.planId = planId;
 		this.amount = amount;
 		this.paymentDate = paymentDate;
 		this.paymentMode = paymentMode;
@@ -40,14 +43,6 @@ public class PaymentResponse {
 		this.id = id;
 	}
 
-	public Long getCustomerId() {
-		return customerId;
-	}
-
-	public void setCustomerId(Long customerId) {
-		this.customerId = customerId;
-	}
-
 	public String getCustomerName() {
 		return customerName;
 	}
@@ -56,12 +51,12 @@ public class PaymentResponse {
 		this.customerName = customerName;
 	}
 
-	public Long getPlanId() {
-		return planId;
+	public Long getCustomerId() {
+		return customerId;
 	}
 
-	public void setPlanId(Long planId) {
-		this.planId = planId;
+	public void setCustomerId(Long customerId) {
+		this.customerId = customerId;
 	}
 
 	public String getPlanName() {
@@ -72,11 +67,19 @@ public class PaymentResponse {
 		this.planName = planName;
 	}
 
-	public String getAmount() {
+	public Long getPlanId() {
+		return planId;
+	}
+
+	public void setPlanId(Long planId) {
+		this.planId = planId;
+	}
+
+	public BigDecimal getAmount() {
 		return amount;
 	}
 
-	public void setAmount(String amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 

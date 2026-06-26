@@ -3,9 +3,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate, formatCurrency, getMembershipStatus } from "../util/CommonUtil";
-import { APP_CONFIG, CUSTOMER_STATUS } from "../constants/AppConstants";
+import { APP_CONFIG, CUSTOMER_STATUS, PAYMENT_STATUS, PAYMENT_MODE, DEFAULT_SORT } from "../constants/AppConstants";
 import { AdminSidebar, Loader, DetailItem, EmptyState } from "../components/common/index";
-import { Trash2, FileSpreadsheet } from "lucide-react";
+import { Trash2, FileSpreadsheet, RefreshCcw } from "lucide-react";
 import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
@@ -15,7 +15,8 @@ import { toast } from "react-toastify";
 export default function CustomerManagement() {
     const [customers, setCustomers] = useState([]);
     const [plans, setPlans] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [pageLoading, setPageLoading] = useState(true);
+    const [tableLoading, setTableLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [updating, setUpdating] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -28,31 +29,43 @@ export default function CustomerManagement() {
     const [viewCustomer, setViewCustomer] = useState(null);
     const [exporting, setExporting] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [planFilter, setPlanFilter] = useState("ALL");
     const [page, setPage] = useState(0);
     const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
-    const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", status: "ACTIVE", planId: "" });
+    const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "", joinDate: "", status: "ACTIVE", planId: "", paymentMode: "UPI", paymentStatus: "PAID", paymentRemarks: "" });
     const [sortBy, setSortBy] = useState("name");
     const [sortDir, setSortDir] = useState("asc");
     const navigate = useNavigate();
+    const resetFilters = () => { setSearchTerm(""); setStatusFilter("ALL"); setPlanFilter("ALL"); setSortDir(DEFAULT_SORT); setPage(0); };
 
-    useEffect(() => { fetchCustomers(); }, [page, searchTerm, statusFilter, planFilter]);
-    useEffect(() => { fetchPlansForCustomer(); }, []);
+    useEffect(() => { loadInitialData(); }, [debouncedSearch, page, statusFilter, planFilter, sortBy, sortDir]);
+    useEffect(() => { setPage(0); }, [searchTerm, statusFilter, planFilter]);
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchCustomers();
+            setDebouncedSearch(searchTerm);
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchTerm, page, sortBy, sortDir, statusFilter, planFilter]);
-    useEffect(() => {
-        setPage(0);
-    }, [searchTerm, statusFilter, planFilter]);
-    const fetchCustomers = async () => {
+    }, [searchTerm]);
+    const loadInitialData = async () => {
         try {
-            setLoading(true);
+            setPageLoading(true);
+            await Promise.all([
+                fetchPlansForCustomer(),
+                fetchCustomers(true)
+            ]);
+        } finally {
+            setPageLoading(false);
+        }
+    };
+    const fetchCustomers = async (initialLoad = false) => {
+        try {
+            if (!initialLoad) {
+                setTableLoading(true);
+            }
             const params = new URLSearchParams({ page, size });
             if (searchTerm.trim()) {
                 params.append("search", searchTerm);
@@ -75,12 +88,13 @@ export default function CustomerManagement() {
             console.log(error);
             toast.error(error.message);
         } finally {
-            setLoading(false);
+            if (!initialLoad) {
+                setTableLoading(false);
+            }
         }
     };
     const fetchPlansForCustomer = async () => {
         try {
-            setLoading(true);
             const response = await apiRequest("/api/plans", "GET");
             await handleApiResponse(response);
             const data = await response.json();
@@ -88,8 +102,6 @@ export default function CustomerManagement() {
         } catch (error) {
             console.log(error);
             toast.error(error.message);
-        } finally {
-            setLoading(false);
         }
     };
     const validateForm = () => {
@@ -176,7 +188,7 @@ export default function CustomerManagement() {
         setPage(0);
     };
     const resetCustomerForm = () => {
-        setCustomerForm({ name: "", email: "", phone: "", joinDate: "", status: "ACTIVE", planId: "" });
+        setCustomerForm({ name: "", email: "", phone: "", joinDate: "", status: "ACTIVE", planId: "", paymentMode: "UPI", paymentStatus: "PAID", paymentRemarks: "" });
     };
     const handleExportCustomers = async () => {
         try {
@@ -208,28 +220,8 @@ export default function CustomerManagement() {
         }
     };
     const exportToCsv = (data) => {
-        const headers = [
-            "ID",
-            "Name",
-            "Email",
-            "Phone",
-            "Plan",
-            "Status",
-            "Join Date",
-            "Expiry Date",
-            "Days Remaining"
-        ];
-        const rows = data.map(customer => [
-            customer.id,
-            customer.name,
-            customer.email,
-            customer.phone,
-            customer.planName,
-            customer.status,
-            customer.joinDate,
-            customer.expiryDate,
-            customer.daysRemaining
-        ]);
+        const headers = ["ID", "Name", "Email", "Phone", "Plan", "Status", "Join Date", "Expiry Date", "Days Remaining"];
+        const rows = data.map(customer => [customer.id, customer.name, customer.email, customer.phone, customer.planName, customer.status, customer.joinDate, customer.expiryDate, customer.daysRemaining]);
         const csvContent = [headers.join(","), ...rows.map(row => row.map(value => `"${value ?? ""}"`).join(","))].join("\n");
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
@@ -245,13 +237,13 @@ export default function CustomerManagement() {
         link.click();
         document.body.removeChild(link);
     };
-    if (loading) {
+    if (pageLoading) {
         return (
             <AdminLayout>
                 <Loader />
             </AdminLayout>
         );
-    };
+    }
     return (
         <AdminLayout>
             <div className="header-card">
@@ -297,7 +289,10 @@ export default function CustomerManagement() {
             {/* TABLE */}
             <div className="table-top">
                 <div className="table-summary"> Total Customers: {totalRecords}</div>
-                <button className="export-btn" title="Export Customers to Excel" onClick={handleExportCustomers}> {exporting ? "..." : ""}<FileSpreadsheet color="#30c40f" size={24} strokeWidth={2} /></button>
+                <div>
+                    <button className="export-btn" title="Export Customers to Excel" onClick={handleExportCustomers}> {exporting ? "..." : ""}<FileSpreadsheet color="#30c40f" size={24} strokeWidth={2} /></button>
+                    <button className="refresh-btn" onClick={resetFilters}> <RefreshCcw color="#2563EB" size={24} strokeWidth={2} /> </button>
+                </div>
             </div>
             <div className="table-wrapper">
                 <table className="customer-table">
@@ -312,7 +307,13 @@ export default function CustomerManagement() {
                         </tr>
                     </thead>
                     <tbody>
-                        {customers.length === 0 ? (<tr>
+                        {tableLoading ? (
+                            <tr>
+                                <td colSpan="8" className="table-loader">
+                                    <Loader />
+                                </td>
+                            </tr>
+                        ) : customers.length === 0 ? (<tr>
                             <td colSpan="8">
                                 <EmptyState title="No Customer Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
@@ -353,6 +354,18 @@ export default function CustomerManagement() {
                     {plans.map((plan) => (<option key={plan.id} value={plan.id}>{plan.name}</option>))}
                 </select>
                 <p className="readonly-note"> Expiry date will be automatically calculated based on the selected plan.</p>
+                <select value={customerForm.paymentMode} onChange={(e) => setCustomerForm({ ...customerForm, paymentMode: e.target.value })} className="filter-select-modal">
+                    <option value={PAYMENT_MODE.UPI}> UPI</option>
+                    <option value={PAYMENT_MODE.CASH}>Cash</option>
+                    <option value={PAYMENT_MODE.CARD}>Card</option>
+                    <option value={PAYMENT_MODE.BANK_TRANSFER}>Bank Transfer</option>
+                </select>
+                <select value={customerForm.paymentStatus} onChange={(e) => setCustomerForm({ ...customerForm, paymentStatus: e.target.value })} className="filter-select-modal">
+                    <option value={PAYMENT_STATUS.PAID}>Paid</option>
+                    <option value={PAYMENT_STATUS.PENDING}>Pending</option>
+                    <option value={PAYMENT_STATUS.FAILED}>Failed</option>
+                </select>
+                <input type="text" placeholder="Enter Remarks" className="search-input" value={customerForm.paymentRemarks} onChange={(e) => setCustomerForm({ ...customerForm, paymentRemarks: e.target.value })} />
                 <select name="status" value={customerForm.status} className="filter-select-modal" onChange={handleChange}>
                     <option value={CUSTOMER_STATUS.ACTIVE}>ACTIVE</option>
                     <option value={CUSTOMER_STATUS.INACTIVE}>INACTIVE</option>

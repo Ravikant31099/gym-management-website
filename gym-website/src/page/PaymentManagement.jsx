@@ -3,135 +3,93 @@ import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { getAmountValue, formatCurrency } from "../util/CommonUtil";
 import { APP_CONFIG, PAYMENT_STATUS, PAYMENT_MODE } from "../constants/AppConstants";
-import { AdminSidebar, DashboardCard, DetailItem, EmptyState } from "../components/common/index";
+import { AdminSidebar, Loader, DashboardCard, DetailItem, EmptyState } from "../components/common/index";
 import { formatDate } from "../util/CommonUtil";
+import { FileSpreadsheet, RefreshCcw } from "lucide-react";
 import { ConfirmModal, FormModal, PaymentViewModal } from "../components/modals/index";
 import AdminLayout from "../components/layout/AdminLayout";
 import { toast } from "react-toastify";
 
 export default function PaymentManagement() {
     const [payments, setPayments] = useState([]);
-    const [customers, setCustomers] = useState([]);
     const [plans, setPlans] = useState([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [showAddModal, setShowAddModal] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [updating, setUpdating] = useState(false);
+    const [pageLoading, setPageLoading] = useState(true);
+    const [tableLoading, setTableLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [exporting, setExporting] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [editingPaymentId, setEditingPaymentId] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedPaymentId, setSelectedPaymentId] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [modeFilter, setModeFilter] = useState("ALL");
     const [planFilter, setPlanFilter] = useState("ALL");
-    const [customerSearch, setCustomerSearch] = useState("");
-    const [filteredCustomers, setFilteredCustomers] = useState([]);
-    const [paymentForm, setPaymentForm] = useState({ customerId: "", planId: "", paymentMode: PAYMENT_STATUS.PAID, status: PAYMENT_MODE.UPI, remarks: "" });
+    const [page, setPage] = useState(0);
+    const [size] = useState(10);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const [sortBy, setSortBy] = useState("paymentDate");
+    const [sortDir, setSortDir] = useState("desc");
+    const resetFilters = () => { setSearchTerm(""); setStatusFilter("ALL"); setPlanFilter("ALL"); setSortDir("desc"); setPage(0); };
 
-    useEffect(() => { fetchPayments(); fetchCustomersForPayments(); fetchPlansForPayments(); }, []);
-    const fetchPayments = async () => {
+    useEffect(() => { loadInitialData(); }, [debouncedSearch, page, statusFilter, planFilter, sortBy, sortDir]);
+    useEffect(() => { setPage(0); }, [searchTerm, statusFilter, modeFilter, planFilter]);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+    const loadInitialData = async () => {
         try {
-            setLoading(true);
-            const response = await apiRequest("/api/payments");
+            setPageLoading(true);
+            await Promise.all([
+                fetchPlansForPayment(),
+                fetchPayments(true)
+            ]);
+        } finally {
+            setPageLoading(false);
+        }
+    };
+    const fetchPayments = async (initialLoad = false) => {
+        try {
+            if (!initialLoad) {
+                setTableLoading(true);
+            }
+            const params = new URLSearchParams({ page, size, search: searchTerm || "", status: statusFilter === "ALL" ? "" : statusFilter, mode: modeFilter === "ALL" ? "" : modeFilter, planId: planFilter === "ALL" ? "" : planFilter, sortBy, sortDir });
+            const response = await apiRequest(`/api/payments?${params}`);
             await handleApiResponse(response);
             const data = await response.json();
-            setPayments(data);
+            setPayments(data.content);
+            setTotalPages(data.totalPages);
+            setTotalElements(data.totalElements);
         } catch (error) {
             console.log(error);
             toast.error(error.message);
         } finally {
-            setLoading(false);
+            if (!initialLoad) {
+                setTableLoading(false);
+            }
         }
     };
-    const fetchCustomersForPayments = async () => {
-        try {
-            setLoading(true);
-            const response = await apiRequest("/api/customers");
-            await handleApiResponse(response);
-            const data = await response.json();
-            setCustomers(data);
-        } catch (error) {
-            console.log(error);
-            toast.error(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-    const fetchPlansForPayments = async () => {
+    const fetchPlansForPayment = async () => {
         try {
             const response = await apiRequest("/api/plans", "GET");
             await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
         } catch (error) {
-            toast.error(error.message);
-            console.log(error);
-        }
-    };
-    const savePayment = async () => {
-        try {
-            setSaving(true);
-            const response = await apiRequest("/api/payments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(paymentForm)
-            });
-            await handleApiResponse(response);
-            const savedPayment = await response.json();
-            setPayments([...payments, savedPayment
-            ]);
-            toast.success("Payment added successfully");
-            setShowAddModal(false);
-            resetPaymentForm();
-        } catch (error) {
             console.log(error);
             toast.error(error.message);
-        } finally {
-            setSaving(false);
         }
-    };
-    const totalRevenue = payments.filter(payment => payment.status === "PAID").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
-    const pendingAmount = payments.filter(payment => payment.status === "PENDING").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
-    const totalPayments = payments.length;
-    const todayCollection = payments.filter(payment => payment.paymentDate === new Date().toISOString().split("T")[0] && payment.status === "PAID").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
-    const openEditPayment = (payment) => {
-        setEditingPaymentId(payment.id);
-        setPaymentForm({
-            customerId: payment.customerId,
-            planId: payment.planId,
-            paymentMode: payment.paymentMode,
-            status: payment.status,
-            remarks: payment.remarks || ""
-        });
-        setCustomerSearch(payment.customerName);
-        setShowEditModal(true);
     };
     const openDeletePayment = (paymentId) => {
         setSelectedPaymentId(paymentId);
         setShowDeleteModal(true);
-    };
-    const updatePayment = async () => {
-        try {
-            setUpdating(true);
-            const response = await apiRequest(`/api/payments/${editingPaymentId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(paymentForm) });
-            await handleApiResponse(response);
-            const updatedPayment = await response.json();
-            setPayments(payments.map(payment => payment.id === editingPaymentId ? updatedPayment : payment));
-            toast.success("Payment updated successfully");
-            setShowEditModal(false);
-            setEditingPaymentId(null);
-        } catch (error) {
-            console.log(error);
-            toast.error(error.message);
-        } finally {
-            setUpdating(false);
-        }
     };
     const deletePayment = async () => {
         try {
@@ -149,27 +107,65 @@ export default function PaymentManagement() {
             setDeleting(false);
         }
     };
-    const filteredPayments = payments.filter(payment => {
-        const matchesSearch = payment.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) || payment.planName?.toLowerCase().includes(searchTerm);
-        const matchesStatus = statusFilter === "ALL" || payment.status === statusFilter;
-        const matchesMode = modeFilter === "ALL" || payment.paymentMode === modeFilter;
-        const matchesPlan = planFilter === "ALL" || payment.planName === planFilter;
-        return (matchesSearch && matchesStatus && matchesMode && matchesPlan);
-    });
-    const handleCustomerSearch = (value) => {
-        setCustomerSearch(value);
-        if (!value.trim()) {
-            setFilteredCustomers([]);
-            return;
+    const handleExportPayments = async () => {
+        try {
+            setExporting(true);
+            const params = new URLSearchParams();
+            if (searchTerm.trim()) {
+                params.append("search", searchTerm);
+            }
+            if (statusFilter !== "ALL") {
+                params.append("status", statusFilter);
+            }
+            if (modeFilter !== "ALL") {
+                params.append("mode", modeFilter);
+            }
+            if (planFilter !== "ALL") {
+                params.append("planId", planFilter);
+            }
+            params.append("sortBy", sortBy);
+            params.append("sortDir", sortDir);
+            const response = await apiRequest(`/api/payments/export?${params}`);
+            await handleApiResponse(response);
+            const data = await response.json();
+            if (!data || data.length === 0) {
+                toast.warning("No payment data found");
+                return;
+            }
+            exportPaymentsToCsv(data);
+            toast.success("Payment report exported successfully");
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message);
+        } finally {
+            setExporting(false);
         }
-        const filtered = customers?.content.filter(customer => customer.name.toLowerCase().includes(value.toLowerCase()) || customer.phone?.includes(value));
-        setFilteredCustomers(filtered);
     };
-    const resetPaymentForm = () => {
-        setPaymentForm({ customerId: "", planId: "", paymentMode: "UPI", status: "PAID", remarks: "" });
-        setCustomerSearch("");
-        setFilteredCustomers([]);
+    const exportPaymentsToCsv = (data) => {
+        const headers = ["ID", "Customer", "Plan", "Amount", "Payment Mode", "Payment Status", "Payment Date", "Remarks"];
+        const rows = data.map(payment => [payment.id, payment.customerName, payment.planName, payment.amount, payment.paymentMode, payment.status, payment.paymentDate, payment.remarks]);
+        const csvContent = [headers.join(","), ...rows.map(row => row.map(value => `"${value ?? ""}"`).join(","))].join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        let fileName = "fitzone_payments";
+        if (statusFilter !== "ALL") {
+            fileName += `_${statusFilter.toLowerCase()}`;
+        }
+        fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
+    if (pageLoading) {
+        return (
+            <AdminLayout>
+                <Loader />
+            </AdminLayout>
+        );
+    }
     return (
         <AdminLayout>
             <div className="header-card">
@@ -178,28 +174,18 @@ export default function PaymentManagement() {
                     <h1 className="dashboard-title">Payments Management</h1>
                     <p className="dashboard-subtitle"> Manage Customer Payments and Subscriptions</p>
                 </div>
-                <div>
-                    <button className="add-Payments-btn" onClick={() => { resetPaymentForm(); setShowAddModal(true) }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>Add Payments
-                    </button>
-                </div>
-            </div>
-            {/* Summary Cards */}
-            <div className="dashboard-section">
-                <h3 className="cards-header"> Payment Summary </h3>
-                <div className="cards-grid">
-                    <DashboardCard title="Today's Collection" value={`${formatCurrency(todayCollection)}`} color="#22c55e" />
-                    <DashboardCard title="Total Revenue" value={`${formatCurrency(totalRevenue)}`} color="#3b82f6" />
-                    <DashboardCard title="Pending Amount" value={`${formatCurrency(pendingAmount)}`} color="#f59e0b" />
-                    <DashboardCard title="Total Payments" value={totalPayments} color="#8b5cf6" />
+                <div className="admin-badge">
+                    <div className="badge-dot" />
+                    <span> FitZone Admin</span>
                 </div>
             </div>
             {/* Search and Filters */}
             <div className="search-filter-container">
                 <input type="text" placeholder="Search Customer..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <select value={sortDir} onChange={(e) => { setSortDir(e.target.value); setPage(0); }} className="filter-select">
+                    <option value="desc">👆 Newest First</option>
+                    <option value="asc">👇 Oldest First</option>
+                </select>
             </div>
             <div className="search-filter-container">
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
@@ -217,14 +203,18 @@ export default function PaymentManagement() {
                 </select>
                 <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="filter-select">
                     <option value="ALL">All Plans</option>
-                    {plans.map(plan => (<option key={plan.id} value={plan.name}>{plan.name} </option>))}
+                    {plans.map(plan => (<option key={plan.id} value={plan.id}>{plan.name} </option>))}
                 </select>
+            </div>
+            <div className="table-top">
+                <div className="table-summary"> Total Payments: {totalElements}</div>
+                <div>
+                    <button className="export-btn" title="Export Customers to Excel" onClick={handleExportPayments}> {exporting ? "..." : ""} <FileSpreadsheet color="#30c40f" size={24} strokeWidth={2} /></button>
+                    <button className="refresh-btn" onClick={resetFilters}> <RefreshCcw color="#2563EB" size={24} strokeWidth={2} /> </button>
+                </div>
             </div>
             {/* Payments Table */}
             <div className="table-wrapper">
-                <div className="table-header">
-                    <h3> Payments <span className="table-header-count"> ({filteredPayments.length})</span></h3>
-                </div>
                 <table className="payments-table">
                     <thead>
                         <tr>
@@ -236,12 +226,18 @@ export default function PaymentManagement() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredPayments.length === 0 ? (<tr>
+                        {tableLoading ? (
+                            <tr>
+                                <td colSpan="8" className="table-loader">
+                                    <Loader />
+                                </td>
+                            </tr>
+                        ) : payments.length === 0 ? (<tr>
                             <td colSpan="7">
                                 <EmptyState title="No Payments Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
                         </tr>
-                        ) : filteredPayments.map(payment => (
+                        ) : payments.map(payment => (
                             <tr key={payment.id} className="payment-clickable-row" onClick={() => { setSelectedPayment(payment); setShowPaymentModal(true); }}>
                                 <td>{payment.customerName}</td>
                                 <td>{payment.planName}</td>
@@ -253,52 +249,17 @@ export default function PaymentManagement() {
                     </tbody>
                 </table>
             </div>
-            {/* Add Payments Modal */}
-            {showAddModal && (<FormModal title="Add Payment" onClose={() => { resetPaymentForm(); setShowAddModal(false) }} onSubmit={savePayment} loading={saving} buttonText="Save Payment">
-                <div className="form-group">
-                    <div className="autocomplete-wrapper">
-                        <input type="text" className="search-input" placeholder="Search Customer" value={customerSearch} onChange={(e) => handleCustomerSearch(e.target.value)} />
-                        {filteredCustomers.length > 0 && (
-                            <div className="suggestions-dropdown">
-                                {filteredCustomers.map(
-                                    customer => (
-                                        <div key={customer.id} className="suggestion-item" onClick={() => { setPaymentForm({ ...paymentForm, customerId: customer.id }); setCustomerSearch(customer.name); setFilteredCustomers([]); }}><small>{customer.name} - </small><small>{customer.phone}</small>
-
-                                        </div>
-                                    ))}
-                            </div>
-                        )}
-                    </div>
+            {/* Pagination Content*/}
+            <div className="pagination-wrapper">
+                <div className="pagination-container">
+                    <button disabled={page === 0} onClick={() => setPage(prev => prev - 1)}>Previous</button>
+                    <span> Page {page + 1} of {totalPages}</span>
+                    <button disabled={page + 1 >= totalPages} onClick={() => setPage(prev => prev + 1)}>Next</button>
                 </div>
-                <div className="form-group">
-                    <select value={paymentForm.planId} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, planId: e.target.value })}>
-                        <option value="">Select Plan</option>
-                        {plans.map(plan => (<option key={plan.id} value={plan.id}>    {plan.name} - {plan.price}</option>))}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <select value={paymentForm.paymentMode} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, paymentMode: e.target.value })}>
-                        <option value={PAYMENT_MODE.CASH}>Cash</option>
-                        <option value={PAYMENT_MODE.UPI}>UPI</option>
-                        <option value={PAYMENT_MODE.CARD}>Card</option>
-                        <option value={PAYMENT_MODE.BANK_TRANSFER}>Bank Transfer</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <select value={paymentForm.status} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, status: e.target.value })}>
-                        <option value={PAYMENT_STATUS.PAID}>Paid</option>
-                        <option value={PAYMENT_STATUS.PENDING}>Pending</option>
-                        <option value={PAYMENT_STATUS.FAILED}>Failed</option>
-                    </select>
-                </div>
-                <div className="form-group full-width">
-                    <input type="text" placeholder="Enter Remarks" className="search-input" value={paymentForm.remarks} onChange={(e) => setPaymentForm({ ...paymentForm, remarks: e.target.value })} />
-                </div>
-            </FormModal>
-            )}
+            </div>
             {/* View Payment Modal */}
             {showPaymentModal && selectedPayment && (
-                <PaymentViewModal title="Customer Details" onClose={() => setShowPaymentModal(false)} onEdit={() => { setShowPaymentModal(false); openEditPayment(selectedPayment); }} onDelete={() => { setShowPaymentModal(false); openDeletePayment(selectedPayment.id); }}>
+                <PaymentViewModal title="Customer Details" onClose={() => setShowPaymentModal(false)} onDelete={() => { setShowPaymentModal(false); openDeletePayment(selectedPayment.id); }}>
                     <DetailItem label="Name" value={selectedPayment.customerName} />
                     <DetailItem label="Plan" value={selectedPayment.planName} />
                     <DetailItem label="Amount" value={selectedPayment.amount} />
@@ -307,49 +268,6 @@ export default function PaymentManagement() {
                     <DetailItem label="Status" value={selectedPayment.status} />
                     <DetailItem label="Remarks" value={selectedPayment.remarks || "-"} />
                 </PaymentViewModal>
-            )}
-            {/* Edit Payment Modal */}
-            {showEditModal && (<FormModal title="Edit Payment" onClose={() => setShowEditModal(false)} onSubmit={updatePayment} loading={updating} buttonText="Update Payment">
-                <div className="form-group">
-                    <div className="autocomplete-wrapper">
-                        <input type="text" className="search-input" placeholder="Search Customer" value={customerSearch} onChange={(e) => handleCustomerSearch(e.target.value)} />
-                        {
-                            filteredCustomers.length > 0 && (
-                                <div className="suggestions-dropdown">
-                                    {filteredCustomers.map(
-                                        customer => (
-                                            <div key={customer.id} className="suggestion-item" onClick={() => { setPaymentForm({ ...paymentForm, customerId: customer.id }); setCustomerSearch(customer.name); setFilteredCustomers([]); }}><small>{customer.name} - </small><small>{customer.phone}</small>
-                                            </div>
-                                        ))}
-                                </div>
-                            )}
-                    </div>
-                </div>
-                <div className="form-group">
-                    <select value={paymentForm.planId} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, planId: e.target.value })}>
-                        <option value="">Select Plan</option>
-                        {plans.map(plan => (<option key={plan.id} value={plan.id}>    {plan.name} - {plan.price}</option>))}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <select value={paymentForm.paymentMode} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, paymentMode: e.target.value })}>
-                        <option value={PAYMENT_MODE.CASH}>Cash</option>
-                        <option value={PAYMENT_MODE.UPI}>UPI</option>
-                        <option value={PAYMENT_MODE.CARD}>Card</option>
-                        <option value={PAYMENT_MODE.BANK_TRANSFER}>Bank Transfer</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <select value={paymentForm.status} className="filter-select-modal" onChange={(e) => setPaymentForm({ ...paymentForm, status: e.target.value })}>
-                        <option value={PAYMENT_STATUS.PAID}>Paid</option>
-                        <option value={PAYMENT_STATUS.PENDING}>Pending</option>
-                        <option value={PAYMENT_STATUS.FAILED}>Failed</option>
-                    </select>
-                </div>
-                <div className="form-group full-width">
-                    <input type="text" placeholder="Enter Remarks" className="search-input" value={paymentForm.remarks} onChange={(e) => setPaymentForm({ ...paymentForm, remarks: e.target.value })} />
-                </div>
-            </FormModal>
             )}
             {/* Delete Payment Modal */}
             {showDeleteModal && (<ConfirmModal title="Delete Payment" description="Are you sure you want to delete this Payment?" onClose={() => setShowDeleteModal(false)} onConfirm={deletePayment} loading={deleting} />)}

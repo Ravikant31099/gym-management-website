@@ -29,6 +29,9 @@ import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.entity.Plan;
 import com.fitzone.gymbackend.enums.CustomerActivityType;
 import com.fitzone.gymbackend.repository.PlanRepository;
+
+import jakarta.transaction.Transactional;
+
 import com.fitzone.gymbackend.constant.CustomerConstants;
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
 import com.fitzone.gymbackend.dto.CustomerDetailsResponse;
@@ -42,7 +45,9 @@ import com.fitzone.gymbackend.dto.CustomerUpdateRequest;
 import com.fitzone.gymbackend.dto.PlanDistributionResponse;
 import com.fitzone.gymbackend.dto.CustomerImageUploadResponse;
 import com.fitzone.gymbackend.dto.RecentCustomerResponse;
+import com.fitzone.gymbackend.dto.RenewalRequest;
 import com.fitzone.gymbackend.entity.Customer;
+import com.fitzone.gymbackend.entity.Payment;
 import com.fitzone.gymbackend.repository.CustomerActivityLogRepository;
 import com.fitzone.gymbackend.repository.CustomerRepository;
 import com.fitzone.gymbackend.repository.PaymentRepository;
@@ -121,27 +126,28 @@ public class CustomerService {
 		return response;
 	}
 
+	@Transactional
 	public CustomerResponse saveCustomer(CustomerRequest c) {
 		Plan plan = planRepository.findById(c.getPlanId()).orElseThrow(() -> new ResourceNotFound("Plan not found"));
 		if (!Boolean.TRUE.equals(plan.getActive())) {
 			throw new BusinessException("Selected plan is inactive");
 		}
 		validCustomerEmailAndPhone(c, null);
-		validCustomerDates(c);
 		validateCustomerStatus(c.getStatus());
 		Customer customer = new Customer();
 		customer.setName(c.getName());
 		customer.setEmail(c.getEmail());
 		customer.setPhone(c.getPhone());
 		customer.setJoinDate(c.getJoinDate());
-		LocalDate expiryDate = calculateExpiryDate(c.getJoinDate(), plan.getPeriod());
-		customer.setJoinDate(c.getJoinDate());
-		customer.setExpiryDate(expiryDate);
+		int months = getPlanMonths(plan.getPeriod());
+		customer.setExpiryDate(c.getJoinDate().plusMonths(months));
 		customer.setStatus(c.getStatus());
 		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
+		createMembershipPayment(savedCustomer, plan, c.getPaymentMode(), c.getPaymentStatus(), c.getPaymentRemarks());
 		customerActivityLogService.logActivity(savedCustomer, CustomerActivityType.CUSTOMER_CREATED,
 				"Customer created");
+
 		return customerMapToResponse(savedCustomer);
 	}
 
@@ -211,10 +217,11 @@ public class CustomerService {
 				.map(e -> new CustomerGrowthResponse((String) e.getKey(), e.getValue())).toList();
 	}
 
-	public CustomerResponse renewMemberShip(Long customerId, Long planId) {
+	public CustomerResponse renewMemberShip(Long customerId, RenewalRequest request) {
 		Customer customer = customerRepository.findById(customerId)
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
-		Plan plan = planRepository.findById(planId).orElseThrow(() -> new ResourceNotFound("Plan not found"));
+		Plan plan = planRepository.findById(request.getPlanId())
+				.orElseThrow(() -> new ResourceNotFound("Plan not found"));
 		int months = getPlanMonths(plan.getPeriod());
 		LocalDate today = LocalDate.now();
 		LocalDate expiry = customer.getExpiryDate();
@@ -223,69 +230,10 @@ public class CustomerService {
 		customer.setExpiryDate(newExpiry);
 		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
+		createMembershipPayment(customer, plan, request.getPaymentMode(), request.getPaymentStatus(),
+				request.getPaymentRemarks());
 		customerActivityLogService.logActivity(customer, CustomerActivityType.MEMBERSHIP_RENEWED, "Membership renewed");
 		return customerMapToResponse(savedCustomer);
-	}
-
-	private int getPlanMonths(String period) {
-		if (period == null)
-			throw new IllegalArgumentException("Plan period is null");
-		return switch (period.toLowerCase().trim().replace("/", "")) {
-		case "month" -> 1;
-		case "3 month" -> 3;
-		case "6 month" -> 6;
-		case "9 month" -> 9;
-		case "year" -> 12;
-		default -> throw new IllegalArgumentException("Invalid plan period: " + period);
-		};
-	}
-
-	private LocalDate calculateExpiryDate(LocalDate joinDate, String planPeriod) {
-		int months = getPlanMonths(planPeriod);
-		return joinDate.plusMonths(months);
-	}
-
-	private CustomerResponse customerMapToResponse(Customer c) {
-		return new CustomerResponse(c.getId(), c.getProfileImageUrl(), c.getName(), c.getEmail(), c.getPhone(),
-				c.getJoinDate(), c.getExpiryDate(), c.getStatus(), c.getPlan().getId(), c.getPlan().getName(),
-				c.getPlan().getPrice());
-	}
-
-	private void validateCustomerStatus(String status) {
-		List<String> validStatuses = List.of(CustomerConstants.ACTIVE, CustomerConstants.INACTIVE);
-		if (!validStatuses.contains(status.toUpperCase())) {
-			throw new BusinessException("Invalid customer status");
-		}
-	}
-
-	private void validCustomerDates(CustomerRequest c) {
-		if (c.getJoinDate().isAfter(LocalDate.now())) {
-			throw new BusinessException("Join date cannot be in the future");
-		}
-	}
-
-	private void validCustomerEmailAndPhoneForUpdate(CustomerUpdateRequest c, Long id) {
-		if (customerRepository.existsByPhoneAndIdNot(c.getPhone(), id)) {
-			throw new BusinessException("Customer phone already exists");
-		}
-		if (customerRepository.existsByEmailAndIdNot(c.getEmail(), id)) {
-			throw new BusinessException("Customer email already exists");
-		}
-	}
-
-	private void validCustomerEmailAndPhone(CustomerRequest c, Long id) {
-		if (id != null && customerRepository.existsByPhoneAndIdNot(c.getPhone(), id)) {
-			throw new BusinessException("Customer phone already exists");
-		}
-		if (id != null && customerRepository.existsByEmailAndIdNot(c.getEmail(), id)) {
-			throw new BusinessException("Customer email already exists");
-		}
-		if (id == null && customerRepository.existsByPhone(c.getPhone())) {
-			throw new BusinessException("Customer phone already exists");
-		}
-		if (id == null && customerRepository.existsByEmail(c.getEmail())) {
-			throw new BusinessException("Customer email already exists");
-		}
 	}
 
 	public CustomerImageUploadResponse uploadCustomerImage(Long customerId, MultipartFile file) throws IOException {
@@ -362,5 +310,68 @@ public class CustomerService {
 			response.setDaysRemaining(daysRemaining);
 			return response;
 		}).toList();
+	}
+
+	private CustomerResponse customerMapToResponse(Customer c) {
+		return new CustomerResponse(c.getId(), c.getProfileImageUrl(), c.getName(), c.getEmail(), c.getPhone(),
+				c.getJoinDate(), c.getExpiryDate(), c.getStatus(), c.getPlan().getId(), c.getPlan().getName(),
+				c.getPlan().getPrice());
+	}
+
+	private int getPlanMonths(String period) {
+		if (period == null)
+			throw new IllegalArgumentException("Plan period is null");
+		return switch (period.toLowerCase().trim().replace("/", "")) {
+		case "month" -> 1;
+		case "3 month" -> 3;
+		case "6 month" -> 6;
+		case "9 month" -> 9;
+		case "year" -> 12;
+		default -> throw new IllegalArgumentException("Invalid plan period: " + period);
+		};
+	}
+
+	private void validateCustomerStatus(String status) {
+		List<String> validStatuses = List.of(CustomerConstants.ACTIVE, CustomerConstants.INACTIVE);
+		if (!validStatuses.contains(status.toUpperCase())) {
+			throw new BusinessException("Invalid customer status");
+		}
+	}
+
+	private void validCustomerEmailAndPhoneForUpdate(CustomerUpdateRequest c, Long id) {
+		if (customerRepository.existsByPhoneAndIdNot(c.getPhone(), id)) {
+			throw new BusinessException("Customer phone already exists");
+		}
+		if (customerRepository.existsByEmailAndIdNot(c.getEmail(), id)) {
+			throw new BusinessException("Customer email already exists");
+		}
+	}
+
+	private void validCustomerEmailAndPhone(CustomerRequest c, Long id) {
+		if (id != null && customerRepository.existsByPhoneAndIdNot(c.getPhone(), id)) {
+			throw new BusinessException("Customer phone already exists");
+		}
+		if (id != null && customerRepository.existsByEmailAndIdNot(c.getEmail(), id)) {
+			throw new BusinessException("Customer email already exists");
+		}
+		if (id == null && customerRepository.existsByPhone(c.getPhone())) {
+			throw new BusinessException("Customer phone already exists");
+		}
+		if (id == null && customerRepository.existsByEmail(c.getEmail())) {
+			throw new BusinessException("Customer email already exists");
+		}
+	}
+
+	private void createMembershipPayment(Customer customer, Plan plan, String paymentMode, String paymentStatus,
+			String paymentRemarks) {
+		Payment payment = new Payment();
+		payment.setCustomer(customer);
+		payment.setPlan(plan);
+		payment.setAmount(plan.getPrice());
+		payment.setPaymentDate(LocalDate.now());
+		payment.setPaymentMode(paymentMode);
+		payment.setStatus(paymentStatus);
+		payment.setRemarks(paymentRemarks);
+		paymentRepository.save(payment);
 	}
 }

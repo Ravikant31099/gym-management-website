@@ -115,48 +115,43 @@ export default function App() {
 }
 
 /*
-Lead Management - Working in Progress
+Phase A Development
+Completed Activity: 
+1. Customer Management with All Validations Production ready. - Completed.
+2. Payment Management with All Validations Production ready. - Completed
+3. Plan Renewal with All Validations Production Ready - Completed.
+4. Customer Details with Customer Image Upload and All Validations Page Production Ready - Completed.
+5. Audit Logs for Customer Management - Completed.
+6. Customer/Payments Export CSV - Completed.
+
+To Do Activity:
+Lead Management Production Ready - Working in Progress
+Plan Management Production Ready - Work in Progress
+Audit Logs for Payments Management, Lead Management and Plan Management   
 Login/Logout - Work in Progress
-Lead Analytics - Work in Progress
-Plan Management - Work in Progress
-User Application Page - Work in Progress 
-imporvement idea(User Application Page) : Work in Progress
-Need to add Weekly Rush Line graph beside Bmi Calculator.  : Work in Progress
-More Feedback option on click - 6 feedback on main page, 3 on extended page : Work in Progress
-on click of service full details to be displayed 
-on click plan full detials of plan to be displayed
-
-Plan Renewal - Completed 
-Customer Management - Completed
-Customer Analytics -  Completed
-
-Phase A
-1. Loader Integration
-2. Dashboard Upgrade
-3. Export Reports
-4. Register 
-5. Feedback management
-6. Services Management
-7. Attendance Management
+Admin User Registration with Role - Work in Progress 
 
 Phase B
-1. Email Notifications
-2. Role Management
+2. Dashboard Upgrade
+3. Export Reports
+5. Feedback management
+6. Services Management
 
 Phase C
-1. Razorpay Integration
-2. WhatsApp Notifications
+1. Attendance Management
+2. Trainer Management
+3. Role Management
 
-Phase D (Commercial Version)
+Phase D
+1. WhatsApp Notifications
+2. Email Notifications
+3. Razorpay Integration
+
+Phase E (Commercial Version)
 1. Multi-Gym Support
 2. Subscription Billing
 3. SaaS Deployment
 
-Current Activity: 
-1. We are making Customer Management Production ready. - Completed.
-2. We are making payment Management Production ready. - To Do
-
-To Do Activity:
-private BigDecimal revenueThisMonth; - This will be implement when we will optimized the payment module.
-Whenever we add or renew customer, payment has to be done in that case we should add record in payment table as pending. later admin user will update it as success.
+Phase F
+1. Bug Fixes if any.
 */

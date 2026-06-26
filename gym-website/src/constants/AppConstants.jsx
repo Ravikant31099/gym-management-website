@@ -38,3 +38,4 @@ export const PLAN_TYPE = {
     NORMAL: "NORMAL",
     POPULAR: "POPULAR"
 };
+export const DEFAULT_SORT = "desc";

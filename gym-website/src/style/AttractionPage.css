@@ -395,6 +395,7 @@
     width: 2px;
     height: 30px;
   }
+
 }
 
 .attraction-page .journey-roadmap {
@@ -458,6 +459,14 @@
 
 .attraction-page .trust-card:hover {
   border-color: rgba(255, 94, 20, 0.4);
+}
+
+@media screen and (max-width: 640px) {
+  .attraction-page .trust-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 24px;
+  }
 }
 
 .attraction-page .section-nav {
@@ -531,6 +540,24 @@
   grid-template-columns: 2fr 1fr 1fr;
   grid-template-rows: 280px 280px;
   gap: 20px;
+}
+
+@media screen and (max-width: 640px) {
+  .attraction-page .gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 280px 280px;
+    gap: 20px;
+  }
+}
+
+@media screen and (max-width: 960px) and (min-width:640px) {
+  .attraction-page .gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 280px 280px;
+    gap: 20px;
+  }
 }
 
 .attraction-page .gallery-item {

@@ -8,56 +8,17 @@ import { AdminSidebar, DashboardCard } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function PaymentAnalytics() {
-    const [payments, setPayments] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const pieColors = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
+    const [analytics, setAnalytics] = useState(null);
 
-    useEffect(() => { fetchPayments(); }, []);
-    const fetchPayments = async () => {
-        try {
-            setLoading(true);
-            const response = await apiRequest("/api/payments");
-            await handleApiResponse(response);
-            const data = await response.json();
-            setPayments(data);
-        } catch (error) {
-            console.log(error);
-            toast.error(error.message);
-        } finally {
-            setLoading(false);
-        }
-    }
-    const totalRevenue = payments.filter(payment => payment.status === "PAID").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
-    const pendingRevenue = payments.filter(payment => payment.status === "PENDING").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
-    const todayCollection = payments.filter(payment => payment.status === "PAID").reduce((sum, payment) => sum + getAmountValue(payment.amount), 0);
-    const totalTransactions = payments.length;
-    const revenueByPlan = Object.values(payments.reduce((acc, payment) => {
-        const amount = getAmountValue(payment.amount);
-        if (!acc[payment.planName]) {
-            acc[payment.planName] = { plan: payment.planName, revenue: 0 };
-        }
-        acc[payment.planName].revenue += amount;
-        return acc;
-    }, {}));
-    const paymentModeData = Object.values(payments.reduce((acc, payment) => {
-        if (!acc[payment.paymentMode]) {
-            acc[payment.paymentMode] = { name: payment.paymentMode, value: 0 };
-        }
-        acc[payment.paymentMode].value++;
-        return acc;
-    }, {}));
-    const revenueByMonth = Object.values(payments.reduce((acc, payment) => {
-        const date = new Date(payment.paymentDate);
-        const monthYear = date.toLocaleString("default", { month: "short", year: "numeric" });
-        const amount = getAmountValue(payment.amount);
-        if (!acc[monthYear]) {
-            acc[monthYear] = { monthYear, revenue: 0, sortDate: new Date(date.getFullYear(), date.getMonth(), 1) };
-        }
-        acc[monthYear].revenue += amount;
-        return acc;
-    }, {})).sort((a, b) => a.sortDate - b.sortDate);
-    const topPlans = [...revenueByPlan].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    useEffect(() => { fetchAnalytics(); }, []);
+    const fetchAnalytics = async () => {
+        const response = await apiRequest("/api/payments/analytics");
+        await handleApiResponse(response);
+        const data = await response.json();
+        setAnalytics(data);
+    };
     return (
         <AdminLayout>
             <div className="header-card">
@@ -75,16 +36,16 @@ export default function PaymentAnalytics() {
             <div className="dashboard-section">
                 <h3 className="cards-header"> Payment Summary </h3>
                 <div className="cards-grid">
-                    <DashboardCard title="Total Revenue" value= {`${formatCurrency(totalRevenue)}`} color="#22c55e" />
-                    <DashboardCard title="Pending Revenue" value={`${formatCurrency(pendingRevenue)}`} color="#3b82f6" />
-                    <DashboardCard title="Today's Collection" value={`${formatCurrency(todayCollection)}`} color="#ef4444" />
-                    <DashboardCard title="Transactions" value={totalTransactions} color="#f59e0b" />
+                    <DashboardCard title="Total Revenue" value={`${formatCurrency(analytics?.summary.totalRevenue)}`} color="#22c55e" />
+                    <DashboardCard title="Pending Revenue" value={`${formatCurrency(analytics?.summary.pendingRevenue)}`} color="#3b82f6" />
+                    <DashboardCard title="Today's Collection" value={`${formatCurrency(analytics?.summary.todayCollection)}`} color="#ef4444" />
+                    <DashboardCard title="Transactions" value={analytics?.summary.totalTransactions} color="#f59e0b" />
                 </div>
             </div>
             <div className="analytics-chart-card">
                 <h3>Membership Status</h3>
                 <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={revenueByPlan}>
+                    <BarChart data={analytics?.revenueByPlan || []}>
                         <defs>
                             <linearGradient id="planRevenueGradient" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#3b82f6" />
@@ -104,8 +65,8 @@ export default function PaymentAnalytics() {
                     <h3>Membership Status</h3>
                     <ResponsiveContainer width="100%" height={400}>
                         <PieChart>
-                            <Pie data={paymentModeData} cx="50%" cy="50%" outerRadius={130} dataKey="value" nameKey="name" label>
-                                {paymentModeData.map((entry, index) => (<Cell key={index} fill={pieColors[index % pieColors.length]} />))}
+                            <Pie data={analytics?.paymentModes || []} cx="50%" cy="50%" outerRadius={130} dataKey="value" nameKey="name" label>
+                                {analytics?.paymentModes.map((entry, index) => (<Cell key={index} fill={pieColors[index % pieColors.length]} />))}
                             </Pie>
                             <Tooltip />
                             <Legend />
@@ -122,7 +83,7 @@ export default function PaymentAnalytics() {
                                 <th>Revenue</th>
                             </tr>
                         </thead>
-                        <tbody>{topPlans.map(
+                        <tbody>{analytics?.topPlans.map(
                             (plan, index) => (
                                 <tr key={plan.plan}>
                                     <td> {index === 0 && "1"} {index === 1 && "2"} {index === 2 && "3"} {index > 2 && `#${index + 1}`}</td>
@@ -136,7 +97,7 @@ export default function PaymentAnalytics() {
             <div className="analytics-chart-card">
                 <h3>Revenue By Month</h3>
                 <ResponsiveContainer width="100%" height={350}>
-                    <AreaChart data={revenueByMonth}>
+                    <AreaChart data={analytics?.revenueByMonth || []}>
                         <defs>
                             <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
