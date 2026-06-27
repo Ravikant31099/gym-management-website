@@ -50,6 +50,22 @@ export const getMembershipStatus = (customer) => {
 };
 export const formatPlanDuration = (months) => {
     if (!months) return "-";
-
     return `${months} Month${months > 1 ? "s" : ""}`;
+};
+
+export const allowOnlyAlphabets = (value) => {
+    return value.replace(/[^A-Za-z ]/g, "");
+};
+
+export const allowOnlyNumbers = (value) => {
+    return value.replace(/\D/g, "");
+};
+
+export const allowDecimal = (value) => {
+    let cleaned = value.replace(/[^0-9.]/g, "");
+    const parts = cleaned.split(".");
+    if (parts.length > 2) {
+        cleaned = parts[0] + "." + parts.slice(1).join("");
+    }
+    return cleaned;
 };

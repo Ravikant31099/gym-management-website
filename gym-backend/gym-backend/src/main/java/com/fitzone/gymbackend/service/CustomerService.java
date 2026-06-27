@@ -27,6 +27,7 @@ import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.entity.Plan;
+import com.fitzone.gymbackend.enums.ActivityType;
 import com.fitzone.gymbackend.enums.CustomerActivityType;
 import com.fitzone.gymbackend.repository.PlanRepository;
 import jakarta.transaction.Transactional;
@@ -61,6 +62,7 @@ public class CustomerService {
 	private final StorageProperties storageProperties;
 	private final CustomerActivityLogService customerActivityLogService;
 	private final CustomerActivityLogRepository customerActivityLogRepository;
+	private final AuditLogService auditLogService;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -70,13 +72,14 @@ public class CustomerService {
 	public CustomerService(CustomerRepository customerRepository, PlanRepository planRepository,
 			PaymentRepository paymentRepository, StorageProperties storageProperties,
 			CustomerActivityLogService customerActivityLogService,
-			CustomerActivityLogRepository customerActivityLogRepository) {
+			CustomerActivityLogRepository customerActivityLogRepository, AuditLogService auditLogService) {
 		this.customerRepository = customerRepository;
 		this.planRepository = planRepository;
 		this.paymentRepository = paymentRepository;
 		this.storageProperties = storageProperties;
 		this.customerActivityLogService = customerActivityLogService;
 		this.customerActivityLogRepository = customerActivityLogRepository;
+		this.auditLogService = auditLogService;
 	}
 
 	public Page<CustomerResponse> getAllCustomer(int page, int size, String sortBy, String sortDir, String search,
@@ -144,6 +147,8 @@ public class CustomerService {
 		createMembershipPayment(savedCustomer, plan, c.getPaymentMode(), c.getPaymentStatus(), c.getPaymentRemarks());
 		customerActivityLogService.logActivity(savedCustomer, CustomerActivityType.CUSTOMER_CREATED,
 				"Customer created");
+		auditLogService.logActivity("CUSTOMER", customer.getId(), ActivityType.CUSTOMER_CREATED,
+				"Customer '" + customer.getName() + "' created.");
 		return customerMapToResponse(savedCustomer);
 	}
 
@@ -159,6 +164,8 @@ public class CustomerService {
 		Customer savedCustomer = customerRepository.save(customer);
 		customerActivityLogService.logActivity(customer, CustomerActivityType.CUSTOMER_UPDATED,
 				"Customer details updated");
+		auditLogService.logActivity("CUSTOMER", customer.getId(), ActivityType.CUSTOMER_UPDATED,
+				"Customer '" + customer.getName() + "' updated.");
 		return customerMapToResponse(savedCustomer);
 	}
 
@@ -170,6 +177,8 @@ public class CustomerService {
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		customer.setArchived(true);
 		customerActivityLogService.logActivity(customer, CustomerActivityType.CUSTOMER_DELETED, "Customer deleted");
+		auditLogService.logActivity("CUSTOMER", customer.getId(), ActivityType.CUSTOMER_ARCHIVED,
+				"Customer '" + customer.getName() + "' archived.");
 		customerRepository.save(customer);
 	}
 
@@ -228,6 +237,8 @@ public class CustomerService {
 		createMembershipPayment(customer, plan, request.getPaymentMode(), request.getPaymentStatus(),
 				request.getPaymentRemarks());
 		customerActivityLogService.logActivity(customer, CustomerActivityType.MEMBERSHIP_RENEWED, "Membership renewed");
+		auditLogService.logActivity("CUSTOMER", customer.getId(), ActivityType.MEMBERSHIP_RENEWED,
+				"Membership renewed for customer '" + customer.getName() + "'.");
 		return customerMapToResponse(savedCustomer);
 	}
 
@@ -257,6 +268,8 @@ public class CustomerService {
 		customer.setImageUpdatedBy(username);
 		customerActivityLogService.logActivity(customer, CustomerActivityType.PROFILE_IMAGE_UPLOADED,
 				"Profile image uploaded");
+		auditLogService.logActivity("CUSTOMER", customer.getId(), ActivityType.CUSTOMER_PROFILE_UPLOADED,
+				"Customer '" + customer.getName() + "' image uploaded.");
 		customerRepository.save(customer);
 		return new CustomerImageUploadResponse(customer.getId(), customer.getName(), imageUrl, LocalDateTime.now(),
 				username, "Customer image uploaded successfully");

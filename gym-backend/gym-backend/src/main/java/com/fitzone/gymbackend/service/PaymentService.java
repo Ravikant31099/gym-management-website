@@ -17,6 +17,7 @@ import com.fitzone.gymbackend.dto.RevenueByMonthResponse;
 import com.fitzone.gymbackend.entity.Customer;
 import com.fitzone.gymbackend.entity.Payment;
 import com.fitzone.gymbackend.entity.Plan;
+import com.fitzone.gymbackend.enums.ActivityType;
 import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.repository.CustomerRepository;
@@ -34,14 +35,14 @@ public class PaymentService {
 	private final PaymentRepository paymentRepository;
 	private final CustomerRepository customerRepository;
 	private final PlanRepository planRepository;
-
-	
+	private final AuditLogService auditLogService;
 
 	public PaymentService(PaymentRepository paymentRepository, CustomerRepository customerRepository,
-			PlanRepository planRepository) {
+			PlanRepository planRepository, AuditLogService auditLogService) {
 		this.paymentRepository = paymentRepository;
 		this.customerRepository = customerRepository;
 		this.planRepository = planRepository;
+		this.auditLogService = auditLogService;
 	}
 
 	public Page<PaymentResponse> getPayments(String search, String status, String mode, Long planId, Pageable pageable,
@@ -78,12 +79,17 @@ public class PaymentService {
 		payment.setStatus(req.getStatus());
 		payment.setRemarks(req.getRemarks());
 		Payment savedPayment = paymentRepository.save(payment);
+		auditLogService.logActivity("PAYMENT", savedPayment.getId(), ActivityType.PAYMENT_CREATED,
+				"Payment received from '" + savedPayment.getCustomer().getName() + "' for ₹"
+						+ savedPayment.getAmount());
 		return paymentMapToResponse(savedPayment);
 	}
 
 	public void deletePayment(Long id) {
 		Payment payment = paymentRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Payment not found"));
 		paymentRepository.delete(payment);
+		auditLogService.logActivity("PAYMENT", payment.getId(), ActivityType.PAYMENT_DELETED,
+				"Payment Record for '" + payment.getCustomer().getName() + "' is deleted." + payment.getAmount());
 	}
 
 	public PaymentAnalyticsResponse getAnalytics() {

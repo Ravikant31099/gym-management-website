@@ -3,6 +3,7 @@ package com.fitzone.gymbackend.service;
 import com.fitzone.gymbackend.dto.PlanRequest;
 import com.fitzone.gymbackend.dto.PlanResponse;
 import com.fitzone.gymbackend.entity.Plan;
+import com.fitzone.gymbackend.enums.ActivityType;
 import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceInUseException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
@@ -20,12 +21,14 @@ public class PlanService {
 	private final PlanRepository planRepository;
 	private final CustomerRepository customerRepository;
 	private final PaymentRepository paymentRepository;
+	private final AuditLogService auditLogService;
 
 	public PlanService(PlanRepository planRepository, CustomerRepository customerRepository,
-			PaymentRepository paymentRepository) {
+			PaymentRepository paymentRepository, AuditLogService auditLogService) {
 		this.planRepository = planRepository;
 		this.customerRepository = customerRepository;
 		this.paymentRepository = paymentRepository;
+		this.auditLogService = auditLogService;
 	}
 
 	public List<PlanResponse> getAllPlans() {
@@ -48,14 +51,14 @@ public class PlanService {
 		plan.setPeriod(p.getPeriod());
 		plan.setPrice(p.getPrice());
 		plan.setPopular(p.getPopular());
-		return planMapToResponse(planRepository.save(plan));
+		Plan savedPlan = planRepository.save(plan);
+		auditLogService.logActivity("PLAN", savedPlan.getId(), ActivityType.PLAN_CREATED,
+				"Plan '" + savedPlan.getName() + "' created.");
+		return planMapToResponse(savedPlan);
 	}
 
 	public PlanResponse updateExistingPlan(Long id, PlanRequest p) {
 		Plan existing = planRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Plan not found"));
-		if (planRepository.existsByNameIgnoreCaseAndIdNot(p.getName(), id)) {
-			throw new BusinessException("Plan name already exists");
-		}
 		if (p.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
 			throw new BusinessException("Plan amount must be greater than zero.");
 		}
@@ -67,7 +70,10 @@ public class PlanService {
 		existing.setPrice(p.getPrice());
 		existing.setPeriod(p.getPeriod());
 		existing.setPopular(p.getPopular());
-		return planMapToResponse(planRepository.save(existing));
+		Plan updatedPlan = planRepository.save(existing);
+		auditLogService.logActivity("PLAN", updatedPlan.getId(), ActivityType.PLAN_UPDATED,
+				"Plan '" + updatedPlan.getName() + "' updated.");
+		return planMapToResponse(updatedPlan);
 	}
 
 	public void deactivatePlan(Long id) {
@@ -80,6 +86,8 @@ public class PlanService {
 		Plan plan = planRepository.findById(id).orElseThrow(() -> new ResourceNotFound("Plan not found"));
 		plan.setActive(false);
 		planRepository.save(plan);
+		auditLogService.logActivity("PLAN", plan.getId(), ActivityType.PLAN_DEACTIVATED,
+				"Plan '" + plan.getName() + "' deactivated.");
 	}
 
 	private PlanResponse planMapToResponse(Plan plan) {

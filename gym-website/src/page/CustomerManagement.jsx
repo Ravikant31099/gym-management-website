@@ -2,11 +2,11 @@ import "../style/Admin.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { formatDate, formatCurrency, getMembershipStatus } from "../util/CommonUtil";
+import { formatDate, formatCurrency, getMembershipStatus, allowOnlyAlphabets, allowOnlyNumbers } from "../util/CommonUtil";
 import { APP_CONFIG, CUSTOMER_STATUS, PAYMENT_STATUS, PAYMENT_MODE, CUSTOMER_DEFAULT_SORT, DEFAULT_FILTER } from "../constants/AppConstants";
 import { AdminSidebar, Loader, DetailItem, EmptyState } from "../components/common/index";
 import { Trash2, FileSpreadsheet, RefreshCcw } from "lucide-react";
-import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
+import { ConfirmModal, FormModal } from "../components/modals/index";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import AdminLayout from "../components/layout/AdminLayout";
@@ -24,8 +24,6 @@ export default function CustomerManagement() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedCustomerId, setSelectedCustomerId] = useState(null);
     const [deleting, setDeleting] = useState(false);
-    const [selectedCustomer, setSelectedCustomer] = useState(null);
-    const [showViewModal, setShowViewModal] = useState(false);
     const [viewCustomer, setViewCustomer] = useState(null);
     const [exporting, setExporting] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -157,7 +155,14 @@ export default function CustomerManagement() {
         }
     };
     const handleChange = (e) => {
-        setCustomerForm({ ...customerForm, [e.target.name]: e.target.value });
+        let { name, value } = e.target;
+        if (name === "name") {
+            value = allowOnlyAlphabets(value);
+        }
+        if (name === "phone") {
+            value = allowOnlyNumbers(value).slice(0, 10);
+        }
+        setCustomerForm({ ...customerForm, [name]: value });
     };
     const handleDeleteClick = (id) => {
         setSelectedCustomerId(id);
@@ -309,12 +314,12 @@ export default function CustomerManagement() {
                     <tbody>
                         {tableLoading ? (
                             <tr>
-                                <td colSpan="8" className="table-loader">
+                                <td colSpan="6" className="table-loader">
                                     <Loader />
                                 </td>
                             </tr>
                         ) : customers.length === 0 ? (<tr>
-                            <td colSpan="8">
+                            <td colSpan="6">
                                 <EmptyState title="No Customer Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
                         </tr>

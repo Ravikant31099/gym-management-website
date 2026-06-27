@@ -1,15 +1,13 @@
 import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { formatCurrency } from "../util/CommonUtil";
 import { APP_CONFIG, PLAN_PERIOD, PLAN_TYPE, DEFAULT_FILTER } from "../constants/AppConstants";
 import { FileSpreadsheet, RefreshCcw } from "lucide-react";
-import { formatPlanDuration } from "../util/CommonUtil";
-import { AdminSidebar, EmptyState } from "../components/common/index";
-import { toast } from "react-toastify";
-import ConfirmModal from "../components/modals/ConfirmModal";
-import FormModal from "../components/modals/FormModal";
+import { formatCurrency, formatPlanDuration, allowOnlyAlphabets, allowDecimal } from "../util/CommonUtil";
+import { AdminSidebar, EmptyState, DetailItem, Loader } from "../components/common/index";
+import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
 import AdminLayout from "../components/Layout/AdminLayout";
+import { toast } from "react-toastify";
 
 export default function PlanManagement() {
     const [plans, setPlans] = useState([]);
@@ -22,6 +20,9 @@ export default function PlanManagement() {
     const [saving, setSaving] = useState(false);
     const [updating, setUpdating] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [tableLoading, setTableLoading] = useState(false);
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState(null);
     const [search, setSearch] = useState("");
     const [popularFilter, setPopularFilter] = useState("ALL");
     const [planForm, setPlanForm] = useState({ name: "", description: "", price: "", period: PLAN_PERIOD.MONTH, popular: false });
@@ -30,8 +31,14 @@ export default function PlanManagement() {
 
     useEffect(() => { fetchPlans(); }, []);
     const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setPlanForm({ ...planForm, [name]: type === "checkbox" ? checked : value });
+        let { name, value, type, checked } = e.target;
+        if (name === "name") {
+            value = allowOnlyAlphabets(value);
+        }
+        if (name === "price") {
+            value = allowDecimal(value);
+        }
+        setPlanForm({ ...planForm, [name]: type === "checkbox" ? checked : value, });
     };
     const filteredPlans = plans.filter((plan) => {
         const matchesSearch = plan.name.toLowerCase().includes(search.toLowerCase());
@@ -48,6 +55,10 @@ export default function PlanManagement() {
         setPlanForm({ name: plan.name, description: plan.description, price: plan.price, period: plan.period, popular: plan.popular });
         setShowEditModal(true);
     };
+    const handleViewPlan = (plan) => {
+        setSelectedPlan(plan);
+        setShowViewModal(true);
+    };
     const validatePlanForm = () => {
         if (!planForm.name.trim()) {
             toast.error("Plan name is required");
@@ -57,11 +68,11 @@ export default function PlanManagement() {
             toast.error("Description is required");
             return false;
         }
-        if (!planForm.price.trim()) {
+        if (!planForm.price) {
             toast.error("Price is required");
             return false;
         }
-        if (!planForm.period.trim()) {
+        if (!planForm.period) {
             toast.error("Period is required");
             return false;
         }
@@ -69,6 +80,7 @@ export default function PlanManagement() {
     };
     const fetchPlans = async () => {
         try {
+            setTableLoading(true);
             const response = await apiRequest("/api/plans", "GET");
             await handleApiResponse(response);
             const data = await response.json();
@@ -76,6 +88,8 @@ export default function PlanManagement() {
         } catch (error) {
             console.log(error);
             toast.error(error.message);
+        } finally {
+            setTableLoading(false);
         }
     }
     const savePlan = async () => {
@@ -215,12 +229,18 @@ export default function PlanManagement() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredPlans.length === 0 ? (<tr>
-                            <td colSpan="7">
+                        {tableLoading ? (
+                            <tr>
+                                <td colSpan="6" className="table-loader">
+                                    <Loader />
+                                </td>
+                            </tr>
+                        ) : filteredPlans.length === 0 ? (<tr>
+                            <td colSpan="6">
                                 <EmptyState title="No Plan Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
                         </tr>) : (filteredPlans.map((plan) => (
-                            <tr key={plan.id}>
+                            <tr key={plan.id} onClick={() => handleViewPlan(plan)}>
                                 <td data-label="Name">{plan.name}</td>
                                 <td data-label="Description" className="plans-description"><span>{plan.description}</span></td>
                                 <td data-label="Price">{formatCurrency(plan.price)}</td>
@@ -283,6 +303,15 @@ export default function PlanManagement() {
                         <input type="checkbox" name="popular" checked={planForm.popular} onChange={handleInputChange} />
                     </label>
                 </FormModal>
+            )}
+            {/* View Plan Modal */}
+            {showViewModal && selectedPlan && (<ViewModal title="Plan Details" onClose={() => { setShowViewModal(false); setSelectedPlan(null); }}>
+                <DetailItem label="Plan Name" value={selectedPlan.name} />
+                <DetailItem label="Description" value={selectedPlan.description} />
+                <DetailItem label="Price" value={formatCurrency(selectedPlan.price)} />
+                <DetailItem label="Period" value={formatPlanDuration(selectedPlan.period)} />
+                <DetailItem label="Popular" value={selectedPlan.popular ? "Yes" : "No"} />
+            </ViewModal>
             )}
         </AdminLayout>
     );

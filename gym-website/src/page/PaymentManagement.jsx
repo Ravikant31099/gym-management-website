@@ -228,12 +228,12 @@ export default function PaymentManagement() {
                     <tbody>
                         {tableLoading ? (
                             <tr>
-                                <td colSpan="8" className="table-loader">
+                                <td colSpan="5" className="table-loader">
                                     <Loader />
                                 </td>
                             </tr>
                         ) : payments.length === 0 ? (<tr>
-                            <td colSpan="7">
+                            <td colSpan="5">
                                 <EmptyState title="No Payments Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
                         </tr>
