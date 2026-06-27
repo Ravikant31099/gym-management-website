@@ -685,7 +685,7 @@ body {
 
 .price-amount {
   font-family: var(--font-display);
-  font-size: 52px;
+  font-size: 2.5rem;
   font-weight: 900;
   color: var(--text-1);
   letter-spacing: -0.02em;

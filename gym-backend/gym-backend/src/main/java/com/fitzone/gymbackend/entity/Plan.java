@@ -14,7 +14,7 @@ public class Plan extends BaseEntity {
 	private String name;
 	private String description;
 	private BigDecimal price;
-	private String period;
+	private Integer period;
 	private Boolean popular;
 	@Column(nullable = false)
 	private Boolean active = true;
@@ -51,11 +51,11 @@ public class Plan extends BaseEntity {
 		this.price = string;
 	}
 
-	public String getPeriod() {
+	public Integer  getPeriod() {
 		return period;
 	}
 
-	public void setPeriod(String period) {
+	public void setPeriod(Integer period) {
 		this.period = period;
 	}
 
@@ -75,7 +75,7 @@ public class Plan extends BaseEntity {
 		this.active = active;
 	}
 
-	public Plan(Long id, String name, String description, BigDecimal price, String period, Boolean popular,
+	public Plan(Long id, String name, String description, BigDecimal price, Integer period, Boolean popular,
 			Boolean active) {
 		super();
 		Id = id;

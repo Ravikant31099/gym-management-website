@@ -40,4 +40,9 @@ public class PlanController {
 		planService.deactivatePlan(id);
 		return ResponseEntity.ok().build();
 	}
+	
+	@GetMapping("/export")
+	public List<PlanResponse> exportPlans() {
+	    return planService.exportPlans();
+	}
 }

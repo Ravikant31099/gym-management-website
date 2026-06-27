@@ -10,6 +10,8 @@ import com.fitzone.gymbackend.repository.CustomerRepository;
 import com.fitzone.gymbackend.repository.PaymentRepository;
 import com.fitzone.gymbackend.repository.PlanRepository;
 import org.springframework.stereotype.Service;
+import com.fitzone.gymbackend.constant.CustomerConstants;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -34,9 +36,15 @@ public class PlanService {
 		if (planRepository.existsByNameIgnoreCase(p.getName())) {
 			throw new BusinessException("Plan name already exists");
 		}
+		if (p.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+			throw new BusinessException("Plan amount must be greater than zero.");
+		}
+		if (!CustomerConstants.ALLOWED_PLAN_PERIOD.contains(p.getPeriod())) {
+			throw new IllegalArgumentException("Invalid Plan Period.");
+		}
 		Plan plan = new Plan();
-		plan.setName(p.getName());
-		plan.setDescription(p.getDescription());
+		plan.setName(p.getName().trim());
+		plan.setDescription(p.getDescription().trim());
 		plan.setPeriod(p.getPeriod());
 		plan.setPrice(p.getPrice());
 		plan.setPopular(p.getPopular());
@@ -48,8 +56,14 @@ public class PlanService {
 		if (planRepository.existsByNameIgnoreCaseAndIdNot(p.getName(), id)) {
 			throw new BusinessException("Plan name already exists");
 		}
-		existing.setName(p.getName());
-		existing.setDescription(p.getDescription());
+		if (p.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+			throw new BusinessException("Plan amount must be greater than zero.");
+		}
+		if (!CustomerConstants.ALLOWED_PLAN_PERIOD.contains(p.getPeriod())) {
+			throw new IllegalArgumentException("Invalid Plan Period.");
+		}
+		existing.setName(p.getName().trim());
+		existing.setDescription(p.getDescription().trim());
 		existing.setPrice(p.getPrice());
 		existing.setPeriod(p.getPeriod());
 		existing.setPopular(p.getPopular());
@@ -71,5 +85,9 @@ public class PlanService {
 	private PlanResponse planMapToResponse(Plan plan) {
 		return new PlanResponse(plan.getId(), plan.getName(), plan.getDescription(), plan.getPrice(), plan.getPeriod(),
 				plan.getPopular());
+	}
+
+	public List<PlanResponse> exportPlans() {
+		return planRepository.findByActiveTrue().stream().map(this::planMapToResponse).toList();
 	}
 }

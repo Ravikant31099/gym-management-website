@@ -2,9 +2,10 @@ package com.fitzone.gymbackend.dto;
 
 import java.math.BigDecimal;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class PlanRequest {
@@ -17,12 +18,13 @@ public class PlanRequest {
 	@Size(max = 500, message = "Description cannot exceed 500 characters")
 	private String description;
 
-	@NotBlank(message = "Plan price is required")
-	@Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "Invalid price format")
+	@NotNull(message = "Plan price is required")
+	@DecimalMin(value = "0.01", message = "Price must be greater than 0")
 	private BigDecimal price;
 
-	@NotBlank(message = "Please Enter Plan Period")
-	private String period;
+	@NotNull
+	@Min(1)
+	private Integer period;
 
 	@NotNull(message = "Popularity Not Provided")
 	private Boolean popular;
@@ -51,11 +53,11 @@ public class PlanRequest {
 		this.price = price;
 	}
 
-	public String getPeriod() {
+	public Integer getPeriod() {
 		return period;
 	}
 
-	public void setPeriod(String period) {
+	public void setPeriod(Integer period) {
 		this.period = period;
 	}
 

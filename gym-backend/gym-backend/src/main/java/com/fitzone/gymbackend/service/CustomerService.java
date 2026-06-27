@@ -29,9 +29,7 @@ import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.entity.Plan;
 import com.fitzone.gymbackend.enums.CustomerActivityType;
 import com.fitzone.gymbackend.repository.PlanRepository;
-
 import jakarta.transaction.Transactional;
-
 import com.fitzone.gymbackend.constant.CustomerConstants;
 import com.fitzone.gymbackend.dto.CustomerAnalyticsResponse;
 import com.fitzone.gymbackend.dto.CustomerDetailsResponse;
@@ -139,15 +137,13 @@ public class CustomerService {
 		customer.setEmail(c.getEmail());
 		customer.setPhone(c.getPhone());
 		customer.setJoinDate(c.getJoinDate());
-		int months = getPlanMonths(plan.getPeriod());
-		customer.setExpiryDate(c.getJoinDate().plusMonths(months));
+		customer.setExpiryDate(c.getJoinDate().plusMonths(plan.getPeriod()));
 		customer.setStatus(c.getStatus());
 		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
 		createMembershipPayment(savedCustomer, plan, c.getPaymentMode(), c.getPaymentStatus(), c.getPaymentRemarks());
 		customerActivityLogService.logActivity(savedCustomer, CustomerActivityType.CUSTOMER_CREATED,
 				"Customer created");
-
 		return customerMapToResponse(savedCustomer);
 	}
 
@@ -222,11 +218,10 @@ public class CustomerService {
 				.orElseThrow(() -> new ResourceNotFound("Customer not found"));
 		Plan plan = planRepository.findById(request.getPlanId())
 				.orElseThrow(() -> new ResourceNotFound("Plan not found"));
-		int months = getPlanMonths(plan.getPeriod());
 		LocalDate today = LocalDate.now();
 		LocalDate expiry = customer.getExpiryDate();
-		LocalDate newExpiry = (expiry != null && expiry.isAfter(today)) ? expiry.plusMonths(months)
-				: today.plusMonths(months);
+		LocalDate newExpiry = (expiry != null && expiry.isAfter(today)) ? expiry.plusMonths(plan.getPeriod())
+				: today.plusMonths(plan.getPeriod());
 		customer.setExpiryDate(newExpiry);
 		customer.setPlan(plan);
 		Customer savedCustomer = customerRepository.save(customer);
@@ -316,19 +311,6 @@ public class CustomerService {
 		return new CustomerResponse(c.getId(), c.getProfileImageUrl(), c.getName(), c.getEmail(), c.getPhone(),
 				c.getJoinDate(), c.getExpiryDate(), c.getStatus(), c.getPlan().getId(), c.getPlan().getName(),
 				c.getPlan().getPrice());
-	}
-
-	private int getPlanMonths(String period) {
-		if (period == null)
-			throw new IllegalArgumentException("Plan period is null");
-		return switch (period.toLowerCase().trim().replace("/", "")) {
-		case "month" -> 1;
-		case "3 month" -> 3;
-		case "6 month" -> 6;
-		case "9 month" -> 9;
-		case "year" -> 12;
-		default -> throw new IllegalArgumentException("Invalid plan period: " + period);
-		};
 	}
 
 	private void validateCustomerStatus(String status) {

@@ -2,12 +2,14 @@ import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { formatCurrency } from "../util/CommonUtil";
-import { APP_CONFIG, PLAN_PERIOD, PLAN_TYPE } from "../constants/AppConstants";
+import { APP_CONFIG, PLAN_PERIOD, PLAN_TYPE, DEFAULT_FILTER } from "../constants/AppConstants";
+import { FileSpreadsheet, RefreshCcw } from "lucide-react";
+import { formatPlanDuration } from "../util/CommonUtil";
+import { AdminSidebar, EmptyState } from "../components/common/index";
+import { toast } from "react-toastify";
 import ConfirmModal from "../components/modals/ConfirmModal";
 import FormModal from "../components/modals/FormModal";
 import AdminLayout from "../components/Layout/AdminLayout";
-import { AdminSidebar, EmptyState } from "../components/common/index";
-import { toast } from "react-toastify";
 
 export default function PlanManagement() {
     const [plans, setPlans] = useState([]);
@@ -23,6 +25,9 @@ export default function PlanManagement() {
     const [search, setSearch] = useState("");
     const [popularFilter, setPopularFilter] = useState("ALL");
     const [planForm, setPlanForm] = useState({ name: "", description: "", price: "", period: PLAN_PERIOD.MONTH, popular: false });
+    const [exporting, setExporting] = useState(false);
+    const resetFilters = () => { setSearch(""); setPopularFilter(DEFAULT_FILTER) };
+
     useEffect(() => { fetchPlans(); }, []);
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -32,8 +37,8 @@ export default function PlanManagement() {
         const matchesSearch = plan.name.toLowerCase().includes(search.toLowerCase());
         const matchesPopular = popularFilter === "ALL" || (popularFilter === "POPULAR" ? plan.popular : !plan.popular);
         return (matchesSearch && matchesPopular);
-    }
-    );
+    });
+    const totalPlans = plans.length;
     const openDeleteModal = (id) => {
         setSelectedPlanId(id);
         setShowDeleteModal(true);
@@ -133,6 +138,37 @@ export default function PlanManagement() {
     const resetPlanForm = () => {
         setPlanForm({ name: "", description: "", price: "", period: PLAN_PERIOD.MONTH, popular: false });
     };
+    const handleExportPlans = async () => {
+        try {
+            setExporting(true);
+            const response = await apiRequest("/api/plans/export");
+            await handleApiResponse(response);
+            const data = await response.json();
+            if (!data.length) {
+                toast.warning("No plans found");
+                return;
+            }
+            exportToCsv(data);
+            toast.success("Plans exported successfully");
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setExporting(false);
+        }
+    };
+    const exportToCsv = (data) => {
+        const headers = ["Plan Name", "Price", "Duration (Months)", "Description", "Popular"];
+        const rows = data.map(plan => [plan.name, plan.price, plan.period, plan.description, plan.popular ? "Yes" : "No"]);
+        const csv = [headers.join(","), ...rows.map(row => row.map(value => `"${value ?? ""}"`).join(","))].join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `fitzone_plans_${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
     return (
         <AdminLayout>
             <div className="header-card">
@@ -159,6 +195,13 @@ export default function PlanManagement() {
                 </select>
             </div>
             {/* TABLE */}
+            <div className="table-top">
+                <div className="table-summary"> Total Plans: {totalPlans}</div>
+                <div>
+                    <button className="export-btn" title="Export Customers to Excel" onClick={handleExportPlans}> {exporting ? "..." : ""}<FileSpreadsheet color="#30c40f" size={24} strokeWidth={2} /></button>
+                    <button className="refresh-btn" onClick={resetFilters}> <RefreshCcw color="#2563EB" size={24} strokeWidth={2} /> </button>
+                </div>
+            </div>
             <div className="table-wrapper">
                 <table className="plans-table">
                     <thead>
@@ -179,9 +222,9 @@ export default function PlanManagement() {
                         </tr>) : (filteredPlans.map((plan) => (
                             <tr key={plan.id}>
                                 <td data-label="Name">{plan.name}</td>
-                                <td data-label="Description"><span>{plan.description}</span></td>
+                                <td data-label="Description" className="plans-description"><span>{plan.description}</span></td>
                                 <td data-label="Price">{formatCurrency(plan.price)}</td>
-                                <td data-label="Period">{plan.period}</td>
+                                <td data-label="Period">{formatPlanDuration(plan.period)}</td>
                                 <td data-label="Popular">
                                     {plan.popular ?
                                         (<span className="popular-yes">Yes</span>) : (<span className="popular-no">No</span>)

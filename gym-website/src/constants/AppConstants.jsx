@@ -28,11 +28,11 @@ export const CUSTOMER_STATUS = {
     INACTIVE: "INACTIVE"
 };
 export const PLAN_PERIOD = {
-    MONTH: "/month",
-    THREE_MONTH: "/3 month",
-    SIX_MONTH: "/6 month",
-    NINE_MONTH: "/9 month",
-    YEAR: "/year"
+    MONTH: "1",
+    THREE_MONTH: "3",
+    SIX_MONTH: "6",
+    NINE_MONTH: "9",
+    YEAR: "12"
 };
 export const PLAN_TYPE = {
     NORMAL: "NORMAL",

@@ -1275,6 +1275,7 @@
     font-size: 0.75rem;
     letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border-subtle);
+    text-align: left;
 }
 
 .plans-table td {
@@ -1299,6 +1300,15 @@
 .plans-table td:nth-child(2) {
     font-weight: 600;
     color: white;
+    max-width: 260px;
+}
+
+.plans-description {
+    max-width: 100%;      
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .popular-yes {
@@ -2982,8 +2992,18 @@
     }
 
     .plan-badge,
-    .status-badge, .payment-status, .popular-yes,
+    .status-badge,
+    .payment-status,
+    .popular-yes,
     .popular-no {
         width: auto;
+    }
+
+    .plans-table td:nth-child(2) {
+        max-width: 100%;
+    }
+
+    .plans-description span{
+        margin-left: 10px;
     }
 }

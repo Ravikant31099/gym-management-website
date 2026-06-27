@@ -48,3 +48,8 @@ export const getMembershipStatus = (customer) => {
     }
     return { text: "Active", category: "ACTIVE", className: "active-status" };
 };
+export const formatPlanDuration = (months) => {
+    if (!months) return "-";
+
+    return `${months} Month${months > 1 ? "s" : ""}`;
+};

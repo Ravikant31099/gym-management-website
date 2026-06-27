@@ -26,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import com.fitzone.gymbackend.constant.CustomerConstants;
 
 @Service
 public class PaymentService {
@@ -34,8 +35,7 @@ public class PaymentService {
 	private final CustomerRepository customerRepository;
 	private final PlanRepository planRepository;
 
-	List<String> validStatuses = List.of("PAID", "PENDING", "FAILED");
-	List<String> validModes = List.of("CASH", "UPI", "CARD", "BANK_TRANSFER");
+	
 
 	public PaymentService(PaymentRepository paymentRepository, CustomerRepository customerRepository,
 			PlanRepository planRepository) {
@@ -63,10 +63,10 @@ public class PaymentService {
 		if (!Boolean.TRUE.equals(plan.getActive())) {
 			throw new BusinessException("Cannot create payment for inactive plan");
 		}
-		if (!validStatuses.contains(req.getStatus().toUpperCase())) {
+		if (!CustomerConstants.VALID_STATUSES.contains(req.getStatus().toUpperCase())) {
 			throw new BusinessException("Invalid payment status");
 		}
-		if (!validModes.contains(req.getPaymentMode().toUpperCase())) {
+		if (!CustomerConstants.VALID_MODES.contains(req.getPaymentMode().toUpperCase())) {
 			throw new BusinessException("Invalid payment mode");
 		}
 		Payment payment = new Payment();

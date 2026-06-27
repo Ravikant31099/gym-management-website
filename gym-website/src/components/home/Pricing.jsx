@@ -1,5 +1,5 @@
 import '../../style/Home.css';
-import { formatCurrency } from '../../util/CommonUtil';
+import { formatCurrency, formatPlanDuration } from '../../util/CommonUtil';
 import { apiRequest, handleApiResponse } from "../../util/api";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
@@ -50,7 +50,7 @@ export default function Pricing({ onSelectPlan }) {
                             <h3 className="plan-name">{plan.name}</h3>
                             <div className="price-container">
                                 <span className="price-amount">{formatCurrency(plan.price)}</span>
-                                <span className="price-period">{plan.period}</span>
+                                <span className="price-period">/{formatPlanDuration(plan.period)}</span>
                             </div>
                             <button className="pricing-btn" type="button" onClick={() => handleChoosePlan(plan.name)}>Choose Plan</button>
                         </div>

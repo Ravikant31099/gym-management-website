@@ -3,15 +3,15 @@ package com.fitzone.gymbackend.dto;
 import java.math.BigDecimal;
 
 public class PlanResponse {
-	
+
 	private Long Id;
 	private String name;
 	private String description;
 	private BigDecimal price;
-	private String period;
+	private Integer period;
 	private Boolean popular;
-	
-	public PlanResponse(Long id, String name, String description, BigDecimal price, String period, Boolean popular) {
+
+	public PlanResponse(Long id, String name, String description, BigDecimal price, Integer period, Boolean popular) {
 		super();
 		Id = id;
 		this.name = name;
@@ -53,11 +53,11 @@ public class PlanResponse {
 		this.price = price;
 	}
 
-	public String getPeriod() {
+	public Integer getPeriod() {
 		return period;
 	}
 
-	public void setPeriod(String period) {
+	public void setPeriod(Integer period) {
 		this.period = period;
 	}
 
@@ -69,6 +69,4 @@ public class PlanResponse {
 		this.popular = popular;
 	}
 
-	
-	
 }
