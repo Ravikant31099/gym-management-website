@@ -252,8 +252,8 @@ export default function PlanManagement() {
                                 </td>
                                 <td data-label="Action">
                                     <div className="action-buttons">
-                                        <button className="view-btn" onClick={() => openEditModal(plan)}> Edit </button>
-                                        <button className="delete-btn" onClick={() => openDeleteModal(plan.id)}> Delete</button>
+                                        <button onClick={(e) => { e.stopPropagation(); openEditModal(plan) }}> Edit </button>
+                                        <button onClick={(e) => { e.stopPropagation(); openDeleteModal(plan.id) }}> Delete</button>
                                     </div>
                                 </td>
                             </tr>
@@ -286,23 +286,22 @@ export default function PlanManagement() {
                 <ConfirmModal title="Delete Plan" description="Are you sure you want to delete this plan?" onClose={() => setShowDeleteModal(false)} onConfirm={deletePlan} loading={deleting} />
             )}
             {/* Edit Plan Modal */}
-            {showEditModal && (
-                <FormModal title="Edit Plan" onClose={() => setShowEditModal(false)} onSubmit={updatePlan} loading={updating} buttonText="Update Plan">
-                    <input type="text" name="name" placeholder="Plan Name" value={planForm.name} onChange={handleInputChange} className="search-input" />
-                    <input type="text" name="description" placeholder="Description" value={planForm.description} onChange={handleInputChange} className="search-input" />
-                    <input type="text" name="price" placeholder="Price" value={planForm.price} onChange={handleInputChange} className="search-input" />
-                    <select name="period" value={planForm.period} className="filter-select-modal" onChange={handleInputChange}>
-                        <option value={PLAN_PERIOD.MONTH}>MONTH</option>
-                        <option value={PLAN_PERIOD.THREE_MONTH}>3 MONTH</option>
-                        <option value={PLAN_PERIOD.SIX_MONTH}>6 MONTH</option>
-                        <option value={PLAN_PERIOD.NINE_MONTH}>9 MONTH</option>
-                        <option value={PLAN_PERIOD.YEAR}>YEAR</option>
-                    </select>
-                    <label className="popular-checkbox-card">
-                        <span>Mark as Popular Plan</span>
-                        <input type="checkbox" name="popular" checked={planForm.popular} onChange={handleInputChange} />
-                    </label>
-                </FormModal>
+            {showEditModal && (<FormModal title="Edit Plan" onClose={() => setShowEditModal(false)} onSubmit={updatePlan} loading={updating} buttonText="Update Plan">
+                <input type="text" name="name" placeholder="Plan Name" value={planForm.name} onChange={handleInputChange} className="search-input" />
+                <input type="text" name="description" placeholder="Description" value={planForm.description} onChange={handleInputChange} className="search-input" />
+                <input type="text" name="price" placeholder="Price" value={planForm.price} onChange={handleInputChange} className="search-input" />
+                <select name="period" value={planForm.period} className="filter-select-modal" onChange={handleInputChange}>
+                    <option value={PLAN_PERIOD.MONTH}>MONTH</option>
+                    <option value={PLAN_PERIOD.THREE_MONTH}>3 MONTH</option>
+                    <option value={PLAN_PERIOD.SIX_MONTH}>6 MONTH</option>
+                    <option value={PLAN_PERIOD.NINE_MONTH}>9 MONTH</option>
+                    <option value={PLAN_PERIOD.YEAR}>YEAR</option>
+                </select>
+                <label className="popular-checkbox-card">
+                    <span>Mark as Popular Plan</span>
+                    <input type="checkbox" name="popular" checked={planForm.popular} onChange={handleInputChange} />
+                </label>
+            </FormModal>
             )}
             {/* View Plan Modal */}
             {showViewModal && selectedPlan && (<ViewModal title="Plan Details" onClose={() => { setShowViewModal(false); setSelectedPlan(null); }}>

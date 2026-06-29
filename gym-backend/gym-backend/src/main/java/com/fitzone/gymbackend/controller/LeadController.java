@@ -1,6 +1,7 @@
 package com.fitzone.gymbackend.controller;
 
-import com.fitzone.gymbackend.entity.Lead;
+import com.fitzone.gymbackend.dto.LeadRequest;
+import com.fitzone.gymbackend.dto.LeadResponse;
 import com.fitzone.gymbackend.service.LeadService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,12 @@ public class LeadController {
 	}
 
 	@PostMapping
-	public ResponseEntity<Lead> saveLead(@Valid @RequestBody Lead lead) {
+	public ResponseEntity<LeadResponse> saveLead(@Valid @RequestBody LeadRequest lead) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(leadService.saveLead(lead));
 	}
 
 	@GetMapping
-	public ResponseEntity<List<Lead>> getAllLeads() {
+	public ResponseEntity<List<LeadResponse>> getAllLeads() {
 		return ResponseEntity.ok(leadService.getAllLeads());
 	}
 
@@ -35,7 +36,13 @@ public class LeadController {
 	}
 
 	@PutMapping("/{id}/status")
-	public ResponseEntity<Lead> updateStatus(@PathVariable("id") Long id, @RequestParam("status") String status) {
+	public ResponseEntity<LeadResponse> updateStatus(@PathVariable("id") Long id,
+			@RequestParam("status") String status) {
 		return ResponseEntity.ok(leadService.updateStatus(id, status));
+	}
+
+	@PutMapping("/{id}")
+	public ResponseEntity<LeadResponse> updateLead(@PathVariable Long id, @Valid @RequestBody LeadRequest request) {
+		return ResponseEntity.ok(leadService.updateLead(id, request));
 	}
 }

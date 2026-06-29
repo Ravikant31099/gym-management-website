@@ -542,6 +542,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    cursor: pointer;
 }
 
 .leads-table th {
@@ -629,7 +630,8 @@
 }
 
 .view-btn,
-.delete-btn {
+.delete-btn,
+.edit-btn {
     padding: 10px 16px;
     border-radius: 10px;
     font-size: 14px;
@@ -646,6 +648,17 @@
 
 .view-btn:hover {
     background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.edit-btn {
+    background: rgba(223, 198, 107, 0.12);
+    color: #f68f3b;
+}
+
+.edit-btn:hover {
+    background: #eb6e25;
     color: #ffffff;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }

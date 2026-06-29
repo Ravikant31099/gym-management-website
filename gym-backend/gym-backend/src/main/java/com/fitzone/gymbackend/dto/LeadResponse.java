@@ -1,27 +1,26 @@
-package com.fitzone.gymbackend.entity;
+package com.fitzone.gymbackend.dto;
 
-import jakarta.persistence.*;
+public class LeadResponse {
+	private Long id;
 
-@Entity
-@Table(name = "leads")
-public class Lead extends BaseEntity {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long Id;
 	private String name;
+
 	private String email;
+
 	private String phone;
+
 	private String subject;
+
 	private String message;
-	private String status = "NEW";
+
+	private String status;
 
 	public Long getId() {
-		return Id;
+		return id;
 	}
 
 	public void setId(Long id) {
-		Id = id;
+		this.id = id;
 	}
 
 	public String getName() {
@@ -70,6 +69,22 @@ public class Lead extends BaseEntity {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public LeadResponse(Long id, String name, String email, String phone, String subject, String message,
+			String status) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.phone = phone;
+		this.subject = subject;
+		this.message = message;
+		this.status = status;
+	}
+
+	public LeadResponse() {
+		super();
 	}
 
 }

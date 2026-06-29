@@ -67,8 +67,6 @@ public class CustomerService {
 	@Value("${file.upload-dir}")
 	private String uploadDir;
 
-	private static final List<String> ALLOWED_SORT_FIELDS = List.of("name", "expiryDate", "status", "plan");
-
 	public CustomerService(CustomerRepository customerRepository, PlanRepository planRepository,
 			PaymentRepository paymentRepository, StorageProperties storageProperties,
 			CustomerActivityLogService customerActivityLogService,
@@ -84,7 +82,7 @@ public class CustomerService {
 
 	public Page<CustomerResponse> getAllCustomer(int page, int size, String sortBy, String sortDir, String search,
 			String status, String membershipStatus, Long planId) {
-		if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+		if (!CustomerConstants.ALLOWED_SORT_FIELDS.contains(sortBy)) {
 			sortBy = "createdAt";
 		}
 		Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
 import { LEAD_STATUS } from "../constants/AppConstants";
 import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
-import { ConfirmModal, ViewModal } from "../components/modals/index";
+import { ConfirmModal, ViewModal, FormModal } from "../components/modals/index";
 import AdminLayout from "../components/layout/AdminLayout";
 import { toast } from "react-toastify";
 
@@ -17,16 +17,41 @@ export default function LeadManagement() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [deletingLead, setDeletingLead] = useState(false);
     const [updatingStatusId, setUpdatingStatusId] = useState(null);
+    const [editingLead, setEditingLead] = useState(null);
+    const [updating, setUpdating] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const statusOptions = [LEAD_STATUS.NEW, LEAD_STATUS.CONTACTED, LEAD_STATUS.FOLLOWUP, LEAD_STATUS.JOINED, LEAD_STATUS.NOTINTERESTED];
+    const [leadForm, setLeadForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
+
     const filteredLeads = leads.filter((lead) => {
         const matchesSearch = lead.name.toLowerCase().includes(search.toLowerCase()) || lead.email.toLowerCase().includes(search.toLowerCase()) || lead.phone.includes(search);
         const matchesStatus = statusFilter === "ALL" || lead.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
     useEffect(() => { const isAnyModalOpen = showViewModal || showDeleteModal; document.body.style.overflow = isAnyModalOpen ? "hidden" : "auto"; }, [showViewModal, showDeleteModal]);
-    const openViewModal = (lead) => { setSelectedLead(lead); setShowViewModal(true); };
-    const openDeleteModal = (id) => { setSelectedLead(id); setShowDeleteModal(true); };
-    const confirmDelete = () => { deleteLead(selectedLeadId); setShowDeleteModal(false); setSelectedLead(null); };
+    const openViewModal = (lead) => {
+        setSelectedLead(lead);
+        setShowViewModal(true);
+    };
+    const openDeleteModal = (id) => {
+        setSelectedLead(id);
+        setShowDeleteModal(true);
+    };
+    const confirmDelete = () => {
+        deleteLead(selectedLead);
+        setShowDeleteModal(false);
+        setSelectedLead(null);
+    };
+    const handleEditLead = (lead) => {
+        setEditingLead(lead);
+        setLeadForm({ name: lead.name, email: lead.email, phone: lead.phone, subject: lead.subject, message: lead.message });
+        setShowEditModal(true);
+    };
+    const closeModal = () => {
+        setShowEditModal(false);
+        setEditingLead(null);
+        setLeadForm({ name: "", email: "", phone: "", subject: "", message: "" });
+    };
     useEffect(() => { fetchLeadStats(); }, []);
     const fetchLeadStats = async () => {
         try {
@@ -37,6 +62,22 @@ export default function LeadManagement() {
         } catch (error) {
             console.log(error);
             toast.error(error.message);
+        }
+    };
+    const updateLead = async () => {
+        try {
+            setUpdating(true);
+            const response = await apiRequest(`/api/leads/${editingLead.id}`,
+                { method: "PUT", body: JSON.stringify(leadForm) }
+            );
+            await handleApiResponse(response);
+            toast.success("Lead updated successfully.");
+            await fetchLeadStats();
+            closeModal();
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setUpdating(false);
         }
     };
     const deleteLead = async (id) => {
@@ -111,12 +152,12 @@ export default function LeadManagement() {
                             </td>
                         </tr>
                         ) : (filteredLeads.map((lead, index) =>
-                            <tr key={lead.id} className={index % 2 === 0 ? "row-even" : "row-odd"}>
+                            <tr key={lead.id} className={index % 2 === 0 ? "row-even" : "row-odd"} onClick={() => openViewModal(lead)}>
                                 <td data-label="Name">{lead.name}</td>
                                 <td data-label="Email"><span>{lead.email}</span></td>
                                 <td data-label="Phone">{lead.phone}</td>
                                 <td data-label="Subject">{lead.subject}</td>
-                                <td data-label="Message"title={lead.message} className="message-cell"><span>{lead.message}</span> </td>
+                                <td data-label="Message" title={lead.message} className="message-cell"><span>{lead.message}</span> </td>
                                 <td data-label="Status">
                                     <select value={lead.status || "NEW"} onChange={(e) => updateStatus(lead.id, e.target.value)}
                                         className="status-select"
@@ -128,8 +169,8 @@ export default function LeadManagement() {
                                 </td>
                                 <td data-label="Action">
                                     <div className="action-buttons">
-                                        <button className="view-btn" onClick={() => openViewModal(lead)}> View</button>
-                                        <button className="delete-btn" onClick={() => openDeleteModal(lead.id)}> Delete</button>
+                                        <button className="delete-btn" onClick={(e) => {e.stopPropagation(); openDeleteModal(lead.id)}}> Delete</button>
+                                        <button className="edit-btn" onClick={(e) => {e.stopPropagation(); handleEditLead(lead)}}> Edit</button>
                                     </div>
                                 </td>
                             </tr>
@@ -152,6 +193,15 @@ export default function LeadManagement() {
             {/* DELETE CONFIRMATION MODAL */}
             {showDeleteModal && (
                 <ConfirmModal title="Delete Lead" description="Are you sure you want to delete this lead?" onClose={() => setShowDeleteModal(false)} onConfirm={confirmDelete} loading={deletingLead} />
+            )}
+            {/* EDIT MODAL */}
+            {showEditModal && (<FormModal title="Edit Plan" onClose={() => setShowEditModal(false)} onSubmit={updateLead} loading={updating} buttonText="Update Lead">
+                <input type="text" className="search-input" value={leadForm.name} onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })} placeholder="Name" />
+                <input type="email" className="search-input" value={leadForm.email} onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })} placeholder="Email" />
+                <input type="text" className="search-input" value={leadForm.phone} onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })} placeholder="Phone" />
+                <input type="text" className="search-input" value={leadForm.subject} onChange={(e) => setLeadForm({ ...leadForm, subject: e.target.value })} placeholder="Subject" />
+                <textarea rows="4" className="search-input" value={leadForm.message} onChange={(e) => setLeadForm({ ...leadForm, message: e.target.value })} placeholder="Message" />
+            </FormModal>
             )}
         </AdminLayout>
     );

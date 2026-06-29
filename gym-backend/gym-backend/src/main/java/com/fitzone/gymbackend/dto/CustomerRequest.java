@@ -19,7 +19,7 @@ public class CustomerRequest {
 	private String email;
 
 	@NotBlank(message = "Phone number is required")
-	@Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")
+	@Pattern(regexp = "^[0-9]{7,15}$", message = "Please Enter valid Phone Number")
 	private String phone;
 
 	@NotNull(message = "Join date is required")
