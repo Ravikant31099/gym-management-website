@@ -15,6 +15,8 @@ public class Lead extends BaseEntity {
 	private String subject;
 	private String message;
 	private String status = "NEW";
+	@Column(nullable = false)
+	private Boolean active = true;
 
 	public Long getId() {
 		return Id;
@@ -71,5 +73,13 @@ public class Lead extends BaseEntity {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+	
+	public Boolean getActive() {
+		return active;
+	}
 
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+	
 }

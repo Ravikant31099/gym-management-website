@@ -1,9 +1,10 @@
 import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { LEAD_STATUS } from "../constants/AppConstants";
+import { LEAD_STATUS, DEFAULT_FILTER } from "../constants/AppConstants";
 import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
 import { ConfirmModal, ViewModal, FormModal } from "../components/modals/index";
+import { FileSpreadsheet, RefreshCcw } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import { toast } from "react-toastify";
 
@@ -20,6 +21,7 @@ export default function LeadManagement() {
     const [editingLead, setEditingLead] = useState(null);
     const [updating, setUpdating] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [exporting, setExporting] = useState(false);
     const statusOptions = [LEAD_STATUS.NEW, LEAD_STATUS.CONTACTED, LEAD_STATUS.FOLLOWUP, LEAD_STATUS.JOINED, LEAD_STATUS.NOTINTERESTED];
     const [leadForm, setLeadForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
 
@@ -28,6 +30,7 @@ export default function LeadManagement() {
         const matchesStatus = statusFilter === "ALL" || lead.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+    const resetFilters = () => { setSearch(""); setStatusFilter(DEFAULT_FILTER);};
     useEffect(() => { const isAnyModalOpen = showViewModal || showDeleteModal; document.body.style.overflow = isAnyModalOpen ? "hidden" : "auto"; }, [showViewModal, showDeleteModal]);
     const openViewModal = (lead) => {
         setSelectedLead(lead);
@@ -108,6 +111,50 @@ export default function LeadManagement() {
             setUpdatingStatusId(null);
         }
     };
+    const handleExportLeads = async () => {
+        try {
+            setExporting(true);
+            const params = new URLSearchParams();
+            if (search.trim()) {
+                params.append("search", search);
+            }
+            if (statusFilter !== "ALL") {
+                params.append("status", statusFilter);
+            }
+            const response = await apiRequest(`/api/leads/export?${params}`);
+            await handleApiResponse(response);
+            const data = await response.json();
+            if (!data || data.length === 0) {
+                toast.warning("No lead data found.");
+                return;
+            }
+            exportToCsv(data);
+            toast.success("Lead report exported successfully.");
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message);
+        } finally {
+            setExporting(false);
+        }
+    };
+    const exportToCsv = (data) => {
+        const headers = ["ID", "Name", "Email", "Phone", "Subject", "Status", "Created Date"];
+        const rows = data.map(lead => [lead.id, lead.name, lead.email, lead.phone, lead.subject, lead.status, lead.createdAt]);
+        const csvContent = [headers.join(","), ...rows.map(row => row.map(value => `"${value ?? ""}"`).join(","))].join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        let fileName = "fitzone_leads";
+        if (statusFilter !== "ALL") {
+            fileName += `_${statusFilter.toLowerCase()}`;
+        }
+        fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
     return (
         <AdminLayout>
             <div className="header-card">
@@ -132,6 +179,13 @@ export default function LeadManagement() {
                 </select>
             </div>
             {/* TABLE */}
+            <div className="table-top">
+                <div className="table-summary"> Total Leads: 5</div>
+                <div>
+                    <button className="export-btn" title="Export Leads to Excel" onClick={handleExportLeads}> {exporting ? "..." : ""}<FileSpreadsheet color="#30c40f" size={24} strokeWidth={2} /></button>
+                    <button className="refresh-btn" onClick={resetFilters}> <RefreshCcw color="#2563EB" size={24} strokeWidth={2} /> </button>
+                </div>
+            </div>
             <div className="table-wrapper">
                 <table className="leads-table">
                     <thead>
@@ -169,8 +223,8 @@ export default function LeadManagement() {
                                 </td>
                                 <td data-label="Action">
                                     <div className="action-buttons">
-                                        <button className="delete-btn" onClick={(e) => {e.stopPropagation(); openDeleteModal(lead.id)}}> Delete</button>
-                                        <button className="edit-btn" onClick={(e) => {e.stopPropagation(); handleEditLead(lead)}}> Edit</button>
+                                        <button className="delete-btn" onClick={(e) => { e.stopPropagation(); openDeleteModal(lead.id) }}> Delete</button>
+                                        <button className="edit-btn" onClick={(e) => { e.stopPropagation(); handleEditLead(lead) }}> Edit</button>
                                     </div>
                                 </td>
                             </tr>

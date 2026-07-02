@@ -382,6 +382,13 @@
     font-weight: 400;
 }
 
+textarea.search-input {
+    padding: 12px 24px;
+    field-sizing: content;
+    min-height: 80px;
+    max-height: 300px;
+}
+
 .custom-date-picker {
     width: 100%;
     min-height: 60px;

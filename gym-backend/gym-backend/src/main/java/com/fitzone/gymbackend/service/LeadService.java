@@ -4,6 +4,7 @@ import com.fitzone.gymbackend.constant.CustomerConstants;
 import com.fitzone.gymbackend.dto.LeadRequest;
 import com.fitzone.gymbackend.dto.LeadResponse;
 import com.fitzone.gymbackend.entity.Lead;
+import com.fitzone.gymbackend.enums.ActivityType;
 import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.repository.LeadRepository;
@@ -15,48 +16,69 @@ import java.util.List;
 public class LeadService {
 
 	private final LeadRepository leadRepository;
-	
-	public LeadService(LeadRepository leadRepository) {
+	private final AuditLogService auditLogService;
+
+	public LeadService(LeadRepository leadRepository, AuditLogService auditLogService) {
 		this.leadRepository = leadRepository;
+		this.auditLogService = auditLogService;
 	}
 
 	public LeadResponse saveLead(LeadRequest lead) {
-		if (leadRepository.existsByPhone(lead.getPhone())) {
+		if (leadRepository.existsByPhoneAndActiveTrue(lead.getPhone())) {
 			throw new BusinessException("Lead already exists with this phone number.");
 		}
 		Lead saveLead = mapToEntity(lead);
+		auditLogService.logActivity("LEAD", saveLead.getId(), ActivityType.LEAD_CREATED,
+				"Lead Created for :- " + lead.getName());
 		return leadMapToResponse(leadRepository.save(saveLead));
 	}
 
 	public List<LeadResponse> getAllLeads() {
-		return leadRepository.findAll().stream().map(this::leadMapToResponse).toList();
+		return leadRepository.findByActiveTrue().stream().map(this::leadMapToResponse).toList();
 	}
 
 	public void deleteLead(Long id) {
-		Lead lead = leadRepository.findById(id)
+		Lead lead = leadRepository.findByIdAndActiveTrue(id)
 				.orElseThrow(() -> new ResourceNotFound("Lead not found with id: " + id));
-		leadRepository.delete(lead);
+		lead.setActive(false);
+		auditLogService.logActivity("LEAD", lead.getId(), ActivityType.LEAD_DELETED,
+				"Lead deactivated for : " + lead.getName());
+		leadRepository.save(lead);
 	}
 
 	public LeadResponse updateStatus(Long id, String status) {
-		Lead lead = leadRepository.findById(id)
+		Lead lead = leadRepository.findByIdAndActiveTrue(id)
 				.orElseThrow(() -> new ResourceNotFound("Lead not found with id: " + id));
 		if (!CustomerConstants.ALLOWED_LEAD_STATUS.contains(status)) {
-		    throw new IllegalArgumentException("Invalid Lead Status.");
+			throw new IllegalArgumentException("Invalid Lead Status.");
 		}
 		lead.setStatus(status);
-		return leadMapToResponse(leadRepository.save(lead));
+		Lead updatedStatusLead = leadRepository.save(lead);
+		auditLogService.logActivity("LEAD", lead.getId(), ActivityType.LEAD_STATUS_UPDATED,
+				"Status updated for Lead created by :- " + lead.getName());
+		return leadMapToResponse(updatedStatusLead);
 	}
-	
+
 	public LeadResponse updateLead(Long id, LeadRequest request) {
-	    Lead lead = leadRepository.findById(id)
-	            .orElseThrow(() -> new ResourceNotFound("Lead not found."));
-	    lead.setName(request.getName().trim());
-	    lead.setEmail(request.getEmail().trim().toLowerCase());
-	    lead.setPhone(request.getPhone().trim());
-	    lead.setSubject(request.getSubject().trim());
-	    lead.setMessage(request.getMessage().trim());
-	    return leadMapToResponse(leadRepository.save(lead));
+		Lead lead = leadRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFound("Lead not found."));
+		lead.setName(request.getName().trim());
+		lead.setEmail(request.getEmail().trim().toLowerCase());
+		lead.setPhone(request.getPhone().trim());
+		lead.setSubject(request.getSubject().trim());
+		lead.setMessage(request.getMessage().trim());
+		Lead updatedLead = leadRepository.save(lead);
+		auditLogService.logActivity("LEAD", lead.getId(), ActivityType.LEAD_STATUS_UPDATED,
+				"Lead updated for Lead created by :- " + lead.getName());
+		return leadMapToResponse(updatedLead);
+	}
+
+	public List<LeadResponse> exportLeads(String search, String status) {
+		return leadRepository.exportLeads(emptyToNull(search), emptyToNull(status)).stream()
+				.map(this::leadMapToResponse).toList();
+	}
+
+	private String emptyToNull(String value) {
+		return value == null || value.isBlank() ? null : value;
 	}
 
 	private Lead mapToEntity(LeadRequest request) {

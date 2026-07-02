@@ -45,4 +45,10 @@ public class LeadController {
 	public ResponseEntity<LeadResponse> updateLead(@PathVariable Long id, @Valid @RequestBody LeadRequest request) {
 		return ResponseEntity.ok(leadService.updateLead(id, request));
 	}
+
+	@GetMapping("/export")
+	public ResponseEntity<List<LeadResponse>> exportLeads(@RequestParam(required = false) String search,
+			@RequestParam(required = false) String status) {
+		return ResponseEntity.ok(leadService.exportLeads(search, status));
+	}
 }
