@@ -1,6 +1,7 @@
 package com.fitzone.gymbackend.service;
 
 import com.fitzone.gymbackend.constant.CustomerConstants;
+import com.fitzone.gymbackend.dto.LeadAnalyticsResponse;
 import com.fitzone.gymbackend.dto.LeadRequest;
 import com.fitzone.gymbackend.dto.LeadResponse;
 import com.fitzone.gymbackend.entity.Lead;
@@ -8,6 +9,10 @@ import com.fitzone.gymbackend.enums.ActivityType;
 import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.repository.LeadRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,8 +38,12 @@ public class LeadService {
 		return leadMapToResponse(leadRepository.save(saveLead));
 	}
 
-	public List<LeadResponse> getAllLeads() {
-		return leadRepository.findByActiveTrue().stream().map(this::leadMapToResponse).toList();
+	public Page<LeadResponse> getAllLeads(String search, String status, Pageable pageable, String sortBy,
+			String sortDir) {
+		Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+		Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+		Page<Lead> leads = leadRepository.searchLeads(emptyToNull(search), emptyToNull(status), sortedPageable);
+		return leads.map(this::leadMapToResponse);
 	}
 
 	public void deleteLead(Long id) {
@@ -75,6 +84,15 @@ public class LeadService {
 	public List<LeadResponse> exportLeads(String search, String status) {
 		return leadRepository.exportLeads(emptyToNull(search), emptyToNull(status)).stream()
 				.map(this::leadMapToResponse).toList();
+	}
+
+	public LeadAnalyticsResponse getLeadAnalytics() {
+		return new LeadAnalyticsResponse(leadRepository.countByActiveTrue(),
+				leadRepository.countByActiveTrueAndStatus("NEW"),
+				leadRepository.countByActiveTrueAndStatus("CONTACTED"),
+				leadRepository.countByActiveTrueAndStatus("FOLLOWUP"),
+				leadRepository.countByActiveTrueAndStatus("JOINED"),
+				leadRepository.countByActiveTrueAndStatus("NOTINTERESTED"));
 	}
 
 	private String emptyToNull(String value) {

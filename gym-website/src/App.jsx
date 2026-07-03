@@ -121,13 +121,12 @@ Completed Activity:
 2. Payment Management with All Validations Production ready. - Completed
 3. Plan Renewal with All Validations Production Ready - Completed.
 4. Customer Details with Customer Image Upload and All Validations Page Production Ready - Completed.
-5. Audit Logs for Customer Management - Completed.
+5. Audit Logs - Completed.
 6. Customer/Payments/Plan Export CSV - Completed.
 7. Plan Management Production Ready - Completed.
+8. Lead Management Production Ready - Completed.
 
 To Do Activity:
-Lead Management Production Ready - Working in Progress
-Audit Logs for Lead Management - Work in Progress   
 Login/Logout - Work in Progress
 Admin User Registration with Role - Work in Progress 
 

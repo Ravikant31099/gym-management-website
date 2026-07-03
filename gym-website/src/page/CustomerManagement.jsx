@@ -2,7 +2,7 @@ import "../style/Admin.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { formatDate, formatCurrency, getMembershipStatus, allowOnlyAlphabets, allowOnlyNumbers } from "../util/CommonUtil";
+import { formatDate, formatCurrency, getMembershipStatus, allowOnlyAlphabets, allowOnlyNumbers, exportToCsv } from "../util/CommonUtil";
 import { APP_CONFIG, CUSTOMER_STATUS, PAYMENT_STATUS, PAYMENT_MODE, CUSTOMER_DEFAULT_SORT, DEFAULT_FILTER } from "../constants/AppConstants";
 import { AdminSidebar, Loader, DetailItem, EmptyState } from "../components/common/index";
 import { Trash2, FileSpreadsheet, RefreshCcw } from "lucide-react";
@@ -19,7 +19,6 @@ export default function CustomerManagement() {
     const [tableLoading, setTableLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [updating, setUpdating] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedCustomerId, setSelectedCustomerId] = useState(null);
@@ -215,7 +214,14 @@ export default function CustomerManagement() {
                 toast.warning("No customer data found");
                 return;
             }
-            exportToCsv(data);
+            const headers = ["ID", "Name", "Email", "Phone", "Plan", "Status", "Join Date", "Expiry Date", "Days Remaining"];
+            const rows = data.map(customer => [customer.id, customer.name, customer.email, customer.phone, customer.planName, customer.status, customer.joinDate, customer.expiryDate, customer.daysRemaining]);
+            let fileName = "fitzone_customers";
+            if (statusFilter !== DEFAULT_FILTER) {
+                fileName += `_${statusFilter.toLowerCase()}`;
+            }
+            fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
+            exportToCsv(headers, rows, fileName);
             toast.success("Customer report exported successfully");
         } catch (error) {
             console.log(error);
@@ -223,24 +229,6 @@ export default function CustomerManagement() {
         } finally {
             setExporting(false);
         }
-    };
-    const exportToCsv = (data) => {
-        const headers = ["ID", "Name", "Email", "Phone", "Plan", "Status", "Join Date", "Expiry Date", "Days Remaining"];
-        const rows = data.map(customer => [customer.id, customer.name, customer.email, customer.phone, customer.planName, customer.status, customer.joinDate, customer.expiryDate, customer.daysRemaining]);
-        const csvContent = [headers.join(","), ...rows.map(row => row.map(value => `"${value ?? ""}"`).join(","))].join("\n");
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        let fileName = "fitzone_customers";
-        if (statusFilter !== DEFAULT_FILTER) {
-            fileName += `_${statusFilter.toLowerCase()}`;
-        }
-        fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     };
     if (pageLoading) {
         return (
@@ -350,9 +338,9 @@ export default function CustomerManagement() {
             </div>
             {/* Add Customer Modal */}
             {showAddModal && (<FormModal title="Add Customer" onClose={() => { resetCustomerForm(); setShowAddModal(false) }} loading={saving} onSubmit={handleAddCustomer} buttonText="Save">
-                <input type="text" name="name" placeholder="Name" className="search-input" value={customerForm.name} onChange={handleChange} />
-                <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
-                <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
+                <input type="text" name="name" placeholder="Name" maxLength={50} className="search-input" value={customerForm.name} onChange={handleChange} />
+                <input type="email" name="email" placeholder="Email" maxLength={50} className="search-input" value={customerForm.email} onChange={handleChange} />
+                <input type="text" name="phone" placeholder="Phone" maxLength={12} className="search-input" value={customerForm.phone} onChange={handleChange} />
                 <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" />
                 <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange}>
                     <option value="">Select Plan</option>

@@ -1,37 +1,46 @@
 import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { LEAD_STATUS, DEFAULT_FILTER } from "../constants/AppConstants";
-import { AdminSidebar, DetailItem, EmptyState } from "../components/common/index";
+import { LEAD_STATUS, DEFAULT_FILTER, LEAD_DEFAULT_SORT } from "../constants/AppConstants";
+import { AdminSidebar, Loader, DetailItem, EmptyState } from "../components/common/index";
 import { ConfirmModal, ViewModal, FormModal } from "../components/modals/index";
 import { FileSpreadsheet, RefreshCcw } from "lucide-react";
+import { allowOnlyAlphabets, allowOnlyNumbers, exportToCsv  } from "../util/CommonUtil";
 import AdminLayout from "../components/layout/AdminLayout";
 import { toast } from "react-toastify";
 
 export default function LeadManagement() {
     const [leads, setLeads] = useState([]);
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [showViewModal, setShowViewModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedLead, setSelectedLead] = useState(null);
     const [statusFilter, setStatusFilter] = useState("ALL");
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [deletingLead, setDeletingLead] = useState(false);
     const [updatingStatusId, setUpdatingStatusId] = useState(null);
     const [editingLead, setEditingLead] = useState(null);
     const [updating, setUpdating] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [exporting, setExporting] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(0);
+    const [size] = useState(10);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const [sortBy] = useState("createdAt");
+    const [sortDir] = useState(LEAD_DEFAULT_SORT);
     const statusOptions = [LEAD_STATUS.NEW, LEAD_STATUS.CONTACTED, LEAD_STATUS.FOLLOWUP, LEAD_STATUS.JOINED, LEAD_STATUS.NOTINTERESTED];
     const [leadForm, setLeadForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
 
-    const filteredLeads = leads.filter((lead) => {
-        const matchesSearch = lead.name.toLowerCase().includes(search.toLowerCase()) || lead.email.toLowerCase().includes(search.toLowerCase()) || lead.phone.includes(search);
-        const matchesStatus = statusFilter === "ALL" || lead.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
-    const resetFilters = () => { setSearch(""); setStatusFilter(DEFAULT_FILTER);};
-    useEffect(() => { const isAnyModalOpen = showViewModal || showDeleteModal; document.body.style.overflow = isAnyModalOpen ? "hidden" : "auto"; }, [showViewModal, showDeleteModal]);
+    const resetFilters = () => { setSearch(""); setStatusFilter(DEFAULT_FILTER); };
+    useEffect(() => { fetchLeadStats(); }, [page, search, statusFilter]);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
     const openViewModal = (lead) => {
         setSelectedLead(lead);
         setShowViewModal(true);
@@ -55,16 +64,31 @@ export default function LeadManagement() {
         setEditingLead(null);
         setLeadForm({ name: "", email: "", phone: "", subject: "", message: "" });
     };
-    useEffect(() => { fetchLeadStats(); }, []);
+    const handleInputChange = (e) => {
+        let { name, value } = e.target;
+        if (name === "name") {
+            value = allowOnlyAlphabets(value);
+        }
+        if (name === "phone") {
+            value = allowOnlyNumbers(value);
+        }
+        setLeadForm({ ...leadForm, [name]: value });
+    };
     const fetchLeadStats = async () => {
         try {
-            const response = await apiRequest("/api/leads");
+            setLoading(true);
+            const params = new URLSearchParams({ page, size, search: search.trim(), status: statusFilter === "ALL" ? "" : statusFilter, sortBy, sortDir});
+            const response = await apiRequest(`/api/leads?${params}`);
             await handleApiResponse(response);
             const data = await response.json();
-            setLeads(data);
+            setLeads(data.content);
+            setTotalPages(data.totalPages);
+            setTotalElements(data.totalElements);
         } catch (error) {
             console.log(error);
             toast.error(error.message);
+        } finally {
+            setLoading(false);
         }
     };
     const updateLead = async () => {
@@ -90,6 +114,7 @@ export default function LeadManagement() {
             await handleApiResponse(response);
             setLeads(leads.filter((lead) => lead.id !== id));
             toast.success("Lead deleted successfully");
+            await fetchLeadStats();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -128,7 +153,14 @@ export default function LeadManagement() {
                 toast.warning("No lead data found.");
                 return;
             }
-            exportToCsv(data);
+            const headers = ["ID", "Name", "Email", "Phone", "Subject", "Status", "Created Date"];
+            const rows = data.map(lead => [lead.id, lead.name, lead.email, lead.phone, lead.subject, lead.status, lead.createdAt]);
+            let fileName = "fitzone_leads";
+            if (statusFilter !== "ALL") {
+                fileName += `_${statusFilter.toLowerCase()}`;
+            }
+            fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
+            exportToCsv(headers, rows, fileName);
             toast.success("Lead report exported successfully.");
         } catch (error) {
             console.log(error);
@@ -136,24 +168,6 @@ export default function LeadManagement() {
         } finally {
             setExporting(false);
         }
-    };
-    const exportToCsv = (data) => {
-        const headers = ["ID", "Name", "Email", "Phone", "Subject", "Status", "Created Date"];
-        const rows = data.map(lead => [lead.id, lead.name, lead.email, lead.phone, lead.subject, lead.status, lead.createdAt]);
-        const csvContent = [headers.join(","), ...rows.map(row => row.map(value => `"${value ?? ""}"`).join(","))].join("\n");
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        let fileName = "fitzone_leads";
-        if (statusFilter !== "ALL") {
-            fileName += `_${statusFilter.toLowerCase()}`;
-        }
-        fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     };
     return (
         <AdminLayout>
@@ -180,7 +194,7 @@ export default function LeadManagement() {
             </div>
             {/* TABLE */}
             <div className="table-top">
-                <div className="table-summary"> Total Leads: 5</div>
+                <div className="table-summary"> Total Leads: {totalElements}</div>
                 <div>
                     <button className="export-btn" title="Export Leads to Excel" onClick={handleExportLeads}> {exporting ? "..." : ""}<FileSpreadsheet color="#30c40f" size={24} strokeWidth={2} /></button>
                     <button className="refresh-btn" onClick={resetFilters}> <RefreshCcw color="#2563EB" size={24} strokeWidth={2} /> </button>
@@ -200,12 +214,19 @@ export default function LeadManagement() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredLeads.length === 0 ? (<tr>
+                        {loading ? (
+                            <tr>
+                                <td colSpan="7">
+                                    <Loader />
+                                </td>
+                            </tr>
+
+                        ) : leads.length === 0 ? (<tr>
                             <td colSpan="7">
                                 <EmptyState title="No Leads Found" description="There is no data to display in this table at the moment. New entries will appear here automatically." />
                             </td>
                         </tr>
-                        ) : (filteredLeads.map((lead, index) =>
+                        ) : (leads.map((lead, index) =>
                             <tr key={lead.id} className={index % 2 === 0 ? "row-even" : "row-odd"} onClick={() => openViewModal(lead)}>
                                 <td data-label="Name">{lead.name}</td>
                                 <td data-label="Email"><span>{lead.email}</span></td>
@@ -233,6 +254,14 @@ export default function LeadManagement() {
                     </tbody>
                 </table>
             </div>
+            {/* Pagination Content*/}
+            <div className="pagination-wrapper">
+                <div className="pagination-container">
+                    <button disabled={page === 0} onClick={() => setPage(prev => prev - 1)}>Previous</button>
+                    <span> Page {page + 1} of {totalPages}</span>
+                    <button disabled={page + 1 >= totalPages} onClick={() => setPage(prev => prev + 1)}>Next</button>
+                </div>
+            </div>
             {/* VIEW MODAL */}
             {showViewModal && selectedLead && (
                 <ViewModal title="Lead Details" onClose={() => setShowViewModal(false)}>
@@ -250,11 +279,11 @@ export default function LeadManagement() {
             )}
             {/* EDIT MODAL */}
             {showEditModal && (<FormModal title="Edit Plan" onClose={() => setShowEditModal(false)} onSubmit={updateLead} loading={updating} buttonText="Update Lead">
-                <input type="text" className="search-input" value={leadForm.name} onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })} placeholder="Name" />
-                <input type="email" className="search-input" value={leadForm.email} onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })} placeholder="Email" />
-                <input type="text" className="search-input" value={leadForm.phone} onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })} placeholder="Phone" />
-                <input type="text" className="search-input" value={leadForm.subject} onChange={(e) => setLeadForm({ ...leadForm, subject: e.target.value })} placeholder="Subject" />
-                <textarea rows="4" className="search-input" value={leadForm.message} onChange={(e) => setLeadForm({ ...leadForm, message: e.target.value })} placeholder="Message" />
+                <input type="text" className="search-input" name="name" maxLength={50} value={leadForm.name} onChange={ handleInputChange } placeholder="Name" />
+                <input type="email" className="search-input" name="email" maxLength={50} value={leadForm.email} onChange={ handleInputChange } placeholder="Email" />
+                <input type="text" className="search-input" name="phone" maxLength={12} value={leadForm.phone} onChange={ handleInputChange } placeholder="Phone" />
+                <input type="text" className="search-input" name="subject" maxLength={100} value={leadForm.subject} onChange={ handleInputChange } placeholder="Subject" />
+                <textarea rows="4" className="search-input" name="message" maxLength={500} value={leadForm.message} onChange={ handleInputChange } placeholder="Message" />
             </FormModal>
             )}
         </AdminLayout>

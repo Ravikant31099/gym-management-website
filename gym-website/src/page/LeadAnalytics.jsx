@@ -2,41 +2,44 @@ import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { AdminSidebar } from "../components/common/index";
+import { AdminSidebar, DashboardCard } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
 import { toast } from "react-toastify";
 
 export default function LeadAnalytics() {
-    const [leads, setLeads] = useState([]);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    useEffect(() => { fetchLeadStats(); }, []);
-    const fetchLeadStats = async () => {
+    const [analytics, setAnalytics] = useState({ totalLeads: 0, newLeads: 0, contactedLeads: 0, followUpLeads: 0, joinedLeads: 0, notInterestedLeads: 0});
+    
+    useEffect(() => { fetchLeadAnalytics(); }, []);
+    const fetchLeadAnalytics = async () => {
         try {
-            const response = await apiRequest("/api/leads");
+            const response = await apiRequest("/api/leads/analytics");
             await handleApiResponse(response);
             const data = await response.json();
-            setLeads(data);
+            setAnalytics(data);
         } catch (error) {
-            console.log(error);
             toast.error(error.message);
         }
     };
     const chartData = [
         {
             name: "New",
-            value: leads.filter((lead) => lead.status === "NEW").length
-        },
-        {
-            name: "Contacted",
-            value: leads.filter((lead) => lead.status === "CONTACTED" || lead.status === "FOLLOW-UP").length
+            value: analytics?.newLeads || 0
         },
         {
             name: "Joined",
-            value: leads.filter((lead) => lead.status === "JOINED").length
+            value: analytics?.joinedLeads || 0
         },
         {
-            name: "Ignored",
-            value: leads.filter((lead) => lead.status === "NOT INTERESTED").length
+            name: "Not-Interested",
+            value: analytics?.notInterestedLeads || 0
+        },
+        {
+            name: "Contacted",
+            value: analytics?.contactedLeads || 0
+        },
+        {
+            name: "Follow-up",
+            value: analytics?.followUpLeads || 0
         }
     ];
     return (
@@ -52,6 +55,18 @@ export default function LeadAnalytics() {
                     <span> FitZone Admin</span>
                 </div>
             </div>
+            {/* Customer Cards */}
+                        <div className="dashboard-section">
+                            <h3 className="cards-header"> Leads Summary </h3>
+                            <div className="cards-grid">
+                                <DashboardCard title="Total Leads" value={analytics?.totalLeads || 0} color="#22c55e" />
+                                <DashboardCard title="New Leads" value={analytics?.newLeads || 0} color="#3b82f6" />
+                                <DashboardCard title="Contacted Leads" value={analytics?.contactedLeads || 0} color="#ef4444" />
+                                <DashboardCard title="Follow-up Leads" value={analytics?.followUpLeads || 0} color="#f59e0b" />
+                                <DashboardCard title="Joined Leads" value={analytics?.joinedLeads || 0} color="#cd5e2b" />
+                                <DashboardCard title="Not-Interested" value={analytics?.notInterestedLeads || 0} color="#a81ee8c0" />
+                            </div>
+                        </div>
             {/* LEAD CHARTS */}
             <div className="charts-grid">
                 <div className="analytics-chart-card">
@@ -60,7 +75,7 @@ export default function LeadAnalytics() {
                         <BarChart data={chartData}>
                             <XAxis dataKey="name" stroke="#94a3b8" />
                             <YAxis stroke="#94a3b8" />
-                            <Tooltip formatter={(value) => [`${value}`, "Customer"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#1d4ed8" }} labelStyle={{ color: "#1d4ed8" }} itemStyle={{ color: "#1d4ed8" }} />
+                            <Tooltip formatter={(value) => [`${value}`, "Leads"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#1d4ed8" }} labelStyle={{ color: "#1d4ed8" }} itemStyle={{ color: "#1d4ed8" }} />
                             <Bar dataKey="value" radius={[10, 10, 0, 0]} fill="#22c55e" />
                         </BarChart>
                     </ResponsiveContainer>
@@ -72,6 +87,7 @@ export default function LeadAnalytics() {
                             <Pie data={chartData} dataKey="value" cx="50%" cy="50%" outerRadius={100} label >
                                 <Cell fill="#f59e0b" />
                                 <Cell fill="#3b82f6" />
+                                <Cell fill="#8b5cf6" />
                                 <Cell fill="#22c55e" />
                                 <Cell fill="#ef4444" />
                             </Pie>

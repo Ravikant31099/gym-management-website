@@ -11,7 +11,6 @@ import { toast } from "react-toastify";
 
 export default function PlanManagement() {
     const [plans, setPlans] = useState([]);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState(null);

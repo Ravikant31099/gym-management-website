@@ -572,6 +572,12 @@ textarea.search-input {
     border-top-right-radius: 14px;
 }
 
+.leads-table th:first-child,
+.leads-table tbody td:first-child {
+    width: 200px; 
+    min-width: 150px;
+}
+
 .leads-table td {
     padding: 20px 24px;
     font-size: 15px;

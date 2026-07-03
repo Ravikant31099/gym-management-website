@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../../style/Home.css';
 import { FaInstagram, FaFacebook, FaWhatsapp, FaYoutube, FaMapMarkerAlt } from 'react-icons/fa';
+import { allowOnlyAlphabets, allowOnlyNumbers } from "../../util/CommonUtil";
 
 export default function Contact({ planMessage }) {
     const [success, setSuccess] = useState(false);
@@ -20,6 +21,16 @@ export default function Contact({ planMessage }) {
             return () => clearTimeout(timer);
         }
     }, [planMessage]);
+    const handleInputChange = (e) => {
+        let { name, value } = e.target;
+        if (name === "name") {
+            value = allowOnlyAlphabets(value);
+        }
+        if (name === "phone") {
+            value = allowOnlyNumbers(value);
+        }
+        setFormData({ ...formData, [name]: value });
+    };
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -96,12 +107,12 @@ export default function Contact({ planMessage }) {
                     <div className="contact-form-wrapper">
                         <form onSubmit={handleSubmit} className="contact-form">
                             <div className="form-grid">
-                                <input type="text" placeholder="Your Name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                                <input type="email" placeholder="Your Email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
-                                <input type="text" placeholder="Phone Number" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
-                                <input type="text" placeholder="Subject" value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} />
+                                <input type="text" name="name" placeholder="Your Name" maxLength={50} required value={formData.name} onChange={ handleInputChange } />
+                                <input type="email" name="email" placeholder="Your Email" maxLength={50} required value={formData.email} onChange={ handleInputChange } />
+                                <input type="text" name="phone" placeholder="Phone Number" maxLength={12} required value={formData.phone} onChange={ handleInputChange } />
+                                <input type="text" name="subject" placeholder="Subject" maxLength={100} required value={formData.subject} onChange={ handleInputChange } />
                             </div>
-                            <textarea rows="5" placeholder="Your Message" required value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} />
+                            <textarea rows="5" name="message" placeholder="Your Message" maxLength={500} required value={formData.message} onChange={ handleInputChange } />
                             <button type="submit">Send Message</button>
                         </form>
                     </div>

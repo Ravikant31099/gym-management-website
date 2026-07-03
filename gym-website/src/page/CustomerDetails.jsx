@@ -315,9 +315,9 @@ export default function CustomerDetails() {
             </div>
             {/* Edit Customer Model */}
             {showEditModal && (<FormModal title="Edit Customer" onClose={() => setShowEditModal(false)} onSubmit={handleUpdateCustomer} loading={updating} buttonText="Update">
-                <input type="text" name="name" placeholder="Name" className="search-input" value={customerForm.name} onChange={handleChange} />
-                <input type="email" name="email" placeholder="Email" className="search-input" value={customerForm.email} onChange={handleChange} />
-                <input type="text" name="phone" placeholder="Phone" className="search-input" value={customerForm.phone} onChange={handleChange} />
+                <input type="text" name="name" placeholder="Name" maxLength={50} className="search-input" value={customerForm.name} onChange={handleChange} />
+                <input type="email" name="email" placeholder="Email" maxLength={50} className="search-input" value={customerForm.email} onChange={handleChange} />
+                <input type="text" name="phone" placeholder="Phone" maxLength={12} className="search-input" value={customerForm.phone} onChange={handleChange} />
                 <DatePicker selected={customerForm.joinDate ? new Date(customerForm.joinDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, joinDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Join Date" disabled />
                 <DatePicker selected={customerForm.expiryDate ? new Date(customerForm.expiryDate) : null} onChange={(date) => setCustomerForm({ ...customerForm, expiryDate: date?.toISOString().split("T")[0] })} dateFormat="yyyy-MM-dd" className="custom-date-picker" placeholderText="Expiry Date" disabled />
                 <select name="planId" value={customerForm.planId} className="filter-select-modal" onChange={handleChange} disabled>

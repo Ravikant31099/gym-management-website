@@ -8,7 +8,6 @@ import { AdminSidebar, DashboardCard } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function PaymentAnalytics() {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const pieColors = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
     const [analytics, setAnalytics] = useState(null);
 

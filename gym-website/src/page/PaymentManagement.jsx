@@ -1,7 +1,7 @@
 import "../style/Admin.css";
 import { useEffect, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { getAmountValue, formatCurrency } from "../util/CommonUtil";
+import { getAmountValue, formatCurrency, exportToCsv } from "../util/CommonUtil";
 import { APP_CONFIG, PAYMENT_STATUS, PAYMENT_MODE, PAYMENT_DEFAULT_SORT, DEFAULT_FILTER } from "../constants/AppConstants";
 import { AdminSidebar, Loader, DashboardCard, DetailItem, EmptyState } from "../components/common/index";
 import { formatDate } from "../util/CommonUtil";
@@ -13,7 +13,6 @@ import { toast } from "react-toastify";
 export default function PaymentManagement() {
     const [payments, setPayments] = useState([]);
     const [plans, setPlans] = useState([]);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
     const [pageLoading, setPageLoading] = useState(true);
     const [tableLoading, setTableLoading] = useState(false);
@@ -132,7 +131,14 @@ export default function PaymentManagement() {
                 toast.warning("No payment data found");
                 return;
             }
-            exportPaymentsToCsv(data);
+            const headers = ["ID", "Customer", "Plan", "Amount", "Payment Mode", "Payment Status", "Payment Date", "Remarks"];
+            const rows = data.map(payment => [payment.id, payment.customerName, payment.planName, payment.amount, payment.paymentMode, payment.status, payment.paymentDate, payment.remarks]);
+            let fileName = "fitzone_payments";
+            if (statusFilter !== DEFAULT_FILTER) {
+                fileName += `_${statusFilter.toLowerCase()}`;
+            }
+            fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
+            exportToCsv(headers, rows, fileName);
             toast.success("Payment report exported successfully");
         } catch (error) {
             console.log(error);
@@ -140,24 +146,6 @@ export default function PaymentManagement() {
         } finally {
             setExporting(false);
         }
-    };
-    const exportPaymentsToCsv = (data) => {
-        const headers = ["ID", "Customer", "Plan", "Amount", "Payment Mode", "Payment Status", "Payment Date", "Remarks"];
-        const rows = data.map(payment => [payment.id, payment.customerName, payment.planName, payment.amount, payment.paymentMode, payment.status, payment.paymentDate, payment.remarks]);
-        const csvContent = [headers.join(","), ...rows.map(row => row.map(value => `"${value ?? ""}"`).join(","))].join("\n");
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        let fileName = "fitzone_payments";
-        if (statusFilter !== DEFAULT_FILTER) {
-            fileName += `_${statusFilter.toLowerCase()}`;
-        }
-        fileName += `_${new Date().toISOString().split("T")[0]}.csv`;
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     };
     if (pageLoading) {
         return (
