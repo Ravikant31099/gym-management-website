@@ -16,7 +16,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import { useState, useEffect } from "react";
-import { clearToken } from "./util/AuthUtils";
+import { logout } from "./util/AuthUtils";
 
 function ScrollToContactHandler() {
   const location = useLocation();
@@ -105,7 +105,7 @@ export default function App() {
           <div className="session-modal">
             <h2>Session Expired</h2>
             <p> Your session has expired. Please login again. </p>
-            <button onClick={() => { clearToken(); setSessionExpired(false); window.location.href = "/login"; }}>Login Again</button>
+            <button onClick={() => { logout(); setSessionExpired(false); window.location.href = "/login"; }}>Login Again</button>
           </div>
         </div>
       )}

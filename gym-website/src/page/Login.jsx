@@ -2,13 +2,13 @@ import "../style/Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { setToken } from "../util/AuthUtils";
+import { setToken, setUserDetails } from "../util/AuthUtils";
 import adminImage from "../assets/admin-bg.jpg";
 import gymLogo from "../assets/gym-logo.png";
 import { toast } from "react-toastify";
 
 export default function Login() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -16,11 +16,12 @@ export default function Login() {
         try {
             const response = await apiRequest("/api/auth/login", { method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ email, password })
             });
             await handleApiResponse(response);
             const data = await response.json();
             setToken(data.token);
+            setUserDetails(data);
             navigate("/admin");
         } catch (error) {
             console.error(error);
@@ -49,10 +50,10 @@ export default function Login() {
                             <p>Enter your credentials to manage the system</p>
                         </div>
                         <div className="input-group">
-                            <input type="text" placeholder="Username" className="input-field" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                            <input type="text" placeholder="Email" className="input-field" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
                         </div>
                         <div className="input-group">
-                            <input type="password" placeholder="Password" className="input-field" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                            <input type="password" placeholder="Password" className="input-field" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                         </div>
                         <button type="submit" className="login-button" disabled={loading}> {loading ? "Authenticating..." : "Sign In"} </button>
                     </form>

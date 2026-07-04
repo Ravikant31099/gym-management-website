@@ -37,6 +37,7 @@ public class SecurityConfig {
 								.permitAll().requestMatchers(HttpMethod.POST, POSTLEADS).permitAll()
 								.requestMatchers(CUSTOMERIMAGE).permitAll().requestMatchers(CUSTOMERS).authenticated()
 								.requestMatchers(LEADS).authenticated().requestMatchers(PLANS).authenticated()
+								.requestMatchers(USERS).authenticated()
 								.requestMatchers(PAYMENTS).authenticated().anyRequest().authenticated())
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(sae))
 				.addFilterBefore(jf, UsernamePasswordAuthenticationFilter.class);

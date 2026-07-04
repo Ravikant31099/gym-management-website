@@ -1,40 +1,38 @@
 package com.fitzone.gymbackend.controller;
 
 import com.fitzone.gymbackend.dto.LoginRequest;
+import com.fitzone.gymbackend.dto.LoginResponse;
+import com.fitzone.gymbackend.entity.User;
+import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.security.JwtUtil;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+import com.fitzone.gymbackend.service.CustomUserDetailsService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
 	private final JwtUtil jwtUtil;
-	private final String adminUsername;
-	private final String adminPassword;
+	private final CustomUserDetailsService customUserDetailsService;
+	private final PasswordEncoder passwordEncoder;
 
-	public AuthController(JwtUtil jwtUtil, @Value("${app.admin.username}") String adminUsername,
-			@Value("${app.admin.password}") String adminPassword) {
+	public AuthController(JwtUtil jwtUtil, CustomUserDetailsService customUserDetailsService,
+			PasswordEncoder passwordEncoder) {
 		this.jwtUtil = jwtUtil;
-		this.adminUsername = adminUsername;
-		this.adminPassword = adminPassword;
+		this.customUserDetailsService = customUserDetailsService;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequest lr) {
-		if (lr.getUsername().equals(adminUsername) && lr.getPassword().equals(adminPassword)) {
-			String token = jwtUtil.generateToken(lr.getUsername());
-			return ResponseEntity.ok(Map.of("token", token));
+	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+		User user = customUserDetailsService.loadUserByEmail(request.getEmail());
+		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+			throw new BusinessException("Invalid Credentials.");
 		}
-		Map<String, String> mp = new HashMap<String, String>();
-		mp.put("error", "Invalid Input");
-		mp.put("message", "Invalid Credentials");
-		mp.put("Timestamp", String.valueOf(System.currentTimeMillis()));		
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mp);
+		String token = jwtUtil.generateToken(user.getEmail());
+		return ResponseEntity.ok(new LoginResponse(token, user.getName(), user.getEmail(), user.getRole()));
 	}
+
 }

@@ -1,14 +1,14 @@
 import "../../style/Admin.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { clearToken } from "../../util/AuthUtils";
+import { logout } from "../../util/AuthUtils";
 import gymLogo from "../../assets/gym-logo.png";
 import { LayoutDashboard, UserCheck, Users, CreditCard, ChevronDown, ChevronUp, Layers, LogOut } from 'lucide-react';
 
 export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollToTop, scrollToSection, leadsRef, analyticsRef }) {
     const navigate = useNavigate();
     const location = useLocation();
-    const handleLogout = () => { clearToken(); navigate("/login"); };
+    const handleLogout = () => { logout(); navigate("/login"); };
     const [openSubmenus, setOpenSubmenus] = useState({ leads: false, customers: false, payments: false, });
     const toggleSubmenu = (menu) => {
         setOpenSubmenus(prev => ({
