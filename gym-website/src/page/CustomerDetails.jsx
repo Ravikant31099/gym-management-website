@@ -297,7 +297,9 @@ export default function CustomerDetails() {
                     </div>
                 </div>
                 <div className="details-card activity-card">
-                    <h3>Customer Activity</h3>{activities.length === 0 ? (<p>No activity found</p>) : (activities.map(activity => (
+                    <h3>Customer Activity</h3>
+                    <div className="activity-list">
+                    {activities.length === 0 ? (<p>No activity found</p>) : (activities.map(activity => (
                         <div key={activity.createdAt} className="activity-item">
                             <div className="activity-dot"></div>
                             <div className="activity-Context">
@@ -307,6 +309,7 @@ export default function CustomerDetails() {
                             </div>
                         </div>
                     )))}
+                    </div>
                 </div>
                 <div className="details-actions">
                     <button className="primary-btn" onClick={() => setShowImageModal(true)}> Upload Image</button>

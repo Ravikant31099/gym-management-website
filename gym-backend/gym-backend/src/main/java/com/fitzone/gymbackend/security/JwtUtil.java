@@ -20,8 +20,8 @@ public class JwtUtil {
 	}
 
 	@SuppressWarnings("deprecation")
-	public String generateToken(String username) {
-		return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+	public String generateToken(String email) {
+		return Jwts.builder().setSubject(email).setIssuedAt(new Date())
 				.setExpiration(new Date(System.currentTimeMillis() + expiryMs)).signWith(SignatureAlgorithm.HS256, key)
 				.compact();
 	}

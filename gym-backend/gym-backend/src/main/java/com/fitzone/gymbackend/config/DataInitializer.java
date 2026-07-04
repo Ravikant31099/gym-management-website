@@ -29,7 +29,7 @@ public class DataInitializer implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
-		if (!userRepository.existsByEmailIgnoreCase("admin@fitzone.com")) {
+		if (!userRepository.existsByEmailIgnoreCase(adminEmail)) {
 			User admin = new User();
 			admin.setName(adminName);
 			admin.setEmail(adminEmail);
