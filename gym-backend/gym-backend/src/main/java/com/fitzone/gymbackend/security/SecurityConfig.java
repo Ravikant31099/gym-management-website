@@ -33,12 +33,15 @@ public class SecurityConfig {
 		http.cors(cors -> cors.configurationSource(ccs())).csrf(csrf -> csrf.disable())
 				.sessionManagement(se -> se.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(
-						auth -> auth.requestMatchers(AUTH).permitAll().requestMatchers(HttpMethod.GET, GETPLANS)
-								.permitAll().requestMatchers(HttpMethod.POST, POSTLEADS).permitAll()
-								.requestMatchers(CUSTOMERIMAGE).permitAll().requestMatchers(CUSTOMERS).authenticated()
-								.requestMatchers(LEADS).authenticated().requestMatchers(PLANS).authenticated()
-								.requestMatchers(USERS).authenticated()
-								.requestMatchers(PAYMENTS).authenticated().anyRequest().authenticated())
+						auth -> auth.requestMatchers(AUTH).permitAll().
+						requestMatchers(HttpMethod.GET, GETPLANS).permitAll()
+						.requestMatchers(HttpMethod.POST, POSTLEADS).permitAll()
+						.requestMatchers(CUSTOMERIMAGE).permitAll()
+						.requestMatchers(USERS).hasRole("ADMIN")
+						.requestMatchers(CUSTOMERS).hasAnyRole("ADMIN", "RECEPTIONIST")
+						.requestMatchers(LEADS).hasAnyRole("ADMIN", "RECEPTIONIST")
+						.requestMatchers(PLANS).hasAnyRole("ADMIN", "RECEPTIONIST")
+						.requestMatchers(PAYMENTS).hasAnyRole("ADMIN", "RECEPTIONIST").anyRequest().authenticated())
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(sae))
 				.addFilterBefore(jf, UsernamePasswordAuthenticationFilter.class);
 		return http.build();

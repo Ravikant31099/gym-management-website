@@ -47,6 +47,9 @@ public class CustomerActivityLogService {
 		if (auth == null) {
 			return "SYSTEM";
 		}
-		return auth.getName();
+		String email = auth.getName();
+		String role = auth.getAuthorities().stream().findFirst().map(a -> a.getAuthority().replace("ROLE_", ""))
+				.orElse("UNKNOWN");
+		return role + "-" + email;
 	}
 }

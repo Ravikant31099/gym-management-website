@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import com.fitzone.gymbackend.entity.User;
 
 @Component
 public class JwtUtil {
@@ -20,14 +21,19 @@ public class JwtUtil {
 	}
 
 	@SuppressWarnings("deprecation")
-	public String generateToken(String email) {
-		return Jwts.builder().setSubject(email).setIssuedAt(new Date())
+	public String generateToken(User user) {
+		return Jwts.builder().setSubject(user.getEmail()).claim("role", user.getRole().name()).setIssuedAt(new Date())
 				.setExpiration(new Date(System.currentTimeMillis() + expiryMs)).signWith(SignatureAlgorithm.HS256, key)
 				.compact();
 	}
 
 	public String extractUserName(String token) {
 		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+	}
+
+	public String extractRole(String token) {
+		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().get("role",
+				String.class);
 	}
 
 	public boolean validateToken(String token) {
