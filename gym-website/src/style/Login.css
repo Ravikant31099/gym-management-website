@@ -51,8 +51,36 @@
   letter-spacing: -1px;
 }
 
-.logo-text .fit { color: var(--text-main); }
-.logo-text .zone { color: var(--primary-accent); }
+.logo-text .fit {
+  color: var(--text-main);
+}
+
+.logo-text .zone {
+  color: var(--primary-accent);
+}
+
+.user-info {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.user-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f2f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.user-info p {
+  font-size: 12px;
+  font-weight: 400;
+  color: #a4b0be;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* The Glass Card */
 .login-card {

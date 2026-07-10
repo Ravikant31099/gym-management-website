@@ -52,49 +52,49 @@ export default function App() {
         }
         />
         <Route path="/admin/plans" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST"]}>
             <PlanManagement />
           </ProtectedRoute>
         }
         />
         <Route path="/admin/leads" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST"]}>
             <LeadManagement />
           </ProtectedRoute>
         }
         />
         <Route path="/admin/leads/analytics" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST", "TRAINER"]}>
             <LeadAnalytics />
           </ProtectedRoute>
         }
         />
         <Route path="/admin/customers" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST"]}>
             <CustomerManagement />
           </ProtectedRoute>
         }
         />
         <Route path="/admin/customers/analytics" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST", "TRAINER"]}>
             <CustomerAnalytics />
           </ProtectedRoute>
         }
         />
         <Route path="/admin/payments" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST"]}>
             <PaymentManagement />
           </ProtectedRoute>
         }
         />
         <Route path="/admin/payments/analytics" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST", "TRAINER"]}>
             <PaymentAnalytics />
           </ProtectedRoute>
         }
         />
         <Route path="/admin/customers/:id" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST"]}>
             <CustomerDetails />
           </ProtectedRoute>
         }
