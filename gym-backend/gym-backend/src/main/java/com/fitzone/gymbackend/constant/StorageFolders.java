@@ -16,4 +16,6 @@ public final class StorageFolders {
     public static final String BACKUPS = "backups";
 
     public static final String TEMP = "temp";
+    
+    public static final String USER_IMAGES = "user-images";
 }

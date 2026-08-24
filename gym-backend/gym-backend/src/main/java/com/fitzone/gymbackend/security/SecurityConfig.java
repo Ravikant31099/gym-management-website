@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -29,18 +31,20 @@ public class SecurityConfig {
 	}
 
 	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+		return configuration.getAuthenticationManager();
+	}
+
+	@Bean
 	public SecurityFilterChain sfc(HttpSecurity http) throws Exception {
 		http.cors(cors -> cors.configurationSource(ccs())).csrf(csrf -> csrf.disable())
 				.sessionManagement(se -> se.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(
-						auth -> auth.requestMatchers(AUTH).permitAll().
-						requestMatchers(HttpMethod.GET, GETPLANS).permitAll()
-						.requestMatchers(HttpMethod.POST, POSTLEADS).permitAll()
-						.requestMatchers(CUSTOMERIMAGE).permitAll()
-						.requestMatchers(USERS).hasRole("ADMIN")
-						.requestMatchers(CUSTOMERS).hasAnyRole("ADMIN", "RECEPTIONIST")
-						.requestMatchers(LEADS).hasAnyRole("ADMIN", "RECEPTIONIST")
-						.requestMatchers(PLANS).hasAnyRole("ADMIN", "RECEPTIONIST")
+				.authorizeHttpRequests(auth -> auth.requestMatchers(AUTH).permitAll()
+						.requestMatchers(HttpMethod.GET, GETPLANS).permitAll()
+						.requestMatchers(HttpMethod.POST, POSTLEADS).permitAll().requestMatchers(CUSTOMERIMAGE)
+						.permitAll().requestMatchers(USERIMAGE).permitAll().requestMatchers(USERS).hasRole("ADMIN")
+						.requestMatchers(CUSTOMERS).hasAnyRole("ADMIN", "RECEPTIONIST").requestMatchers(LEADS)
+						.hasAnyRole("ADMIN", "RECEPTIONIST").requestMatchers(PLANS).hasAnyRole("ADMIN", "RECEPTIONIST")
 						.requestMatchers(PAYMENTS).hasAnyRole("ADMIN", "RECEPTIONIST").anyRequest().authenticated())
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(sae))
 				.addFilterBefore(jf, UsernamePasswordAuthenticationFilter.class);
@@ -51,7 +55,7 @@ public class SecurityConfig {
 	public CorsConfigurationSource ccs() {
 		CorsConfiguration conf = new CorsConfiguration();
 		conf.setAllowedOrigins(List.of("http://localhost:5173"));
-		conf.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		conf.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		conf.setAllowedHeaders(List.of("*"));
 		conf.setAllowCredentials(true);
 		UrlBasedCorsConfigurationSource ubs = new UrlBasedCorsConfigurationSource();

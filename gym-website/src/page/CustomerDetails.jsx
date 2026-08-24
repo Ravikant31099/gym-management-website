@@ -222,7 +222,7 @@ export default function CustomerDetails() {
             </div>
             <div className="customer-details-container">
                 <div className="customer-profile-card">
-                    {customer.profileImageUrl ? (<img src={`http://localhost:8080${customer.profileImageUrl}`} alt={customer.name} className="customer-profile-image" />) : (<div className="customer-profile-placeholder">     {customer.name?.charAt(0).toUpperCase()} </div>)}
+                    {customer.profileImageUrl ? (<img src={`${BASE_URL}${customer.profileImageUrl}`} alt={customer.name} className="customer-profile-image" />) : (<div className="customer-profile-placeholder">     {customer.name?.charAt(0).toUpperCase()} </div>)}
                     <div className="profile-info">
                         <h1>{customer.name}</h1>
                         <p className="customer-id">Customer ID : #{customer.id}</p>

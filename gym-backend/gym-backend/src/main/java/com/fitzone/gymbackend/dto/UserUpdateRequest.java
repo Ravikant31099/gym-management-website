@@ -1,20 +1,18 @@
 package com.fitzone.gymbackend.dto;
 
 import com.fitzone.gymbackend.enums.UserRole;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class UserRequest {
+public class UserUpdateRequest {
 	@NotBlank
 	private String name;
 
+	@NotBlank
 	@Email
-	@NotBlank
 	private String email;
-
-	@NotBlank
-	private String password;
 
 	@NotNull
 	private UserRole role;
@@ -35,31 +33,11 @@ public class UserRequest {
 		this.email = email;
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
 	public UserRole getRole() {
 		return role;
 	}
 
 	public void setRole(UserRole role) {
-		this.role = role;
-	}
-
-	public UserRequest() {
-		super();
-	}
-
-	public UserRequest(@NotBlank String name, @Email String email, @NotBlank String password, @NotNull UserRole role) {
-		super();
-		this.name = name;
-		this.email = email;
-		this.password = password;
 		this.role = role;
 	}
 

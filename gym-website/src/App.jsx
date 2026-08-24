@@ -3,12 +3,14 @@ import PlanManagement from "./page/PlanManagement";
 import LeadManagement from "./page/LeadManagement";
 import CustomerManagement from "./page/CustomerManagement";
 import PaymentManagement from "./page/PaymentManagement";
+import UserManagement from "./page/UserManagement";
 import CustomerAnalytics from "./page/CustomerAnalytics";
 import PaymentAnalytics from "./page/PaymentAnalytics";
 import LeadAnalytics from "./page/LeadAnalytics";
 import Login from "./page/Login";
 import Home from "./page/Home";
 import CustomerDetails from "./page/CustomerDetails";
+import UserDetails from "./page/UserDetails";
 import AttractionPage from "./components/home/AttractionPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { Route, Routes, useLocation } from "react-router-dom";
@@ -99,6 +101,18 @@ export default function App() {
           </ProtectedRoute>
         }
         />
+        <Route path="/admin/users/:id" element={
+          <ProtectedRoute allowedRoles={["ADMIN", "RECEPTIONIST"]}>
+            <UserDetails />
+          </ProtectedRoute>
+        }
+        />
+        <Route path="/admin/users" element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <UserManagement />
+          </ProtectedRoute>
+        }
+        />
       </Routes>
       {sessionExpired && (
         <div className="session-modal-overlay">
@@ -115,7 +129,10 @@ export default function App() {
 }
 
 /*
-Phase A Development
+Development Status:
+Phase A -> In Progress
+
+Phase A 
 Completed Activity: 
 1. Customer Management with All Validations Production ready. - Completed.
 2. Payment Management with All Validations Production ready. - Completed
@@ -125,10 +142,11 @@ Completed Activity:
 6. Customer/Payments/Plan Export CSV - Completed.
 7. Plan Management Production Ready - Completed.
 8. Lead Management Production Ready - Completed.
+9. Login/Logout - Completed.
+10. Admin User Registration with Role - Completed.
 
-To Do Activity:
-Login/Logout - Work in Progress
-Admin User Registration with Role - Work in Progress 
+To Do 
+Optimization Of Phase A
 
 Phase B
 1. Dashboard Upgrade

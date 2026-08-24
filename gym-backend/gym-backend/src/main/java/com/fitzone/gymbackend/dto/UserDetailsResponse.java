@@ -1,18 +1,40 @@
 package com.fitzone.gymbackend.dto;
 
 import java.time.LocalDateTime;
-
 import com.fitzone.gymbackend.enums.UserRole;
 
-public class UserResponse {
+public class UserDetailsResponse {
 	private Long id;
 	private String name;
 	private String email;
 	private UserRole role;
 	private Boolean active;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 	private String profileImageUrl;
 	private LocalDateTime imageUpdatedAt;
 	private String imageUpdatedBy;
+
+	public UserDetailsResponse(Long id, String name, String email, UserRole role, Boolean active,
+			LocalDateTime createdAt, LocalDateTime updatedAt, String profileImageUrl, LocalDateTime imageUpdatedAt,
+			String imageUpdatedBy) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.role = role;
+		this.active = active;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
+		this.profileImageUrl = profileImageUrl;
+		this.imageUpdatedAt = imageUpdatedAt;
+		this.imageUpdatedBy = imageUpdatedBy;
+
+	}
+
+	public UserDetailsResponse() {
+		super();
+	}
 
 	public Long getId() {
 		return id;
@@ -54,6 +76,22 @@ public class UserResponse {
 		this.active = active;
 	}
 
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
 	public String getProfileImageUrl() {
 		return profileImageUrl;
 	}
@@ -75,23 +113,6 @@ public class UserResponse {
 	}
 
 	public void setImageUpdatedBy(String imageUpdatedBy) {
-		this.imageUpdatedBy = imageUpdatedBy;
-	}
-
-	public UserResponse() {
-		super();
-	}
-
-	public UserResponse(Long id, String name, String email, UserRole role, Boolean active, String profileImageUrl,
-			LocalDateTime imageUpdatedAt, String imageUpdatedBy) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.email = email;
-		this.role = role;
-		this.active = active;
-		this.profileImageUrl = profileImageUrl;
-		this.imageUpdatedAt = imageUpdatedAt;
 		this.imageUpdatedBy = imageUpdatedBy;
 	}
 

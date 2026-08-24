@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { logout } from "../../util/AuthUtils";
 import gymLogo from "../../assets/gym-logo.png";
-import { LayoutDashboard, UserCheck, Users, CreditCard, ChevronDown, ChevronUp, Layers, LogOut } from 'lucide-react';
+import { LayoutDashboard, UserCheck, Users, UserCog, CreditCard, ChevronDown, ChevronUp, Layers, LogOut } from 'lucide-react';
 import { isAdmin, hasAnyRole, getCurrentUser } from "../../util/RoleUtils";
 
 export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollToTop, scrollToSection, leadsRef, analyticsRef }) {
@@ -103,6 +103,15 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, scrollTo
                             </div>
                         </div>
                     )}
+                    {hasAnyRole(["ADMIN"]) && (
+                        <div className={`sidebar-item ${location.pathname === "/admin/users" ? "active" : ""}`} onClick={() => navigate("/admin/users")}>
+                            <div className="sidebar-item-left">
+                                <UserCog size={18} />
+                                <span>Users</span>
+                            </div>
+                        </div>
+                    )
+                    }
                 </div>
                 <div className="logout-wrapper">
                     <button className="btn-logout" onClick={handleLogout}>

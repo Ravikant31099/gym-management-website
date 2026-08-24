@@ -1,5 +1,7 @@
 package com.fitzone.gymbackend.entity;
 
+import java.time.LocalDateTime;
+
 import com.fitzone.gymbackend.enums.UserRole;
 
 import jakarta.persistence.Column;
@@ -30,6 +32,15 @@ public class User extends BaseEntity {
 	private UserRole role;
 
 	private Boolean active = true;
+
+	private Boolean deleted = false;
+
+	@Column(name = "profile_image_url")
+	private String profileImageUrl;
+
+	private LocalDateTime imageUpdatedAt;
+
+	private String imageUpdatedBy;
 
 	public Long getId() {
 		return id;
@@ -77,6 +88,38 @@ public class User extends BaseEntity {
 
 	public void setActive(Boolean active) {
 		this.active = active;
+	}
+
+	public Boolean getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public String getProfileImageUrl() {
+		return profileImageUrl;
+	}
+
+	public void setProfileImageUrl(String profileImageUrl) {
+		this.profileImageUrl = profileImageUrl;
+	}
+
+	public LocalDateTime getImageUpdatedAt() {
+		return imageUpdatedAt;
+	}
+
+	public void setImageUpdatedAt(LocalDateTime imageUpdatedAt) {
+		this.imageUpdatedAt = imageUpdatedAt;
+	}
+
+	public String getImageUpdatedBy() {
+		return imageUpdatedBy;
+	}
+
+	public void setImageUpdatedBy(String imageUpdatedBy) {
+		this.imageUpdatedBy = imageUpdatedBy;
 	}
 
 }
