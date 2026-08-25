@@ -2,6 +2,7 @@ node_modules/
 target/
 .env
 .DS_Store
+gym-data/
 
 # React
 node_modules/
