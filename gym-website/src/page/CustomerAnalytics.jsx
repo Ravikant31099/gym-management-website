@@ -5,13 +5,13 @@ import { apiRequest, handleApiResponse } from "../util/api";
 import { formatDate } from "../util/CommonUtil";
 import { AdminSidebar, DashboardCard, EmptyState } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
+import { toast } from "react-toastify";
 
 export default function CustomerAnalytics() {
     const [analytics, setAnalytics] = useState(null);
     const membershipStatusData = analytics ? [{ name: "Active", value: analytics.stats.activeCustomers }, { name: "Expiring", value: analytics.stats.expiringCustomers }, { name: "Expired", value: analytics.stats.expiredCustomers }, { name: "Inactive", value: analytics.stats.inactiveCustomers }] : [];
     const STATUS_COLORS = ["#22c55e", "#eab308", "#ef4444", "#ed7474"];
     const PLAN_COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f97316", "#06b6d4"];
-    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     useEffect(() => { fetchCustomerAnalytics(); }, []);
     const fetchCustomerAnalytics = async () => {
         try {
@@ -26,7 +26,6 @@ export default function CustomerAnalytics() {
     };
     const planDistributionData = analytics?.planDistribution?.map(plan => ({ name: plan.planName, value: plan.count })) || [];
     const customerGrowthData = analytics?.customerGrowth || [];
-    customerGrowthData.sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month));
     const recentCustomers = analytics?.recentCustomers || [];
     return (
         <AdminLayout>

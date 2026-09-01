@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import '../../style/Home.css';
 import { FaInstagram, FaFacebook, FaWhatsapp, FaYoutube, FaMapMarkerAlt } from 'react-icons/fa';
 import { allowOnlyAlphabets, allowOnlyNumbers } from "../../util/CommonUtil";
+const BASE_URL = import.meta.env.VITE_API_LOCALURL;
 
 export default function Contact({ planMessage }) {
     const [success, setSuccess] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [infoMessage, setInfoMessage] = useState("");
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -21,6 +23,7 @@ export default function Contact({ planMessage }) {
             return () => clearTimeout(timer);
         }
     }, [planMessage]);
+
     const handleInputChange = (e) => {
         let { name, value } = e.target;
         if (name === "name") {
@@ -31,10 +34,13 @@ export default function Contact({ planMessage }) {
         }
         setFormData({ ...formData, [name]: value });
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (submitting) return;
+        setSubmitting(true);
         try {
-            const response = await fetch("http://localhost:8080/api/leads", {
+            const response = await fetch(`${BASE_URL}/api/leads`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -48,20 +54,28 @@ export default function Contact({ planMessage }) {
                 }, 3000);
                 setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
             } else {
-                const errorData = await response.json();
-                const messages = Object.values(errorData);
-                setErrorMessage(messages.join(" - "));
+                let publicMessage = "Something went wrong. Please try again.";
+                try {
+                    const errorData = await response.json();
+                    if (typeof errorData.message === "string" && errorData.message.trim()) {
+                        publicMessage = errorData.message;
+                    }
+                } catch (parseError) {
+                    console.log(parseError);
+                }
+                setErrorMessage(publicMessage);
                 setTimeout(() => {
                     setErrorMessage("");
                 }, 4000);
             }
         } catch (error) {
-            setErrorMessage("Backend connection failed due to " + error.message);
+            setErrorMessage("We couldn't reach the server. Please check your connection and try again.");
             setTimeout(() => {
                 setErrorMessage("");
             }, 3000);
+        } finally {
+            setSubmitting(false);
         }
-        console.log('Form Data:', formData);
     };
 
     return (
@@ -107,13 +121,13 @@ export default function Contact({ planMessage }) {
                     <div className="contact-form-wrapper">
                         <form onSubmit={handleSubmit} className="contact-form">
                             <div className="form-grid">
-                                <input type="text" name="name" placeholder="Your Name" maxLength={50} required value={formData.name} onChange={ handleInputChange } />
-                                <input type="email" name="email" placeholder="Your Email" maxLength={50} required value={formData.email} onChange={ handleInputChange } />
-                                <input type="text" name="phone" placeholder="Phone Number" maxLength={12} required value={formData.phone} onChange={ handleInputChange } />
-                                <input type="text" name="subject" placeholder="Subject" maxLength={100} required value={formData.subject} onChange={ handleInputChange } />
+                                <input type="text" name="name" placeholder="Your Name" maxLength={50} required value={formData.name} onChange={handleInputChange} />
+                                <input type="email" name="email" placeholder="Your Email" maxLength={50} required value={formData.email} onChange={handleInputChange} />
+                                <input type="text" name="phone" placeholder="Phone Number" maxLength={12} required value={formData.phone} onChange={handleInputChange} />
+                                <input type="text" name="subject" placeholder="Subject" maxLength={100} required value={formData.subject} onChange={handleInputChange} />
                             </div>
-                            <textarea rows="5" name="message" placeholder="Your Message" maxLength={500} required value={formData.message} onChange={ handleInputChange } />
-                            <button type="submit">Send Message</button>
+                            <textarea rows="5" name="message" placeholder="Your Message" maxLength={500} required value={formData.message} onChange={handleInputChange} />
+                            <button type="submit" disabled={submitting}>{submitting ? "Sending..." : "Send Message"}</button>
                         </form>
                     </div>
                 </div>

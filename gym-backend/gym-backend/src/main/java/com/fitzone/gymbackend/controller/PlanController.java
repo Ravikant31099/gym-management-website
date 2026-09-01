@@ -1,17 +1,22 @@
 package com.fitzone.gymbackend.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
 import com.fitzone.gymbackend.dto.PlanRequest;
 import com.fitzone.gymbackend.dto.PlanResponse;
 import com.fitzone.gymbackend.service.PlanService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
 @RestController
 @RequestMapping("/api/plans")
+@Validated
 public class PlanController {
 
 	private final PlanService planService;
@@ -31,18 +36,19 @@ public class PlanController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<PlanResponse> updatePlan(@PathVariable("id") Long id, @RequestBody @Valid PlanRequest p) {
+	public ResponseEntity<PlanResponse> updatePlan(@PathVariable("id") @Positive Long id,
+			@RequestBody @Valid PlanRequest p) {
 		return ResponseEntity.ok(planService.updateExistingPlan(id, p));
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deletePlan(@PathVariable("id") Long id) {
+	public ResponseEntity<Void> deletePlan(@PathVariable("id") @Positive Long id) {
 		planService.deactivatePlan(id);
 		return ResponseEntity.ok().build();
 	}
-	
+
 	@GetMapping("/export")
-	public List<PlanResponse> exportPlans() {
-	    return planService.exportPlans();
+	public ResponseEntity<List<PlanResponse>> exportPlans() {
+		return ResponseEntity.ok(planService.exportPlans());
 	}
 }

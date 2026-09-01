@@ -35,7 +35,11 @@ export default function PaymentManagement() {
     const [sortDir, setSortDir] = useState("desc");
     const resetFilters = () => { setSearchTerm(""); setStatusFilter(DEFAULT_FILTER); setModeFilter(DEFAULT_FILTER); setPlanFilter(DEFAULT_FILTER); setSortDir(PAYMENT_DEFAULT_SORT); setPage(0); };
 
-    useEffect(() => { loadInitialData(); }, [debouncedSearch, page, statusFilter, planFilter, modeFilter, sortBy, sortDir]);
+    useEffect(() => {
+        fetchPlansForPayment();
+    }, []);
+
+    useEffect(() => { fetchPayments(); }, [debouncedSearch, page, statusFilter, planFilter, modeFilter, sortBy, sortDir]);
     useEffect(() => { setPage(0); }, [searchTerm, statusFilter, modeFilter, planFilter]);
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -43,23 +47,11 @@ export default function PaymentManagement() {
         }, 500);
         return () => clearTimeout(timer);
     }, [searchTerm]);
-    const loadInitialData = async () => {
+
+    const fetchPayments = async () => {
         try {
-            setPageLoading(true);
-            await Promise.all([
-                fetchPlansForPayment(),
-                fetchPayments(true)
-            ]);
-        } finally {
-            setPageLoading(false);
-        }
-    };
-    const fetchPayments = async (initialLoad = false) => {
-        try {
-            if (!initialLoad) {
-                setTableLoading(true);
-            }
-            const params = new URLSearchParams({ page, size, search: searchTerm || "", status: statusFilter === DEFAULT_FILTER ? "" : statusFilter, mode: modeFilter === DEFAULT_FILTER ? "" : modeFilter, planId: planFilter === DEFAULT_FILTER ? "" : planFilter, sortBy, sortDir });
+            setTableLoading(true);
+            const params = new URLSearchParams({ page, size, search: debouncedSearch.trim() || "", status: statusFilter === DEFAULT_FILTER ? "" : statusFilter, mode: modeFilter === DEFAULT_FILTER ? "" : modeFilter, planId: planFilter === DEFAULT_FILTER ? "" : planFilter, sortBy, sortDir });
             const response = await apiRequest(`/api/payments?${params}`);
             await handleApiResponse(response);
             const data = await response.json();
@@ -70,14 +62,13 @@ export default function PaymentManagement() {
             console.log(error);
             toast.error(error.message);
         } finally {
-            if (!initialLoad) {
-                setTableLoading(false);
-            }
+            setTableLoading(false);
+            setPageLoading(false);
         }
     };
     const fetchPlansForPayment = async () => {
         try {
-            const response = await apiRequest("/api/plans", "GET");
+            const response = await apiRequest("/api/plans");
             await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
@@ -95,10 +86,10 @@ export default function PaymentManagement() {
             setDeleting(true);
             const response = await apiRequest(`/api/payments/${selectedPaymentId}`, { method: "DELETE" });
             await handleApiResponse(response);
-            setPayments(payments.filter(payment => payment.id !== selectedPaymentId));
             toast.success("Payment deleted successfully");
             setShowDeleteModal(false);
             setSelectedPaymentId(null);
+            fetchPayments();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -110,8 +101,8 @@ export default function PaymentManagement() {
         try {
             setExporting(true);
             const params = new URLSearchParams();
-            if (searchTerm.trim()) {
-                params.append("search", searchTerm);
+            if (debouncedSearch.trim()) {
+                params.append("search", debouncedSearch.trim());
             }
             if (statusFilter !== DEFAULT_FILTER) {
                 params.append("status", statusFilter);
@@ -261,4 +252,4 @@ export default function PaymentManagement() {
             {showDeleteModal && (<ConfirmModal title="Delete Payment" description="Are you sure you want to delete this Payment?" onClose={() => setShowDeleteModal(false)} onConfirm={deletePayment} loading={deleting} />)}
         </AdminLayout>
     );
-};
+}

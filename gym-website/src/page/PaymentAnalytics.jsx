@@ -6,17 +6,27 @@ import { getAmountValue, formatCurrency } from "../util/CommonUtil";
 import { APP_CONFIG } from "../constants/AppConstants";
 import { AdminSidebar, DashboardCard } from "../components/common/index";
 import AdminLayout from "../components/layout/AdminLayout";
+import { toast } from "react-toastify";
 
 export default function PaymentAnalytics() {
     const pieColors = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
     const [analytics, setAnalytics] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => { fetchAnalytics(); }, []);
     const fetchAnalytics = async () => {
-        const response = await apiRequest("/api/payments/analytics");
-        await handleApiResponse(response);
-        const data = await response.json();
-        setAnalytics(data);
+        try {
+            setLoading(true);
+            const response = await apiRequest("/api/payments/analytics");
+            await handleApiResponse(response);
+            const data = await response.json();
+            setAnalytics(data);
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message || "Unable to load payment analytics.");
+        } finally {
+            setLoading(false);
+        }
     };
     return (
         <AdminLayout>
@@ -35,14 +45,14 @@ export default function PaymentAnalytics() {
             <div className="dashboard-section">
                 <h3 className="cards-header"> Payment Summary </h3>
                 <div className="cards-grid">
-                    <DashboardCard title="Total Revenue" value={`${formatCurrency(analytics?.summary.totalRevenue)}`} color="#22c55e" />
-                    <DashboardCard title="Pending Revenue" value={`${formatCurrency(analytics?.summary.pendingRevenue)}`} color="#3b82f6" />
-                    <DashboardCard title="Today's Collection" value={`${formatCurrency(analytics?.summary.todayCollection)}`} color="#ef4444" />
-                    <DashboardCard title="Transactions" value={analytics?.summary.totalTransactions} color="#f59e0b" />
+                    <DashboardCard title="Total Revenue" value={`${formatCurrency(analytics?.summary?.totalRevenue)}`} color="#22c55e" />
+                    <DashboardCard title="Pending Revenue" value={`${formatCurrency(analytics?.summary?.pendingRevenue)}`} color="#3b82f6" />
+                    <DashboardCard title="Today's Collection" value={`${formatCurrency(analytics?.summary?.todayCollection)}`} color="#ef4444" />
+                    <DashboardCard title="Transactions" value={analytics?.summary?.totalTransactions} color="#f59e0b" />
                 </div>
             </div>
             <div className="analytics-chart-card">
-                <h3>Membership Status</h3>
+                <h3>Revenue By Plan</h3>
                 <ResponsiveContainer width="100%" height={350}>
                     <BarChart data={analytics?.revenueByPlan || []}>
                         <defs>
@@ -61,11 +71,11 @@ export default function PaymentAnalytics() {
             </div>
             <div className="charts-grid">
                 <div className="analytics-chart-card">
-                    <h3>Membership Status</h3>
+                    <h3>Payment Modes</h3>
                     <ResponsiveContainer width="100%" height={400}>
                         <PieChart>
                             <Pie data={analytics?.paymentModes || []} cx="50%" cy="50%" outerRadius={130} dataKey="value" nameKey="name" label>
-                                {analytics?.paymentModes.map((entry, index) => (<Cell key={index} fill={pieColors[index % pieColors.length]} />))}
+                                {analytics?.paymentModes?.map((entry, index) => (<Cell key={index} fill={pieColors[index % pieColors.length]} />))}
                             </Pie>
                             <Tooltip />
                             <Legend />
@@ -82,7 +92,7 @@ export default function PaymentAnalytics() {
                                 <th>Revenue</th>
                             </tr>
                         </thead>
-                        <tbody>{analytics?.topPlans.map(
+                        <tbody>{analytics?.topPlans?.map(
                             (plan, index) => (
                                 <tr key={plan.plan}>
                                     <td data-label="Rank"> {index === 0 && "1"} {index === 1 && "2"} {index === 2 && "3"} {index > 2 && `#${index + 1}`}</td>
@@ -104,13 +114,13 @@ export default function PaymentAnalytics() {
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="monthYear" />
+                        <XAxis dataKey="month" />
                         <YAxis />
-                        <Tooltip formatter={(value) => [`${formatCurrency(value)}`, "Revenue"]} />
-                        <Area type="monotone" dataKey="revenue" stroke="#22c55e" fill="url(#revenueGradient)" strokeWidth={3} />
+                        <Tooltip formatter={(value) => [`${formatCurrency(value)}`, "Revenue"]} contentStyle={{ backgroundColor: "#ffffff", borderRadius: "10px", color: "#15803d" }} labelStyle={{ color: "#15803d" }} itemStyle={{ color: "#15803d" }} />
+                        <Area type="monotone" dataKey="revenue" stroke="#22c55e" fill="url(#revenueGradient)" strokeWidth={2} />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
         </AdminLayout>
     );
-} 
+}

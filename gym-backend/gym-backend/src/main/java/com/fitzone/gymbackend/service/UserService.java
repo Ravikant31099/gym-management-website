@@ -1,8 +1,16 @@
 package com.fitzone.gymbackend.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fitzone.gymbackend.config.StorageProperties;
+import com.fitzone.gymbackend.constant.StorageFolders;
 import com.fitzone.gymbackend.dto.UserDetailsResponse;
 import com.fitzone.gymbackend.dto.UserExportResponse;
 import com.fitzone.gymbackend.dto.UserImageUploadResponse;
@@ -23,19 +33,13 @@ import com.fitzone.gymbackend.exception.BusinessException;
 import com.fitzone.gymbackend.exception.ResourceNotFound;
 import com.fitzone.gymbackend.repository.UserRepository;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.util.Objects;
-
-import com.fitzone.gymbackend.constant.StorageFolders;
-import com.fitzone.gymbackend.config.StorageProperties;
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
+
+	private static final int MAX_PAGE_SIZE = 100;
+
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final AuditLogService auditLogService;
@@ -55,16 +59,19 @@ public class UserService {
 
 	public Page<UserResponse> getUsers(String search, UserRole role, Boolean active, Pageable pageable) {
 		String normalizedSearch = search == null || search.isBlank() ? null : search.trim();
-		return userRepository.findUsers(normalizedSearch, role, active, pageable).map(this::userMapToResponse);
+		Pageable safePageable = clampPageable(pageable);
+		return userRepository.findUsers(normalizedSearch, role, active, safePageable).map(this::userMapToResponse);
 	}
 
+	@Transactional
 	public UserResponse createUser(UserRequest request) {
-		if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
+		String normalizedEmail = request.getEmail().trim().toLowerCase(Locale.ROOT);
+		if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
 			throw new BusinessException("Email already exists.");
 		}
 		User user = new User();
 		user.setName(request.getName().trim());
-		user.setEmail(request.getEmail().trim().toLowerCase());
+		user.setEmail(normalizedEmail);
 		user.setPassword(passwordEncoder.encode(request.getPassword()));
 		user.setRole(request.getRole());
 		user.setActive(true);
@@ -74,10 +81,15 @@ public class UserService {
 		return userMapToResponse(savedUser);
 	}
 
+	@Transactional
 	public UserResponse updateExistingUser(Long id, UserUpdateRequest request) {
 		User existing = userRepository.findById(id).orElseThrow(() -> new ResourceNotFound("User not found."));
+		String normalizedEmail = request.getEmail().trim().toLowerCase(Locale.ROOT);
+		if (userRepository.existsByEmailIgnoreCaseAndIdNot(normalizedEmail, id)) {
+			throw new BusinessException("Email already exists.");
+		}
 		existing.setName(request.getName().trim());
-		existing.setEmail(request.getEmail().trim().toLowerCase());
+		existing.setEmail(normalizedEmail);
 		existing.setRole(request.getRole());
 		User savedUser = userRepository.save(existing);
 		auditLogService.logActivity("USER", savedUser.getId(), ActivityType.USER_UPDATE,
@@ -85,26 +97,29 @@ public class UserService {
 		return userMapToResponse(savedUser);
 	}
 
+	@Transactional
 	public void deleteUser(Long id) {
 		User user = userRepository.findByIdAndDeletedFalse(id)
 				.orElseThrow(() -> new ResourceNotFound("User not found."));
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String currentUserEmail = auth.getName();
+		String currentUserEmail = currentUsername();
 		if (user.getEmail().equalsIgnoreCase(currentUserEmail)) {
 			throw new BusinessException("You cannot delete your own account.");
 		}
 		user.setDeleted(true);
 		user.setActive(false);
+		userRepository.save(user);
 		auditLogService.logActivity("USER", user.getId(), ActivityType.USER_DEACTIVATE,
 				"User deleted: " + user.getEmail());
-		userRepository.save(user);
 	}
 
+	@Transactional
 	public UserResponse updateUserStatus(Long id, Boolean active) {
+		if (active == null) {
+			throw new BusinessException("active is required");
+		}
 		User user = userRepository.findByIdAndDeletedFalse(id)
 				.orElseThrow(() -> new ResourceNotFound("User not found."));
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String currentUserEmail = auth.getName();
+		String currentUserEmail = currentUsername();
 		if (user.getEmail().equalsIgnoreCase(currentUserEmail)) {
 			throw new BusinessException("You cannot change your own account status.");
 		}
@@ -139,28 +154,28 @@ public class UserService {
 				user.getImageUpdatedBy());
 	}
 
+	@Transactional
 	public UserImageUploadResponse uploadUserImage(Long userId, MultipartFile file) throws IOException {
 		User user = userRepository.findByIdAndDeletedFalse(userId)
 				.orElseThrow(() -> new ResourceNotFound("User not found."));
-		if (file.isEmpty()) {
-			throw new BusinessException("Image file is required.");
-		}
-		String contentType = file.getContentType();
-		if (contentType == null || !contentType.startsWith("image/")) {
-			throw new BusinessException("Only image files are allowed.");
-		}
-		Path uploadPath = Paths.get(storageProperties.getRootPath(), StorageFolders.USER_IMAGES);
+
+		validateImageFile(file);
+
+		Path uploadPath = Paths.get(storageProperties.getRootPath(), StorageFolders.USER_IMAGES).normalize();
 		if (!Files.exists(uploadPath)) {
 			Files.createDirectories(uploadPath);
 		}
-		String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
-		String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+		String extension = safeExtension(file.getOriginalFilename());
 		String fileName = "user-" + userId + extension;
-		Path filePath = uploadPath.resolve(fileName);
+		Path filePath = uploadPath.resolve(fileName).normalize();
+		if (!filePath.startsWith(uploadPath)) {
+			throw new BusinessException("Invalid file path");
+		}
 		Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
 		String imageUrl = "/user-images/" + fileName;
 		LocalDateTime updatedAt = LocalDateTime.now();
-		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		String username = currentUsername();
 		user.setProfileImageUrl(imageUrl);
 		user.setImageUpdatedAt(updatedAt);
 		user.setImageUpdatedBy(username);
@@ -176,4 +191,46 @@ public class UserService {
 				user.getProfileImageUrl(), user.getImageUpdatedAt(), user.getImageUpdatedBy());
 	}
 
+	private void validateImageFile(MultipartFile file) {
+		if (file == null || file.isEmpty()) {
+			throw new BusinessException("Image file is required.");
+		}
+		if (file.getSize() > StorageFolders.MAX_IMAGE_SIZE_BYTES) {
+			throw new BusinessException("Image exceeds the maximum allowed size of 5MB");
+		}
+		String contentType = file.getContentType();
+		if (contentType == null || !contentType.startsWith("image/")) {
+			throw new BusinessException("Only image files are allowed.");
+		}
+		String extension = safeExtension(file.getOriginalFilename());
+		if (!StorageFolders.ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
+			throw new BusinessException("Unsupported image type. Allowed types: "
+					+ String.join(", ", StorageFolders.ALLOWED_IMAGE_EXTENSIONS));
+		}
+	}
+
+	private String safeExtension(String originalFilename) {
+		if (originalFilename == null || originalFilename.isBlank()) {
+			return "";
+		}
+		String sanitized = Paths.get(originalFilename).getFileName().toString();
+		int dotIndex = sanitized.lastIndexOf('.');
+		if (dotIndex < 0 || dotIndex == sanitized.length() - 1) {
+			return "";
+		}
+		return sanitized.substring(dotIndex).toLowerCase(Locale.ROOT);
+	}
+
+	private String currentUsername() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		return auth != null ? auth.getName() : "SYSTEM";
+	}
+
+	private Pageable clampPageable(Pageable pageable) {
+		int safeSize = pageable.getPageSize() <= 0 ? 10 : Math.min(pageable.getPageSize(), MAX_PAGE_SIZE);
+		if (safeSize == pageable.getPageSize()) {
+			return pageable;
+		}
+		return PageRequest.of(pageable.getPageNumber(), safeSize, pageable.getSort());
+	}
 }

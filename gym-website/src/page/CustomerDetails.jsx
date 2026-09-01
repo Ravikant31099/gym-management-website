@@ -8,6 +8,7 @@ import { ViewModal, FormModal } from "../components/modals/index";
 import { Loader, EmptyState } from "../components/common";
 import DatePicker from "react-datepicker";
 import { toast } from "react-toastify";
+
 export default function CustomerDetails() {
     const { id } = useParams();
     const [customer, setCustomer] = useState(null);
@@ -27,6 +28,7 @@ export default function CustomerDetails() {
 
     useEffect(() => { fetchCustomerDetails(); fetchCustomerActivities(); }, [id]);
     useEffect(() => { fetchPlansForCustomer(); }, []);
+
     const fetchCustomerDetails = async () => {
         try {
             setLoading(true);
@@ -41,38 +43,36 @@ export default function CustomerDetails() {
             setLoading(false);
         }
     };
+
     const fetchPlansForCustomer = async () => {
         try {
-            setLoading(true);
-            const response = await apiRequest("/api/plans", "GET");
+            const response = await apiRequest("/api/plans");
             await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
         } catch (error) {
             console.log(error);
             toast.error(error.message);
-        } finally {
-            setLoading(false);
         }
     };
+
     const fetchCustomerActivities = async () => {
         try {
-            setLoading(true);
             const response = await apiRequest(`/api/customers/${id}/activities`);
             await handleApiResponse(response);
             const data = await response.json();
             setActivities(data);
         } catch (error) {
             console.log(error);
-        } finally {
-            setLoading(false);
         }
     };
+
     const openEditCustomer = (customer) => {
         setSelectedCustomer(customer);
         setCustomerForm({ name: customer.name, email: customer.email, phone: customer.phone, joinDate: customer.joinDate, expiryDate: customer.expiryDate, status: customer.status, planId: customer.planId });
         setShowEditModal(true);
     };
+
     const handleUpdateCustomer = async () => {
         setUpdating(true);
         if (!validateForm()) {
@@ -94,6 +94,7 @@ export default function CustomerDetails() {
             setUpdating(false);
         }
     };
+
     const validateForm = () => {
         if (!customerForm.name.trim()) {
             toast.error("Name is required");
@@ -119,9 +120,11 @@ export default function CustomerDetails() {
         }
         return true;
     };
+
     const handleChange = (e) => {
         setCustomerForm({ ...customerForm, [e.target.name]: e.target.value });
     };
+
     const uploadCustomerImage = async () => {
         if (!selectedImage) {
             toast.error("Please select an image");
@@ -131,9 +134,10 @@ export default function CustomerDetails() {
             setUploadingImage(true);
             const formData = new FormData();
             formData.append("file", selectedImage);
-            const token = sessionStorage.getItem("token");
-            const response = await fetch(`${BASE_URL}/api/customers/${customer.id}/upload-image`,
-                { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
+            const response = await apiRequest(`/api/customers/${customer.id}/upload-image`, {
+                method: "POST",
+                body: formData,
+            });
             await handleApiResponse(response);
             toast.success("Profile image uploaded successfully");
             setSelectedImage(null);
@@ -147,38 +151,44 @@ export default function CustomerDetails() {
             setUploadingImage(false);
         }
     };
+
     const closeImageModal = () => {
         setSelectedImage(null);
         setShowImageModal(false);
     };
+
     const openRenewModal = (customer) => {
         setSelectedCustomer(customer);
         setRenewalForm({ planId: customer.planId || "", paymentMode: PAYMENT_MODE.UPI, paymentStatus: PAYMENT_STATUS.PAID, paymentRemarks: "" });
         setShowRenewModal(true);
     };
+
     const resetRenewForm = () => {
         setRenewalForm({ planId: "", paymentMode: "UPI", paymentStatus: "PAID", paymentRemarks: "" });
     };
+
     const validateRenewForm = () => {
+        if (!renewalForm.planId) {
+            toast.error("Please select a plan");
+            return false;
+        }
         if (!renewalForm.paymentRemarks) {
             toast.error("Payment remarks required");
             return false;
         }
         return true;
     };
+
     const renewMembership = async () => {
+        if (!validateRenewForm()) {
+            return;
+        }
         try {
-            if (!validateRenewForm()) {
-                setUpdating(false);
-                return;
-            }
             setUpdating(true);
             const response = await apiRequest(`/api/customers/${selectedCustomer.id}/renew`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(renewalForm)
-            }
-            );
+                body: JSON.stringify(renewalForm),
+            });
             await handleApiResponse(response);
             await response.json();
             toast.success("Membership renewed successfully");
@@ -188,19 +198,19 @@ export default function CustomerDetails() {
             fetchCustomerActivities();
         } catch (error) {
             console.log(error);
-            toast.error("Something went wrong"
-            );
+            toast.error(error.message);
         } finally {
             setUpdating(false);
         }
     };
+
     if (loading) {
         return (
             <AdminLayout>
                 <Loader />
             </AdminLayout>
         );
-    };
+    }
     if (!customer) {
         return (
             <AdminLayout>
@@ -228,7 +238,7 @@ export default function CustomerDetails() {
                         <p className="customer-id">Customer ID : #{customer.id}</p>
                         <div className="profile-badges">
                             <span className={`status-badge-det ${customer.status.toLowerCase()}`}>{customer.status}</span>
-                            <span className="plan-badge-det">{customer.planName}
+                            <span className="plan-badge-det">{customer.planName ?? "—"}
                             </span>
                         </div>
                     </div>
@@ -257,7 +267,7 @@ export default function CustomerDetails() {
                         <h3>Membership Information</h3>
                         <div className="details-row">
                             <span>Plan</span>
-                            <strong>{customer.planName}</strong>
+                            <strong>{customer.planName ?? "—"}</strong>
                         </div>
                         <div className="details-row">
                             <span>Status</span>
@@ -299,8 +309,8 @@ export default function CustomerDetails() {
                 <div className="details-card activity-card">
                     <h3>Customer Activity</h3>
                     <div className="activity-list">
-                    {activities.length === 0 ? (<p>No activity found</p>) : (activities.map(activity => (
-                        <div key={activity.createdAt} className="activity-item">
+                    {activities.length === 0 ? (<p>No activity found</p>) : (activities.map((activity, index) => (
+                        <div key={activity.id ?? `${activity.createdAt}-${index}`} className="activity-item">
                             <div className="activity-dot"></div>
                             <div className="activity-Context">
                                 <strong>Activity: {activity.description}</strong>
@@ -342,7 +352,7 @@ export default function CustomerDetails() {
             )}
             {/* Renew Membership Modal */}
             {showRenewModal && (<FormModal title="Renew Membership" onClose={() => { resetRenewForm(); setShowRenewModal(false); }} onSubmit={renewMembership} loading={updating} buttonText="Renew">
-                <div className="table-summary">Current Plan: <strong>{customer.planName}</strong></div>
+                <div className="table-summary">Current Plan: <strong>{customer.planName ?? "—"}</strong></div>
                 <select value={renewalForm.planId} className="filter-select-modal" onChange={(e) => setRenewalForm({ ...renewalForm, planId: Number(e.target.value) })}>
                     <option value="">Select Plan</option>{plans.map(plan => (
                         <option key={plan.id} value={plan.id}>

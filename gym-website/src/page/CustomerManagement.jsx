@@ -1,10 +1,10 @@
 import "../style/Admin.css";
 import "react-datepicker/dist/react-datepicker.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { formatDate, formatCurrency, getMembershipStatus, allowOnlyAlphabets, allowOnlyNumbers, exportToCsv } from "../util/CommonUtil";
-import { APP_CONFIG, CUSTOMER_STATUS, PAYMENT_STATUS, PAYMENT_MODE, CUSTOMER_DEFAULT_SORT, DEFAULT_FILTER } from "../constants/AppConstants";
-import { AdminSidebar, Loader, DetailItem, EmptyState } from "../components/common/index";
+import { formatDate, getMembershipStatus, allowOnlyAlphabets, allowOnlyNumbers, exportToCsv } from "../util/CommonUtil";
+import { CUSTOMER_STATUS, PAYMENT_STATUS, PAYMENT_MODE, CUSTOMER_DEFAULT_SORT, DEFAULT_FILTER } from "../constants/AppConstants";
+import { Loader, EmptyState } from "../components/common/index";
 import { Trash2, FileSpreadsheet, RefreshCcw } from "lucide-react";
 import { ConfirmModal, FormModal } from "../components/modals/index";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +23,6 @@ export default function CustomerManagement() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedCustomerId, setSelectedCustomerId] = useState(null);
     const [deleting, setDeleting] = useState(false);
-    const [viewCustomer, setViewCustomer] = useState(null);
     const [exporting, setExporting] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -37,35 +36,44 @@ export default function CustomerManagement() {
     const [sortBy, setSortBy] = useState("name");
     const [sortDir, setSortDir] = useState(CUSTOMER_DEFAULT_SORT);
     const navigate = useNavigate();
+    const latestRequestId = useRef(0);
     const resetFilters = () => { setSearchTerm(""); setStatusFilter(DEFAULT_FILTER); setPlanFilter(DEFAULT_FILTER); setSortDir(CUSTOMER_DEFAULT_SORT); setPage(0); };
 
-    useEffect(() => { loadInitialData(); }, [debouncedSearch, page, statusFilter, planFilter, sortBy, sortDir]);
+    useEffect(() => {
+        fetchPlansForCustomer();
+    }, []);
+
+    useEffect(() => {
+        loadCustomerTable();
+    }, [debouncedSearch, page, statusFilter, planFilter, sortBy, sortDir]);
+
     useEffect(() => { setPage(0); }, [searchTerm, statusFilter, planFilter]);
+
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchTerm);
         }, 500);
         return () => clearTimeout(timer);
     }, [searchTerm]);
-    const loadInitialData = async () => {
+
+    const loadCustomerTable = async () => {
         try {
-            setPageLoading(true);
-            await Promise.all([
-                fetchPlansForCustomer(),
-                fetchCustomers(true)
-            ]);
+            setPageLoading((prev) => (customers.length === 0 ? true : prev));
+            await fetchCustomers(customers.length === 0);
         } finally {
             setPageLoading(false);
         }
     };
+
     const fetchCustomers = async (initialLoad = false) => {
+        const requestId = ++latestRequestId.current;
         try {
             if (!initialLoad) {
                 setTableLoading(true);
             }
             const params = new URLSearchParams({ page, size });
-            if (searchTerm.trim()) {
-                params.append("search", searchTerm);
+            if (debouncedSearch.trim()) {
+                params.append("search", debouncedSearch.trim());
             }
             if (statusFilter !== DEFAULT_FILTER) {
                 params.append("status", statusFilter);
@@ -78,21 +86,27 @@ export default function CustomerManagement() {
             const response = await apiRequest(`/api/customers?${params}`);
             await handleApiResponse(response);
             const data = await response.json();
+            if (requestId !== latestRequestId.current) {
+                return;
+            }
             setCustomers(data.content);
             setTotalPages(data.totalPages);
             setTotalRecords(data.totalElements);
         } catch (error) {
-            console.log(error);
-            toast.error(error.message);
+            if (requestId === latestRequestId.current) {
+                console.log(error);
+                toast.error(error.message);
+            }
         } finally {
-            if (!initialLoad) {
+            if (requestId === latestRequestId.current && !initialLoad) {
                 setTableLoading(false);
             }
         }
     };
+
     const fetchPlansForCustomer = async () => {
         try {
-            const response = await apiRequest("/api/plans", "GET");
+            const response = await apiRequest("/api/plans");
             await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
@@ -101,6 +115,7 @@ export default function CustomerManagement() {
             toast.error(error.message);
         }
     };
+
     const validateForm = () => {
         if (!customerForm.name.trim()) {
             toast.error("Name is required");
@@ -130,6 +145,7 @@ export default function CustomerManagement() {
         }
         return true;
     };
+
     const handleAddCustomer = async (e) => {
         e.preventDefault();
         setSaving(true);
@@ -140,8 +156,7 @@ export default function CustomerManagement() {
         try {
             const response = await apiRequest("/api/customers", { method: "POST", body: JSON.stringify(customerForm) });
             await handleApiResponse(response);
-            const savedCustomer = await response.json();
-            setCustomers([...customers, savedCustomer]);
+            await response.json();
             toast.success("Customer Added Successfully");
             setShowAddModal(false);
             resetCustomerForm();
@@ -153,6 +168,7 @@ export default function CustomerManagement() {
             setSaving(false);
         }
     };
+
     const handleChange = (e) => {
         let { name, value } = e.target;
         if (name === "name") {
@@ -163,16 +179,17 @@ export default function CustomerManagement() {
         }
         setCustomerForm({ ...customerForm, [name]: value });
     };
+
     const handleDeleteClick = (id) => {
         setSelectedCustomerId(id);
         setShowDeleteModal(true);
     };
+
     const deleteCustomer = async () => {
         try {
             setDeleting(true);
             const response = await apiRequest(`/api/customers/${selectedCustomerId}`, { method: "DELETE" });
             await handleApiResponse(response);
-            setCustomers(customers.filter(customer => customer.id !== selectedCustomerId));
             toast.success("Customer Deleted Successfully");
             setShowDeleteModal(false);
             setSelectedCustomerId(null);
@@ -184,22 +201,26 @@ export default function CustomerManagement() {
             setDeleting(false);
         }
     };
+
     const handleViewCustomer = (customer) => {
         navigate(`/admin/customers/${customer.id}`);
     };
+
     const handleSearchChange = (value) => {
         setSearchTerm(value);
         setPage(0);
     };
+
     const resetCustomerForm = () => {
         setCustomerForm({ name: "", email: "", phone: "", joinDate: "", status: "ACTIVE", planId: "", paymentMode: "UPI", paymentStatus: "PAID", paymentRemarks: "" });
     };
+
     const handleExportCustomers = async () => {
         try {
             setExporting(true);
             const params = new URLSearchParams();
-            if (searchTerm.trim()) {
-                params.append("search", searchTerm);
+            if (debouncedSearch.trim()) {
+                params.append("search", debouncedSearch.trim());
             }
             if (statusFilter !== DEFAULT_FILTER) {
                 params.append("status", statusFilter);
@@ -230,6 +251,7 @@ export default function CustomerManagement() {
             setExporting(false);
         }
     };
+
     if (pageLoading) {
         return (
             <AdminLayout>
@@ -256,7 +278,7 @@ export default function CustomerManagement() {
             </div>
             {/* SEARCH */}
             <div className="search-filter-container">
-                <input type="text" placeholder="Search by Name, Phone or Email" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
+                <input type="text" placeholder="Search by Name, Phone or Email" value={searchTerm} onChange={(e) => handleSearchChange(e.target.value)} className="search-input" />
             </div>
             <div className="search-filter-container">
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
@@ -315,7 +337,7 @@ export default function CustomerManagement() {
                             <tr key={customer.id} className="clickable-row" onClick={() => handleViewCustomer(customer)}>
                                 <td data-label="Name">{customer.name}</td>
                                 <td data-label="Phone">{customer.phone}</td>
-                                <td data-label="Plan"><span className={`plan-badge ${customer.planName.toLowerCase()}`}>{customer.planName}</span></td>
+                                <td data-label="Plan"><span className={`plan-badge ${(customer.planName ?? "unassigned").toLowerCase()}`}>{customer.planName ?? "—"}</span></td>
                                 <td data-label="Expiry Date">{formatDate(customer.expiryDate)}</td>
                                 <td data-label="Status"><span className={`status-badge ${getMembershipStatus(customer).className.toLowerCase()}`}>{getMembershipStatus(customer).text}</span></td>
                                 <td data-label="Action">

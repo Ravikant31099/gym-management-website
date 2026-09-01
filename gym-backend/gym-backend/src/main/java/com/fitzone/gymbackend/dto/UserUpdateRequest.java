@@ -5,16 +5,20 @@ import com.fitzone.gymbackend.enums.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class UserUpdateRequest {
-	@NotBlank
+
+	@NotBlank(message = "Name is required")
+	@Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
 	private String name;
 
-	@NotBlank
-	@Email
+	@Email(message = "Invalid email format")
+	@NotBlank(message = "Email is required")
+	@Size(max = 100, message = "Email cannot exceed 100 characters")
 	private String email;
 
-	@NotNull
+	@NotNull(message = "Role is required")
 	private UserRole role;
 
 	public String getName() {
@@ -40,5 +44,4 @@ public class UserUpdateRequest {
 	public void setRole(UserRole role) {
 		this.role = role;
 	}
-
 }

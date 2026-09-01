@@ -34,13 +34,16 @@ export default function LeadManagement() {
     const [leadForm, setLeadForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
 
     const resetFilters = () => { setSearch(""); setStatusFilter(DEFAULT_FILTER); };
-    useEffect(() => { fetchLeadStats(); }, [page, search, statusFilter]);
+
+    useEffect(() => { fetchLeads(); }, [page, debouncedSearch, statusFilter]);
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(search);
         }, 500);
         return () => clearTimeout(timer);
     }, [search]);
+    useEffect(() => { setPage(0); }, [search, statusFilter]);
+
     const openViewModal = (lead) => {
         setSelectedLead(lead);
         setShowViewModal(true);
@@ -74,10 +77,10 @@ export default function LeadManagement() {
         }
         setLeadForm({ ...leadForm, [name]: value });
     };
-    const fetchLeadStats = async () => {
+    const fetchLeads = async () => {
         try {
             setLoading(true);
-            const params = new URLSearchParams({ page, size, search: search.trim(), status: statusFilter === "ALL" ? "" : statusFilter, sortBy, sortDir});
+            const params = new URLSearchParams({ page, size, search: debouncedSearch.trim(), status: statusFilter === "ALL" ? "" : statusFilter, sortBy, sortDir});
             const response = await apiRequest(`/api/leads?${params}`);
             await handleApiResponse(response);
             const data = await response.json();
@@ -99,7 +102,7 @@ export default function LeadManagement() {
             );
             await handleApiResponse(response);
             toast.success("Lead updated successfully.");
-            await fetchLeadStats();
+            await fetchLeads();
             closeModal();
         } catch (error) {
             toast.error(error.message);
@@ -112,9 +115,8 @@ export default function LeadManagement() {
             setDeletingLead(true);
             const response = await apiRequest(`/api/leads/${id}`, { method: "DELETE" });
             await handleApiResponse(response);
-            setLeads(leads.filter((lead) => lead.id !== id));
             toast.success("Lead deleted successfully");
-            await fetchLeadStats();
+            await fetchLeads();
         } catch (error) {
             console.log(error);
             toast.error(error.message);
@@ -140,8 +142,8 @@ export default function LeadManagement() {
         try {
             setExporting(true);
             const params = new URLSearchParams();
-            if (search.trim()) {
-                params.append("search", search);
+            if (debouncedSearch.trim()) {
+                params.append("search", debouncedSearch.trim());
             }
             if (statusFilter !== "ALL") {
                 params.append("status", statusFilter);
@@ -278,7 +280,7 @@ export default function LeadManagement() {
                 <ConfirmModal title="Delete Lead" description="Are you sure you want to delete this lead?" onClose={() => setShowDeleteModal(false)} onConfirm={confirmDelete} loading={deletingLead} />
             )}
             {/* EDIT MODAL */}
-            {showEditModal && (<FormModal title="Edit Plan" onClose={() => setShowEditModal(false)} onSubmit={updateLead} loading={updating} buttonText="Update Lead">
+            {showEditModal && (<FormModal title="Edit Lead" onClose={() => setShowEditModal(false)} onSubmit={updateLead} loading={updating} buttonText="Update Lead">
                 <input type="text" className="search-input" name="name" maxLength={50} value={leadForm.name} onChange={ handleInputChange } placeholder="Name" />
                 <input type="email" className="search-input" name="email" maxLength={50} value={leadForm.email} onChange={ handleInputChange } placeholder="Email" />
                 <input type="text" className="search-input" name="phone" maxLength={12} value={leadForm.phone} onChange={ handleInputChange } placeholder="Phone" />

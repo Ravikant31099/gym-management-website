@@ -22,7 +22,6 @@ export default function UserDetails() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [saving, setSaving] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
@@ -30,27 +29,19 @@ export default function UserDetails() {
     const [userForm, setUserForm] = useState({
         name: "",
         email: "",
-        password: "",
         role: "RECEPTIONIST"
     });
     const [errors, setErrors] = useState({
         name: "",
         email: "",
-        password: "",
         role: ""
     });
-    const passwordRules = {
-        minLength: userForm.password.length >= 8,
-        upperCase: /[A-Z]/.test(userForm.password),
-        lowerCase: /[a-z]/.test(userForm.password),
-        number: /\d/.test(userForm.password),
-        special: /[!@#$%^&*(),.?":{}|<>]/.test(userForm.password)
-    };
 
     useEffect(() => {
         fetchUserDetails();
         fetchUserActivities();
     }, [id]);
+
     const fetchUserDetails = async () => {
         try {
             setLoading(true);
@@ -62,10 +53,12 @@ export default function UserDetails() {
         } catch (error) {
             console.error("Error fetching user details:", error);
             setError(error.message || "Unable to load user details.");
+            setUser(null);
         } finally {
             setLoading(false);
         }
     };
+
     const fetchUserActivities = async () => {
         try {
             setActivityLoading(true);
@@ -80,111 +73,92 @@ export default function UserDetails() {
             setActivityLoading(false);
         }
     };
+
     const handleEditUser = (user) => {
         setIsEditMode(true);
         setSelectedUserId(user.id);
         setUserForm({
             name: user.name,
             email: user.email,
-            password: "",
             role: user.role
         });
+        setErrors({ name: "", email: "", role: "" });
         setShowEditModal(true);
     };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setUserForm(prev => ({
             ...prev,
             [name]: value
         }));
-        const error = validateField(name, value);
+        const fieldError = validateField(name, value);
         setErrors(prev => ({
             ...prev,
-            [name]: error
+            [name]: fieldError
         }));
     };
+
     const resetUserForm = () => {
         setIsEditMode(false);
         setSelectedUserId(null);
         setUserForm({
             name: "",
             email: "",
-            password: "",
             role: USER_ROLE.RECEPTIONIST
         });
         setErrors({
             name: "",
             email: "",
-            password: "",
             role: ""
         });
     };
-    const validateUserForm = () => {
-        const newErrors = {};
-        const name = userForm.name.trim();
-        const email = userForm.email.trim();
-        const password = userForm.password;
-        const isPasswordValid = passwordRules.minLength && passwordRules.upperCase && passwordRules.lowerCase && passwordRules.number && passwordRules.special;
-        if (!name) {
-            newErrors.name = "Name is required.";
-            return false;
-        }
-        if (name.length < 3) {
-            newErrors.name = "Minimum 3 characters required.";
-            return false;
-        }
-        if (name.length > 50) {
-            newErrors.name = "Maximum 50 characters allowed.";
-            return false;
-        }
-        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-        if (!email) {
-            newErrors.email = "Email is required.";
-            return false;
-        }
-        if (!emailRegex.test(email)) {
-            newErrors.email = "Enter a valid email address.";
-            return false;
-        }
-        if (!isPasswordValid) {
-            newErrors.password = "Password does not satisfy all rules.";
-            return false;
-        }
-        if (!userForm.role) {
-            newErrors.role = "Role is required.";
-            return false;
-        }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+
     const validateField = (name, value) => {
-        let error = "";
+        let fieldError = "";
         switch (name) {
             case "name":
                 if (!value.trim()) {
-                    error = "Name is required.";
+                    fieldError = "Name is required.";
                 } else if (value.trim().length < 3) {
-                    error = "Minimum 3 characters required.";
+                    fieldError = "Minimum 3 characters required.";
+                } else if (value.trim().length > 50) {
+                    fieldError = "Maximum 50 characters allowed.";
                 }
                 break;
             case "email":
                 if (!value.trim()) {
-                    error = "Email is required.";
+                    fieldError = "Email is required.";
                 } else if (
                     !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value)
                 ) {
-                    error = "Enter a valid email address.";
+                    fieldError = "Enter a valid email address.";
                 }
                 break;
             case "role":
                 if (!value) {
-                    error = "Role is required.";
+                    fieldError = "Role is required.";
                 }
                 break;
             default: break;
         }
-        return error;
+        return fieldError;
     };
+
+    const validateUserForm = () => {
+        const newErrors = {
+            name: validateField("name", userForm.name),
+            email: validateField("email", userForm.email),
+            role: validateField("role", userForm.role),
+        };
+        setErrors(newErrors);
+        const hasErrors = Object.values(newErrors).some((message) => message);
+        if (hasErrors) {
+            toast.error("Please fix the highlighted fields before submitting.");
+        }
+        return !hasErrors;
+    };
+
     const handleUpdateUser = async (e) => {
         e.preventDefault();
         if (!validateUserForm()) return;
@@ -212,6 +186,7 @@ export default function UserDetails() {
             setSaving(false);
         }
     };
+
     const uploadUserImage = async () => {
         if (!selectedImage) {
             toast.error("Please select an image");
@@ -221,17 +196,10 @@ export default function UserDetails() {
             setUploadingImage(true);
             const formData = new FormData();
             formData.append("file", selectedImage);
-            const token = sessionStorage.getItem("token");
-            const response = await fetch(
-                `${BASE_URL}/api/users/${user.id}/upload-image`,
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: formData
-                }
-            );
+            const response = await apiRequest(`/api/users/${user.id}/upload-image`, {
+                method: "POST",
+                body: formData,
+            });
             await handleApiResponse(response);
             toast.success("Profile image uploaded successfully");
             setSelectedImage(null);
@@ -245,17 +213,28 @@ export default function UserDetails() {
             setUploadingImage(false);
         }
     };
+
     const closeImageModal = () => {
         setSelectedImage(null);
         setShowImageModal(false);
     };
+
     if (loading) {
         return (
             <AdminLayout>
                 <Loader />
             </AdminLayout>
         );
-    };
+    }
+
+    if (!user) {
+        return (
+            <AdminLayout>
+                <EmptyState title="User Not Found" description={error || "The requested user does not exist or has been deleted."} />
+            </AdminLayout>
+        );
+    }
+
     return (
         <AdminLayout>
             <div className="header-card">
@@ -270,9 +249,9 @@ export default function UserDetails() {
             <div className="user-details-grid">
                 <div className="user-profile-card">
                     <div className="user-profile-header">
-                        <div className="user-avatar"> 
+                        <div className="user-avatar">
                             {user.profileImageUrl ? ( <img src={`${BASE_URL}${user.profileImageUrl}`} alt={user.name} className="user-profile-image" />) : (
-                                <div className="user-profile-placeholder"> {user.name?.charAt(0).toUpperCase()}</div>)} 
+                                <div className="user-profile-placeholder"> {user.name?.charAt(0).toUpperCase()}</div>)}
                         </div>
                         <div className="profile-info">
                             <h1>{user.name}</h1>
@@ -329,7 +308,7 @@ export default function UserDetails() {
                     <strong> {user.imageUpdatedAt ? formatDateTime(user.imageUpdatedAt) : "-"} </strong>
                 </div>
             </div>
-            {/* Activity Section - Coming Next */}
+            {/* Activity Section */}
             <div className="user-activity-card">
                 <div>
                     <h3>Recent Activity</h3>
@@ -367,23 +346,12 @@ export default function UserDetails() {
                 {errors.name && <p className="field-error"> {errors.name} </p>}
                 <input type="email" name="email" placeholder="Email Address" maxLength={100} className={`search-input ${errors.email ? "input-error" : ""}`} value={userForm.email} onChange={handleChange} />
                 {errors.email && <p className="field-error"> {errors.email} </p>}
-                <div className="password-wrapper">
-                    <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" className="search-input" autoComplete="new-password" value={userForm.password} onChange={handleChange} />
-                    <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} > {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
-                </div>
-                {errors.password && <p className="field-error"> {errors.password} </p>}
-                <div className="password-rules">
-                    <PasswordRule valid={passwordRules.minLength} text="Minimum 8 characters" />
-                    <PasswordRule valid={passwordRules.upperCase} text="One uppercase letter" />
-                    <PasswordRule valid={passwordRules.lowerCase} text="One lowercase letter" />
-                    <PasswordRule valid={passwordRules.number} text="One number" />
-                    <PasswordRule valid={passwordRules.special} text="One special character" />
-                </div>
                 <select name="role" value={userForm.role} className={`filter-select-modal ${errors.role ? "input-error" : ""}`} onChange={handleChange}>
                     <option value={USER_ROLE.RECEPTIONIST}>Receptionist</option>
                     <option value={USER_ROLE.TRAINER}>Trainer</option>
                 </select>
                 {errors.role && <p className="field-error"> {errors.role} </p>}
+                <p className="readonly-note">Password changes aren't handled from this form — use a dedicated password-reset flow.</p>
             </FormModal>
             )}
             {/* Upload Image Modal */}

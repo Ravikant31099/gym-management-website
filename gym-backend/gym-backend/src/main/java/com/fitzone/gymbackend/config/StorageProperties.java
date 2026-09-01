@@ -7,13 +7,13 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.storage")
 public class StorageProperties {
 
-    private String rootPath;
+	private String rootPath;
 
-    public String getRootPath() {
-        return rootPath;
-    }
+	public String getRootPath() {
+		return rootPath;
+	}
 
-    public void setRootPath(String rootPath) {
-        this.rootPath = rootPath;
-    }
+	public void setRootPath(String rootPath) {
+		this.rootPath = rootPath;
+	}
 }

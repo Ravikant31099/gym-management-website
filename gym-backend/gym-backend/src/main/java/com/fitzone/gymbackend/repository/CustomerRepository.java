@@ -3,16 +3,19 @@ package com.fitzone.gymbackend.repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.fitzone.gymbackend.dto.PlanDistributionResponse;
-import com.fitzone.gymbackend.dto.RecentCustomerResponse;
-import com.fitzone.gymbackend.entity.Customer;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.fitzone.gymbackend.dto.PlanDistributionResponse;
+import com.fitzone.gymbackend.dto.RecentCustomerResponse;
+import com.fitzone.gymbackend.entity.Customer;
+
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
+
 	boolean existsByPlanId(Long planId);
 
 	Page<Customer> findByArchivedFalse(Pageable pageable);
@@ -163,4 +166,19 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 	List<Customer> findByExpiryDateBetween(LocalDate startDate, LocalDate endDate);
 
 	Long countByJoinDateBetween(LocalDate startDate, LocalDate endDate);
+
+	/**
+	 * Database-side aggregation of new-customer counts per calendar month, bounded to
+	 * [startDate, endDate]. Returns Object[]{ year (Integer), month (Integer), count (Long) }.
+	 * Ordered chronologically so the service layer doesn't need to re-sort.
+	 */
+	@Query(value = """
+			SELECT YEAR(c.join_date) AS yr, MONTH(c.join_date) AS mo, COUNT(*) AS cnt
+			FROM customer c
+			WHERE c.archived = false
+			AND c.join_date BETWEEN :startDate AND :endDate
+			GROUP BY YEAR(c.join_date), MONTH(c.join_date)
+			ORDER BY yr, mo
+			""", nativeQuery = true)
+	List<Object[]> findMonthlyJoinCounts(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

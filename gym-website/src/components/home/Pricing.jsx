@@ -20,7 +20,7 @@ export default function Pricing({ onSelectPlan }) {
     }, [plans, showAllPlans]);
     const fetchPlans = async () => {
         try {
-            const response = await apiRequest("/api/plans", "GET");
+            const response = await apiRequest("/api/plans");
             await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);

@@ -1,23 +1,26 @@
 package com.fitzone.gymbackend.repository;
 
-import com.fitzone.gymbackend.entity.Lead;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.fitzone.gymbackend.entity.Lead;
+
 public interface LeadRepository extends JpaRepository<Lead, Long> {
+
 	List<Lead> findByActiveTrue();
 
 	Optional<Lead> findByIdAndActiveTrue(Long id);
-	
+
 	long countByActiveTrue();
 
 	long countByActiveTrueAndStatus(String status);
-	
+
 	boolean existsByPhoneAndActiveTrue(String phone);
 
 	boolean existsByPhoneAndIdNotAndActiveTrue(String phone, Long id);

@@ -1,49 +1,60 @@
 import "../style/Admin.css";
-import { Component, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest, handleApiResponse } from "../util/api";
-import { AdminSidebar, DashboardCard, EmptyState } from "../components/common/index";
+import { Loader, DashboardCard, EmptyState } from "../components/common/index";
 import { toast } from "react-toastify";
 import { formatDate } from "../util/CommonUtil";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function Admin() {
-    const [customerStats, setCustomerStats] = useState([]);
+    const [customerStats, setCustomerStats] = useState({
+        total: 0,
+        active: 0,
+        inactive: 0,
+        expiringToday: 0,
+        expiring: 0,
+        expired: 0,
+        newCustomers: 0,
+        renewals: 0
+    });
     const [expiringCustomers, setExpiringCustomers] = useState([]);
+    const [pageLoading, setPageLoading] = useState(true);
     const navigate = useNavigate();
-    useEffect(() => { fetchCustomerStats(); fetchExpiringCustomers(); }, []);
+    useEffect(() => { fetchDashboard(); }, []);
 
-    const fetchCustomerStats = async () => {
+    const fetchDashboard = async () => {
         try {
-            const response = await apiRequest("/api/customers/stats");
-            await handleApiResponse(response);
-            const stats = await response.json();
-            setCustomerStats({
-                total: stats.totalCustomers,
-                active: stats.activeCustomers,
-                inactive: stats.inactiveCustomers,
-                expiringToday: stats.expiringToday,
-                expiring: stats.expiringCustomers,
-                expired: stats.expiredCustomers,
-                newCustomers: stats.newCustomersThisMonth,
-                renewals: stats.renewalsThisMonth
-            });
-        } catch (error) {
-            console.log(error);
-            toast.error(error.message);
-        }
-    };
-    const fetchExpiringCustomers = async () => {
-        try {
-            const response = await apiRequest("/api/customers/expiring-soon");
+            setPageLoading(true);
+            const response = await apiRequest("/api/dashboard");
             await handleApiResponse(response);
             const data = await response.json();
-            setExpiringCustomers(data);
-        } catch (error) {
-            console.log(error);
+            setCustomerStats({
+                total: data.customerStats.totalCustomers,
+                active: data.customerStats.activeCustomers,
+                inactive: data.customerStats.inactiveCustomers,
+                expiringToday: data.customerStats.expiringToday,
+                expiring: data.customerStats.expiringCustomers,
+                expired: data.customerStats.expiredCustomers,
+                newCustomers: data.customerStats.newCustomersThisMonth,
+                renewals: data.customerStats.renewalsThisMonth
+            });
+            setExpiringCustomers(data.expiringCustomers || []);
+        } catch (err) {
+            console.log(err);
             toast.error(error.message);
+        } finally {
+            setPageLoading(false);
         }
     };
+
+    if (pageLoading) {
+        return (
+            <AdminLayout>
+                <Loader />
+            </AdminLayout>
+        );
+    }
     return (
         <AdminLayout>
             {/* HEADER */}

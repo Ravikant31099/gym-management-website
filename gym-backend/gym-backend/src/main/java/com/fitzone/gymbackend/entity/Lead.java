@@ -8,22 +8,35 @@ public class Lead extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long Id;
+	private Long id;
+
+	@Column(nullable = false)
 	private String name;
+
+	@Column(nullable = false)
 	private String email;
+
+	@Column(nullable = false)
 	private String phone;
+
+	@Column(nullable = false)
 	private String subject;
+
+	@Column(nullable = false, length = 2000)
 	private String message;
+
+	@Column(nullable = false)
 	private String status = "NEW";
+
 	@Column(nullable = false)
 	private Boolean active = true;
 
 	public Long getId() {
-		return Id;
+		return id;
 	}
 
 	public void setId(Long id) {
-		Id = id;
+		this.id = id;
 	}
 
 	public String getName() {
@@ -73,7 +86,7 @@ public class Lead extends BaseEntity {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+
 	public Boolean getActive() {
 		return active;
 	}
@@ -81,5 +94,4 @@ public class Lead extends BaseEntity {
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
-	
 }

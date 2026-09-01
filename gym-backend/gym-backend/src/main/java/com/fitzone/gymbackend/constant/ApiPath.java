@@ -15,4 +15,5 @@ public class ApiPath {
 	public static final String PAYMENTS = "/api/payments/**";
 	public static final String USERS = "/api/users/**";
 	public static final String USERIMAGE = "/user-images/*";
+	public static final String DASHBOARD = "/api/dashboard/**";
 }

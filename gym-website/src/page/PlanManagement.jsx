@@ -6,7 +6,7 @@ import { FileSpreadsheet, RefreshCcw } from "lucide-react";
 import { formatCurrency, formatPlanDuration, allowOnlyAlphabets, allowDecimal } from "../util/CommonUtil";
 import { AdminSidebar, EmptyState, DetailItem, Loader } from "../components/common/index";
 import { ConfirmModal, FormModal, ViewModal } from "../components/modals/index";
-import AdminLayout from "../components/Layout/AdminLayout";
+import AdminLayout from "../components/layout/AdminLayout";
 import { toast } from "react-toastify";
 
 export default function PlanManagement() {
@@ -80,7 +80,7 @@ export default function PlanManagement() {
     const fetchPlans = async () => {
         try {
             setTableLoading(true);
-            const response = await apiRequest("/api/plans", "GET");
+            const response = await apiRequest("/api/plans");
             await handleApiResponse(response);
             const data = await response.json();
             setPlans(data);
@@ -97,7 +97,7 @@ export default function PlanManagement() {
             if (!validatePlanForm()) {
                 return;
             }
-            const response = await apiRequest(`/api/plans`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(planForm) });
+            const response = await apiRequest(`/api/plans`, { method: "POST", body: JSON.stringify(planForm) });
             await handleApiResponse(response);
             const savedPlan = await response.json();
             setPlans([...plans, savedPlan]);
@@ -133,7 +133,7 @@ export default function PlanManagement() {
             if (!validatePlanForm()) {
                 return;
             }
-            const response = await apiRequest(`/api/plans/${editingPlanId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(planForm) });
+            const response = await apiRequest(`/api/plans/${editingPlanId}`, { method: "PUT", body: JSON.stringify(planForm) });
             await handleApiResponse(response);
             const updatedPlan = await response.json();
             setPlans(plans.map((plan) => plan.id === editingPlanId ? updatedPlan : plan));
